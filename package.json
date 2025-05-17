@@ -1,0 +1,21 @@
+{
+  "name": "@lc-tut/tut-bus",
+  "private": false,
+  "workspaces": [
+    "web",
+    "spec"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "dev:web": "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build",
+    "generate:spec": "pnpm --filter spec run generate:spec",
+    "generate:client": "pnpm --filter spec run generate:client",
+    "lint": "pnpm --filter web lint"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "latest",
+    "@typespec/http": "latest",
+    "@typespec/openapi3": "latest"
+  }
+}
