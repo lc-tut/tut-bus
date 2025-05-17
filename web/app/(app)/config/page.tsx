@@ -1,20 +1,18 @@
-"use client";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-
+'use client'
+import { useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function ConfigPage() {
-  const [username, setUsername] = useState("");
-  const [notifications, setNotifications] = useState(true);
+  const [username, setUsername] = useState('')
+  const [notifications, setNotifications] = useState(true)
 
   const handleSave = () => {
     // 設定保存処理（例: API呼び出し）
-    alert("設定を保存しました");
-  };
+    alert('設定を保存しました')
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -33,10 +31,7 @@ export default function ConfigPage() {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm">通知を有効にする</span>
-            <Switch
-              checked={notifications}
-              onCheckedChange={setNotifications}
-            />
+            <Switch checked={notifications} onCheckedChange={setNotifications} />
           </div>
           <Button className="w-full" onClick={handleSave}>
             保存
@@ -44,5 +39,5 @@ export default function ConfigPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

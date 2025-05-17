@@ -1,74 +1,74 @@
-import { OperationParameter, OperationURLParameter } from "@azure/core-client";
+import { OperationParameter, OperationURLParameter } from '@azure/core-client'
 import {
   Widget as WidgetMapper,
   WidgetMergePatchUpdate as WidgetMergePatchUpdateMapper,
-} from "../models/mappers.js";
+} from '../models/mappers.js'
 
 export const accept: OperationParameter = {
-  parameterPath: "accept",
+  parameterPath: 'accept',
   mapper: {
-    defaultValue: "application/json",
+    defaultValue: 'application/json',
     isConstant: true,
-    serializedName: "Accept",
+    serializedName: 'Accept',
     type: {
-      name: "String",
+      name: 'String',
     },
   },
-};
+}
 
 export const $host: OperationURLParameter = {
-  parameterPath: "$host",
+  parameterPath: '$host',
   mapper: {
-    serializedName: "$host",
+    serializedName: '$host',
     required: true,
     type: {
-      name: "String",
+      name: 'String',
     },
   },
   skipEncoding: true,
-};
+}
 
 export const contentType: OperationParameter = {
-  parameterPath: ["options", "contentType"],
+  parameterPath: ['options', 'contentType'],
   mapper: {
-    defaultValue: "application/json",
+    defaultValue: 'application/json',
     isConstant: true,
-    serializedName: "Content-Type",
+    serializedName: 'Content-Type',
     type: {
-      name: "String",
+      name: 'String',
     },
   },
-};
+}
 
 export const body: OperationParameter = {
-  parameterPath: "body",
+  parameterPath: 'body',
   mapper: WidgetMapper,
-};
+}
 
 export const id: OperationURLParameter = {
-  parameterPath: "id",
+  parameterPath: 'id',
   mapper: {
-    serializedName: "id",
+    serializedName: 'id',
     required: true,
     type: {
-      name: "String",
+      name: 'String',
     },
   },
-};
+}
 
 export const contentType1: OperationParameter = {
-  parameterPath: ["options", "contentType"],
+  parameterPath: ['options', 'contentType'],
   mapper: {
-    defaultValue: "application/merge-patch+json",
+    defaultValue: 'application/merge-patch+json',
     isConstant: true,
-    serializedName: "Content-Type",
+    serializedName: 'Content-Type',
     type: {
-      name: "String",
+      name: 'String',
     },
   },
-};
+}
 
 export const body1: OperationParameter = {
-  parameterPath: "body",
+  parameterPath: 'body',
   mapper: WidgetMergePatchUpdateMapper,
-};
+}

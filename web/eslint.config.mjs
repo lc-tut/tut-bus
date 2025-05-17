@@ -1,16 +1,23 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// eslint.config.mjs
+import js from '@eslint/js'
+import { FlatCompat } from '@eslint/eslintrc'
 
 const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+  baseDirectory: import.meta.dirname,
+  recommendedConfig: js.configs.recommended,
+})
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-];
-
-export default eslintConfig;
+export default [
+  // 既存の設定
+  ...compat.config({
+    extends: [
+      'eslint:recommended',
+      'plugin:react/recommended',
+      'next',
+      'next/core-web-vitals',
+      'next/typescript',
+      'prettier',
+    ],
+    settings: { react: { version: 'detect' } },
+  }),
+]

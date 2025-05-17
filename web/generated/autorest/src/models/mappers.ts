@@ -1,126 +1,126 @@
-import * as coreClient from "@azure/core-client";
+import * as coreClient from '@azure/core-client'
 
 export const WidgetList: coreClient.CompositeMapper = {
   type: {
-    name: "Composite",
-    className: "WidgetList",
+    name: 'Composite',
+    className: 'WidgetList',
     modelProperties: {
       items: {
-        serializedName: "items",
+        serializedName: 'items',
         required: true,
         type: {
-          name: "Sequence",
+          name: 'Sequence',
           element: {
             type: {
-              name: "Composite",
-              className: "Widget",
+              name: 'Composite',
+              className: 'Widget',
             },
           },
         },
       },
     },
   },
-};
+}
 
 export const Widget: coreClient.CompositeMapper = {
   type: {
-    name: "Composite",
-    className: "Widget",
+    name: 'Composite',
+    className: 'Widget',
     modelProperties: {
       id: {
-        serializedName: "id",
+        serializedName: 'id',
         required: true,
         type: {
-          name: "String",
+          name: 'String',
         },
       },
       weight: {
-        serializedName: "weight",
+        serializedName: 'weight',
         required: true,
         type: {
-          name: "Number",
+          name: 'Number',
         },
       },
       color: {
-        serializedName: "color",
+        serializedName: 'color',
         required: true,
         type: {
-          name: "String",
+          name: 'String',
         },
       },
     },
   },
-};
+}
 
 export const ErrorModel: coreClient.CompositeMapper = {
   type: {
-    name: "Composite",
-    className: "ErrorModel",
+    name: 'Composite',
+    className: 'ErrorModel',
     modelProperties: {
       code: {
-        serializedName: "code",
+        serializedName: 'code',
         required: true,
         type: {
-          name: "Number",
+          name: 'Number',
         },
       },
       message: {
-        serializedName: "message",
+        serializedName: 'message',
         required: true,
         type: {
-          name: "String",
+          name: 'String',
         },
       },
     },
   },
-};
+}
 
 export const WidgetMergePatchUpdate: coreClient.CompositeMapper = {
   type: {
-    name: "Composite",
-    className: "WidgetMergePatchUpdate",
+    name: 'Composite',
+    className: 'WidgetMergePatchUpdate',
     modelProperties: {
       id: {
-        serializedName: "id",
+        serializedName: 'id',
         type: {
-          name: "String",
+          name: 'String',
         },
       },
       weight: {
-        serializedName: "weight",
+        serializedName: 'weight',
         type: {
-          name: "Number",
+          name: 'Number',
         },
       },
       color: {
-        serializedName: "color",
+        serializedName: 'color',
         type: {
-          name: "String",
+          name: 'String',
         },
       },
     },
   },
-};
+}
 
 export const AnalyzeResult: coreClient.CompositeMapper = {
   type: {
-    name: "Composite",
-    className: "AnalyzeResult",
+    name: 'Composite',
+    className: 'AnalyzeResult',
     modelProperties: {
       id: {
-        serializedName: "id",
+        serializedName: 'id',
         required: true,
         type: {
-          name: "String",
+          name: 'String',
         },
       },
       analysis: {
-        serializedName: "analysis",
+        serializedName: 'analysis',
         required: true,
         type: {
-          name: "String",
+          name: 'String',
         },
       },
     },
   },
-};
+}

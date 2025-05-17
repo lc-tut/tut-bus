@@ -1,37 +1,37 @@
-import * as coreClient from "@azure/core-client";
+import * as coreClient from '@azure/core-client'
 
 export interface WidgetList {
-  items: Widget[];
+  items: Widget[]
 }
 
 export interface Widget {
-  id: string;
-  weight: number;
-  color: WidgetColor;
+  id: string
+  weight: number
+  color: WidgetColor
 }
 
 export interface ErrorModel {
-  code: number;
-  message: string;
+  code: number
+  message: string
 }
 
 export interface WidgetMergePatchUpdate {
-  id?: string;
-  weight?: number;
-  color?: WidgetMergePatchUpdateColor;
+  id?: string
+  weight?: number
+  color?: WidgetMergePatchUpdateColor
 }
 
 export interface AnalyzeResult {
-  id: string;
-  analysis: string;
+  id: string
+  analysis: string
 }
 
 /** Known values of {@link WidgetColor} that the service accepts. */
 export enum KnownWidgetColor {
   /** Red */
-  Red = "red",
+  Red = 'red',
   /** Blue */
-  Blue = "blue",
+  Blue = 'blue',
 }
 
 /**
@@ -42,14 +42,14 @@ export enum KnownWidgetColor {
  * **red** \
  * **blue**
  */
-export type WidgetColor = string;
+export type WidgetColor = string
 
 /** Known values of {@link WidgetMergePatchUpdateColor} that the service accepts. */
 export enum KnownWidgetMergePatchUpdateColor {
   /** Red */
-  Red = "red",
+  Red = 'red',
   /** Blue */
-  Blue = "blue",
+  Blue = 'blue',
 }
 
 /**
@@ -60,50 +60,43 @@ export enum KnownWidgetMergePatchUpdateColor {
  * **red** \
  * **blue**
  */
-export type WidgetMergePatchUpdateColor = string;
+export type WidgetMergePatchUpdateColor = string
 
 /** Optional parameters. */
-export interface WidgetsListOptionalParams
-  extends coreClient.OperationOptions {}
+export interface WidgetsListOptionalParams extends coreClient.OperationOptions {}
 
 /** Contains response data for the list operation. */
-export type WidgetsListResponse = WidgetList;
+export type WidgetsListResponse = WidgetList
 
 /** Optional parameters. */
-export interface WidgetsCreateOptionalParams
-  extends coreClient.OperationOptions {}
+export interface WidgetsCreateOptionalParams extends coreClient.OperationOptions {}
 
 /** Contains response data for the create operation. */
-export type WidgetsCreateResponse = Widget;
+export type WidgetsCreateResponse = Widget
 
 /** Optional parameters. */
-export interface WidgetsReadOptionalParams
-  extends coreClient.OperationOptions {}
+export interface WidgetsReadOptionalParams extends coreClient.OperationOptions {}
 
 /** Contains response data for the read operation. */
-export type WidgetsReadResponse = Widget;
+export type WidgetsReadResponse = Widget
 
 /** Optional parameters. */
-export interface WidgetsUpdateOptionalParams
-  extends coreClient.OperationOptions {}
+export interface WidgetsUpdateOptionalParams extends coreClient.OperationOptions {}
 
 /** Contains response data for the update operation. */
-export type WidgetsUpdateResponse = Widget;
+export type WidgetsUpdateResponse = Widget
 
 /** Optional parameters. */
-export interface WidgetsDeleteOptionalParams
-  extends coreClient.OperationOptions {}
+export interface WidgetsDeleteOptionalParams extends coreClient.OperationOptions {}
 
 /** Optional parameters. */
-export interface WidgetsAnalyzeOptionalParams
-  extends coreClient.OperationOptions {}
+export interface WidgetsAnalyzeOptionalParams extends coreClient.OperationOptions {}
 
 /** Contains response data for the analyze operation. */
-export type WidgetsAnalyzeResponse = AnalyzeResult;
+export type WidgetsAnalyzeResponse = AnalyzeResult
 
 /** Optional parameters. */
-export interface WidgetServiceOptionalParams
-  extends coreClient.ServiceClientOptions {
+export interface WidgetServiceOptionalParams extends coreClient.ServiceClientOptions {
   /** Overrides client endpoint. */
-  endpoint?: string;
+  endpoint?: string
 }

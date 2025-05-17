@@ -1,1 +1,1 @@
-export * from "./widgets.js";
+export * from './widgets.js'

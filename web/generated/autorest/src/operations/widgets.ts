@@ -1,8 +1,8 @@
-import { Widgets } from "../operationsInterfaces/index.js";
-import * as coreClient from "@azure/core-client";
-import * as Mappers from "../models/mappers.js";
-import * as Parameters from "../models/parameters.js";
-import { WidgetService } from "../widgetService.js";
+import { Widgets } from '../operationsInterfaces/index.js'
+import * as coreClient from '@azure/core-client'
+import * as Mappers from '../models/mappers.js'
+import * as Parameters from '../models/parameters.js'
+import { WidgetService } from '../widgetService.js'
 import {
   WidgetsListOptionalParams,
   WidgetsListResponse,
@@ -17,18 +17,18 @@ import {
   WidgetsDeleteOptionalParams,
   WidgetsAnalyzeOptionalParams,
   WidgetsAnalyzeResponse,
-} from "../models/index.js";
+} from '../models/index.js'
 
 /** Class containing Widgets operations. */
 export class WidgetsImpl implements Widgets {
-  private readonly client: WidgetService;
+  private readonly client: WidgetService
 
   /**
    * Initialize a new instance of the class Widgets class.
    * @param client Reference to the service client
    */
   constructor(client: WidgetService) {
-    this.client = client;
+    this.client = client
   }
 
   /**
@@ -36,7 +36,7 @@ export class WidgetsImpl implements Widgets {
    * @param options The options parameters.
    */
   list(options?: WidgetsListOptionalParams): Promise<WidgetsListResponse> {
-    return this.client.sendOperationRequest({ options }, listOperationSpec);
+    return this.client.sendOperationRequest({ options }, listOperationSpec)
   }
 
   /**
@@ -44,14 +44,8 @@ export class WidgetsImpl implements Widgets {
    * @param body
    * @param options The options parameters.
    */
-  create(
-    body: Widget,
-    options?: WidgetsCreateOptionalParams,
-  ): Promise<WidgetsCreateResponse> {
-    return this.client.sendOperationRequest(
-      { body, options },
-      createOperationSpec,
-    );
+  create(body: Widget, options?: WidgetsCreateOptionalParams): Promise<WidgetsCreateResponse> {
+    return this.client.sendOperationRequest({ body, options }, createOperationSpec)
   }
 
   /**
@@ -59,11 +53,8 @@ export class WidgetsImpl implements Widgets {
    * @param id
    * @param options The options parameters.
    */
-  read(
-    id: string,
-    options?: WidgetsReadOptionalParams,
-  ): Promise<WidgetsReadResponse> {
-    return this.client.sendOperationRequest({ id, options }, readOperationSpec);
+  read(id: string, options?: WidgetsReadOptionalParams): Promise<WidgetsReadResponse> {
+    return this.client.sendOperationRequest({ id, options }, readOperationSpec)
   }
 
   /**
@@ -75,12 +66,9 @@ export class WidgetsImpl implements Widgets {
   update(
     id: string,
     body: WidgetMergePatchUpdate,
-    options?: WidgetsUpdateOptionalParams,
+    options?: WidgetsUpdateOptionalParams
   ): Promise<WidgetsUpdateResponse> {
-    return this.client.sendOperationRequest(
-      { id, body, options },
-      updateOperationSpec,
-    );
+    return this.client.sendOperationRequest({ id, body, options }, updateOperationSpec)
   }
 
   /**
@@ -89,10 +77,7 @@ export class WidgetsImpl implements Widgets {
    * @param options The options parameters.
    */
   delete(id: string, options?: WidgetsDeleteOptionalParams): Promise<void> {
-    return this.client.sendOperationRequest(
-      { id, options },
-      deleteOperationSpec,
-    );
+    return this.client.sendOperationRequest({ id, options }, deleteOperationSpec)
   }
 
   /**
@@ -100,22 +85,16 @@ export class WidgetsImpl implements Widgets {
    * @param id
    * @param options The options parameters.
    */
-  analyze(
-    id: string,
-    options?: WidgetsAnalyzeOptionalParams,
-  ): Promise<WidgetsAnalyzeResponse> {
-    return this.client.sendOperationRequest(
-      { id, options },
-      analyzeOperationSpec,
-    );
+  analyze(id: string, options?: WidgetsAnalyzeOptionalParams): Promise<WidgetsAnalyzeResponse> {
+    return this.client.sendOperationRequest({ id, options }, analyzeOperationSpec)
   }
 }
 // Operation Specifications
-const serializer = coreClient.createSerializer(Mappers, /* isXml */ false);
+const serializer = coreClient.createSerializer(Mappers, /* isXml */ false)
 
 const listOperationSpec: coreClient.OperationSpec = {
-  path: "/widgets",
-  httpMethod: "GET",
+  path: '/widgets',
+  httpMethod: 'GET',
   responses: {
     200: {
       bodyMapper: Mappers.WidgetList,
@@ -127,10 +106,10 @@ const listOperationSpec: coreClient.OperationSpec = {
   urlParameters: [Parameters.$host],
   headerParameters: [Parameters.accept],
   serializer,
-};
+}
 const createOperationSpec: coreClient.OperationSpec = {
-  path: "/widgets",
-  httpMethod: "POST",
+  path: '/widgets',
+  httpMethod: 'POST',
   responses: {
     200: {
       bodyMapper: Mappers.Widget,
@@ -142,12 +121,12 @@ const createOperationSpec: coreClient.OperationSpec = {
   requestBody: Parameters.body,
   urlParameters: [Parameters.$host],
   headerParameters: [Parameters.accept, Parameters.contentType],
-  mediaType: "json",
+  mediaType: 'json',
   serializer,
-};
+}
 const readOperationSpec: coreClient.OperationSpec = {
-  path: "/widgets/{id}",
-  httpMethod: "GET",
+  path: '/widgets/{id}',
+  httpMethod: 'GET',
   responses: {
     200: {
       bodyMapper: Mappers.Widget,
@@ -159,10 +138,10 @@ const readOperationSpec: coreClient.OperationSpec = {
   urlParameters: [Parameters.$host, Parameters.id],
   headerParameters: [Parameters.accept],
   serializer,
-};
+}
 const updateOperationSpec: coreClient.OperationSpec = {
-  path: "/widgets/{id}",
-  httpMethod: "PATCH",
+  path: '/widgets/{id}',
+  httpMethod: 'PATCH',
   responses: {
     200: {
       bodyMapper: Mappers.Widget,
@@ -174,12 +153,12 @@ const updateOperationSpec: coreClient.OperationSpec = {
   requestBody: Parameters.body1,
   urlParameters: [Parameters.$host, Parameters.id],
   headerParameters: [Parameters.accept, Parameters.contentType1],
-  mediaType: "json",
+  mediaType: 'json',
   serializer,
-};
+}
 const deleteOperationSpec: coreClient.OperationSpec = {
-  path: "/widgets/{id}",
-  httpMethod: "DELETE",
+  path: '/widgets/{id}',
+  httpMethod: 'DELETE',
   responses: {
     204: {},
     default: {
@@ -189,10 +168,10 @@ const deleteOperationSpec: coreClient.OperationSpec = {
   urlParameters: [Parameters.$host, Parameters.id],
   headerParameters: [Parameters.accept],
   serializer,
-};
+}
 const analyzeOperationSpec: coreClient.OperationSpec = {
-  path: "/widgets/{id}/analyze",
-  httpMethod: "POST",
+  path: '/widgets/{id}/analyze',
+  httpMethod: 'POST',
   responses: {
     200: {
       bodyMapper: Mappers.AnalyzeResult,
@@ -204,4 +183,4 @@ const analyzeOperationSpec: coreClient.OperationSpec = {
   urlParameters: [Parameters.$host, Parameters.id],
   headerParameters: [Parameters.accept],
   serializer,
-};
+}
