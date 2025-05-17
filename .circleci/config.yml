@@ -13,6 +13,13 @@ jobs:
             - spec-pnpm-deps-{{ checksum "./pnpm-lock.lock" }}
 
       - run:
+          name: Install pnpm package manager
+          command: |
+            sudo corepack enable
+            sudo corepack prepare pnpm@latest-9 --activate
+            pnpm config set store-dir ~/.cache/pnpm
+
+      - run:
           name: Install dependencies
           working_directory: spec
           command: pnpm install
@@ -43,6 +50,13 @@ jobs:
           name: Restore web cache
           keys:
             - web-pnpm-deps-{{ checksum "./pnpm-lock.lock" }}
+
+      - run:
+          name: Install pnpm package manager
+          command: |
+            sudo corepack enable
+            sudo corepack prepare pnpm@latest-9 --activate
+            pnpm config set store-dir ~/.cache/pnpm
 
       - run:
           name: Install dependencies
