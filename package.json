@@ -10,6 +10,7 @@
     "lint": "prettier --check . && turbo run lint",
     "fix": "prettier --check --write . && turbo run fix",
     "typecheck": "turbo run typecheck",
+    "build": "turbo run build",
     "dev": "pnpm --filter web dev",
     "prod:build": "pnpm -r build",
     "gen:spec": "pnpm --filter spec run gen:spec",
