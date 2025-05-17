@@ -36,9 +36,9 @@ jobs:
 
       - save_cache:
           name: Save spec cache
-          key: spec-pnpm-deps-{{ checksum "./pnpm-lock.lock" }}
+          key: spec-pnpm-deps-{{ checksum "./pnpm-lock.yaml" }}
           paths:
-            - spec/node_modules
+            - ./spec/node_modules
 
   web:
     docker:
@@ -81,9 +81,9 @@ jobs:
 
       - save_cache:
           name: Save web cache
-          key: web-pnpm-deps-{{ checksum "./pnpm-lock.lock" }}
+          key: web-pnpm-deps-{{ checksum "./pnpm-lock.yaml" }}
           paths:
-            - web/node_modules
+            - ./web/node_modules
 
 workflows:
   version: 2
