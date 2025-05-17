@@ -8,7 +8,6 @@ const compat = new FlatCompat({
 })
 
 export default [
-  // 既存の設定
   ...compat.config({
     extends: [
       'eslint:recommended',

@@ -1,11 +1,15 @@
 {
   "name": "@lc-tut/tut-bus",
   "private": true,
+  "packageManager": "npm@8.5.0",
   "workspaces": [
-    "web",
-    "spec"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
+    "lint": "prettier --check . && turbo run lint",
+    "fix": "prettier --check --write . && turbo run fix",
+    "typecheck": "turbo run typecheck",
     "dev": "pnpm --filter web dev",
     "prod:build": "pnpm -r build",
     "gen:spec": "pnpm --filter spec run gen:spec",
@@ -18,7 +22,9 @@
     "lint:web": "pnpm --filter web run lint",
     "dev:api": "go run ./api/cmd/server/main.go",
     "build:api": "go build ./api/...",
-    "test": "echo \"No tests configured\"",
-    "lint": "pnpm -r lint"
+    "test": "echo \"No tests configured\""
+  },
+  "devDependencies": {
+    "turbo": "^2.5.3"
   }
 }
