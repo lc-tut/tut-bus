@@ -1,0 +1,9 @@
+input-file: ./dist/openapi.yaml
+output-folder: ../web/generated/autorest
+typescript:
+  add-credential: false
+  generate-metadata: false
+  generate-test: false
+  source-map: false
+  generate-package-json: false
+

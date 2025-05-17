@@ -1,0 +1,16 @@
+{
+  "name": "spec",
+  "private": true,
+  "scripts": {
+    "gen:spec": "tsp compile .",
+    "gen:ts": "autorest ./readme.ts.yaml --typescript",
+    "gen:go": "mkdir -p ../api/models && oapi-codegen --config=./oapi-codegen.yaml ./dist/openapi.yaml"
+  },
+  "devDependencies": {
+    "autorest": "latest",
+    "@autorest/go": "latest",
+    "@typespec/compiler": "latest",
+    "@typespec/http": "latest",
+    "@typespec/openapi3": "latest"
+  }
+}

@@ -1,21 +1,24 @@
 {
   "name": "@lc-tut/tut-bus",
-  "private": false,
+  "private": true,
   "workspaces": [
     "web",
     "spec"
   ],
   "scripts": {
     "dev": "pnpm --filter web dev",
-    "dev:web": "pnpm --filter web dev",
-    "build:web": "pnpm --filter web build",
-    "generate:spec": "pnpm --filter spec run generate:spec",
-    "generate:client": "pnpm --filter spec run generate:client",
-    "lint": "pnpm --filter web lint"
-  },
-  "devDependencies": {
-    "@typespec/compiler": "latest",
-    "@typespec/http": "latest",
-    "@typespec/openapi3": "latest"
+    "prod:build": "pnpm -r build",
+    "gen:spec": "pnpm --filter spec run gen:spec",
+    "gen:spec:ts": "pnpm --filter spec run gen:ts",
+    "gen:spec:go": "pnpm --filter spec run gen:go",
+    "gen:clients": "pnpm run gen:spec:ts && pnpm run gen:spec:go",
+    "dev:web": "pnpm --filter web run dev",
+    "build:web": "pnpm --filter web run build",
+    "start:web": "pnpm --filter web run start",
+    "lint:web": "pnpm --filter web run lint",
+    "dev:api": "go run ./api/cmd/server/main.go",
+    "build:api": "go build ./api/...",
+    "test": "echo \"No tests configured\"",
+    "lint": "pnpm -r lint"
   }
 }
