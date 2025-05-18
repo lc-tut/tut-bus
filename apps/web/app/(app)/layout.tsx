@@ -1,3 +1,4 @@
+import Header from '@/components/header'
 import NavBar from '@/components/nav-bar'
 
 export default function AppLayout({
@@ -7,7 +8,10 @@ export default function AppLayout({
 }>) {
   return (
     <div>
-      {children}
+      <Header />
+      <div className='p-1'>
+        {children}
+      </div>
       <NavBar />
     </div>
   )
