@@ -30,7 +30,7 @@ export default function NavBar() {
   const pathname = usePathname()
 
   return (
-    <nav className="w-full fixed bottom-0 left-0 shadow-xs bg-secondary sm:hidden">
+    <nav className="w-full fixed bottom-0 left-0 shadow-xs border-t bg-primary-foreground y sm:hidden">
       <ul className="h-20 grid grid-cols-3 gap-4">
         {navItems.map((item) => {
           const selected = pathname === item.href
