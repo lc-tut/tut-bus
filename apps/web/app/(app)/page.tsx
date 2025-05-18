@@ -1,38 +1,29 @@
 'use client'
 
 import * as React from 'react'
-import { Moon, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
 
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Card, CardContent } from '@/components/ui/card'
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 
-export default function ModeToggle() {
-  const { setTheme } = useTheme()
-
+export default function Home() {
   return (
-    <div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="icon">
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <br />
-      <Button variant="default">Test Button</Button>
+    <div className='my-10'>
+      <Carousel>
+        <CarouselContent className='mx-[5vw]'>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <CarouselItem
+              key={index}
+              className="basis-[90vw] px-2 flex justify-center max-w-lg"
+            >
+              <Card className="w-full h-96 flex flex-col items-center justify-center">
+                <CardContent className="flex aspect-square items-center justify-center">
+                  <span className="text-4xl font-semibold">{index + 1}</span>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </div>
   )
 }
