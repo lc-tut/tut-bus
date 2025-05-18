@@ -4,7 +4,8 @@
   "scripts": {
     "lint": "tsp format . --check",
     "fix": "tsp format .",
-    "build": "tsp compile .",
+    "build": "run-s gen:*",
+    "gen:spec": "tsp compile .",
     "gen:ts": "autorest ./readme.ts.yaml --typescript",
     "gen:go": "mkdir -p ../api/models && oapi-codegen --config=./oapi-codegen.yaml ./dist/openapi.yaml"
   },

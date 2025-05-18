@@ -1,11 +1,14 @@
 # syntax=docker.io/docker/dockerfile:1
 
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+
+RUN corepack prepare pnpm@10.11.0 --activate
+
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
@@ -23,7 +26,7 @@ COPY . .
 # Note: Don't expose ports here, Compose will handle that for us
 
 # Start Next.js in development mode based on the preferred package manager
-CMD \
+CMD  \
   if [ -f yarn.lock ]; then yarn dev; \
   elif [ -f package-lock.json ]; then npm run dev; \
   elif [ -f pnpm-lock.yaml ]; then pnpm dev; \

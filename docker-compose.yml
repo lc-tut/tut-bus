@@ -2,13 +2,13 @@ services:
   web:
     container_name: web
     build:
-      context: ./web
+      context: ./apps/web
       dockerfile: dev.Dockerfile
 
     env_file:
-      - ./web/.env
+      - ./apps/web/.env
     volumes:
-      - ./web:/app
+      - ./apps/web:/app
     restart: always
     ports:
       - 3000:3000
@@ -21,6 +21,6 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ./spec/dist/openapi.yaml:/spec/dist/openapi.yaml:ro
+      - ./apps/spec/dist/openapi.yaml:/spec/dist/openapi.yaml:ro
     environment:
       SWAGGER_JSON: /spec/dist/openapi.yaml

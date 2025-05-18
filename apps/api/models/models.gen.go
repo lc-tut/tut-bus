@@ -4,175 +4,16 @@
 package schema
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/labstack/echo/v4"
-	"github.com/oapi-codegen/runtime"
 )
-
-// Defines values for WidgetColor.
-const (
-	WidgetColorBlue WidgetColor = "blue"
-	WidgetColorRed  WidgetColor = "red"
-)
-
-// Defines values for WidgetMergePatchUpdateColor.
-const (
-	WidgetMergePatchUpdateColorBlue WidgetMergePatchUpdateColor = "blue"
-	WidgetMergePatchUpdateColorRed  WidgetMergePatchUpdateColor = "red"
-)
-
-// AnalyzeResult defines model for AnalyzeResult.
-type AnalyzeResult struct {
-	Analysis string `json:"analysis"`
-	Id       string `json:"id"`
-}
-
-// Error defines model for Error.
-type Error struct {
-	Code    int32  `json:"code"`
-	Message string `json:"message"`
-}
-
-// Widget defines model for Widget.
-type Widget struct {
-	Color  WidgetColor `json:"color"`
-	Id     string      `json:"id"`
-	Weight int32       `json:"weight"`
-}
-
-// WidgetColor defines model for Widget.Color.
-type WidgetColor string
-
-// WidgetList defines model for WidgetList.
-type WidgetList struct {
-	Items []Widget `json:"items"`
-}
-
-// WidgetMergePatchUpdate defines model for WidgetMergePatchUpdate.
-type WidgetMergePatchUpdate struct {
-	Color  *WidgetMergePatchUpdateColor `json:"color,omitempty"`
-	Id     *string                      `json:"id,omitempty"`
-	Weight *int32                       `json:"weight,omitempty"`
-}
-
-// WidgetMergePatchUpdateColor defines model for WidgetMergePatchUpdate.Color.
-type WidgetMergePatchUpdateColor string
-
-// WidgetsCreateJSONRequestBody defines body for WidgetsCreate for application/json ContentType.
-type WidgetsCreateJSONRequestBody = Widget
-
-// WidgetsUpdateApplicationMergePatchPlusJSONRequestBody defines body for WidgetsUpdate for application/merge-patch+json ContentType.
-type WidgetsUpdateApplicationMergePatchPlusJSONRequestBody = WidgetMergePatchUpdate
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-
-	// (GET /widgets)
-	WidgetsList(ctx echo.Context) error
-
-	// (POST /widgets)
-	WidgetsCreate(ctx echo.Context) error
-
-	// (DELETE /widgets/{id})
-	WidgetsDelete(ctx echo.Context, id string) error
-
-	// (GET /widgets/{id})
-	WidgetsRead(ctx echo.Context, id string) error
-
-	// (PATCH /widgets/{id})
-	WidgetsUpdate(ctx echo.Context, id string) error
-
-	// (POST /widgets/{id}/analyze)
-	WidgetsAnalyze(ctx echo.Context, id string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
-}
-
-// WidgetsList converts echo context to params.
-func (w *ServerInterfaceWrapper) WidgetsList(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.WidgetsList(ctx)
-	return err
-}
-
-// WidgetsCreate converts echo context to params.
-func (w *ServerInterfaceWrapper) WidgetsCreate(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.WidgetsCreate(ctx)
-	return err
-}
-
-// WidgetsDelete converts echo context to params.
-func (w *ServerInterfaceWrapper) WidgetsDelete(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.WidgetsDelete(ctx, id)
-	return err
-}
-
-// WidgetsRead converts echo context to params.
-func (w *ServerInterfaceWrapper) WidgetsRead(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.WidgetsRead(ctx, id)
-	return err
-}
-
-// WidgetsUpdate converts echo context to params.
-func (w *ServerInterfaceWrapper) WidgetsUpdate(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.WidgetsUpdate(ctx, id)
-	return err
-}
-
-// WidgetsAnalyze converts echo context to params.
-func (w *ServerInterfaceWrapper) WidgetsAnalyze(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.WidgetsAnalyze(ctx, id)
-	return err
 }
 
 // This is a simple interface which specifies echo.Route addition functions which
@@ -198,16 +39,5 @@ func RegisterHandlers(router EchoRouter, si ServerInterface) {
 // Registers handlers, and prepends BaseURL to the paths, so that the paths
 // can be served under a prefix.
 func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string) {
-
-	wrapper := ServerInterfaceWrapper{
-		Handler: si,
-	}
-
-	router.GET(baseURL+"/widgets", wrapper.WidgetsList)
-	router.POST(baseURL+"/widgets", wrapper.WidgetsCreate)
-	router.DELETE(baseURL+"/widgets/:id", wrapper.WidgetsDelete)
-	router.GET(baseURL+"/widgets/:id", wrapper.WidgetsRead)
-	router.PATCH(baseURL+"/widgets/:id", wrapper.WidgetsUpdate)
-	router.POST(baseURL+"/widgets/:id/analyze", wrapper.WidgetsAnalyze)
 
 }
