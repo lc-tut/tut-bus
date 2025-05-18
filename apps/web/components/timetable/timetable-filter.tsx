@@ -21,12 +21,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { format, addDays } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
-import {
-  FaCalendarAlt,
-  FaClock,
-  FaExchangeAlt,
-  FaMapMarkerAlt,
-} from 'react-icons/fa'
+import { FaCalendarAlt, FaClock, FaExchangeAlt, FaMapMarkerAlt } from 'react-icons/fa'
 import { TimeFilterType } from '@/lib/types/timetable'
 import { getAvailableDepartures, getAvailableDestinations } from '@/lib/utils/timetable'
 
@@ -115,8 +110,7 @@ export function TimetableFilter({
                     ? 'today'
                     : format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
                       ? 'today'
-                      : format(selectedDate, 'yyyy-MM-dd') ===
-                          format(addDays(now, 1), 'yyyy-MM-dd')
+                      : format(selectedDate, 'yyyy-MM-dd') === format(addDays(now, 1), 'yyyy-MM-dd')
                         ? 'tomorrow'
                         : 'custom'
                 }
@@ -161,8 +155,7 @@ export function TimetableFilter({
                               {tab.label}
                               {selectedDate &&
                                 now &&
-                                format(selectedDate, 'yyyy-MM-dd') !==
-                                  format(now, 'yyyy-MM-dd') &&
+                                format(selectedDate, 'yyyy-MM-dd') !== format(now, 'yyyy-MM-dd') &&
                                 format(selectedDate, 'yyyy-MM-dd') !==
                                   format(addDays(now, 1), 'yyyy-MM-dd') && (
                                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
@@ -203,8 +196,7 @@ export function TimetableFilter({
                     'px-4 py-3 text-sm font-medium rounded-md flex items-center justify-center',
                     format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
                       ? 'bg-green-50 text-green-700 border border-green-200'
-                      : format(selectedDate, 'yyyy-MM-dd') ===
-                          format(addDays(now, 1), 'yyyy-MM-dd')
+                      : format(selectedDate, 'yyyy-MM-dd') === format(addDays(now, 1), 'yyyy-MM-dd')
                         ? 'bg-blue-50 text-blue-700 border border-blue-200'
                         : 'border'
                   )}
@@ -222,8 +214,7 @@ export function TimetableFilter({
                   />
                   {format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
                     ? `今日 ${format(selectedDate, 'M月d日(E)', { locale: ja })}`
-                    : format(selectedDate, 'yyyy-MM-dd') ===
-                        format(addDays(now, 1), 'yyyy-MM-dd')
+                    : format(selectedDate, 'yyyy-MM-dd') === format(addDays(now, 1), 'yyyy-MM-dd')
                       ? `明日 ${format(selectedDate, 'M月d日(E)', { locale: ja })}`
                       : format(selectedDate, 'yyyy年M月d日(E)', { locale: ja })}
                 </div>
@@ -353,7 +344,6 @@ export function TimetableFilter({
           </div>
           {/* 区切り線 */}
           <div className="border-t my-4"></div>
-          
           {/* 時間帯設定（簡略化）*/}
           <div>
             <div className="mb-2">
@@ -362,8 +352,8 @@ export function TimetableFilter({
                 時間帯
               </label>
             </div>
-            
-            <Select 
+
+            <Select
               value={timeFilter}
               onValueChange={(value: TimeFilterType) => setTimeFilter(value)}
             >

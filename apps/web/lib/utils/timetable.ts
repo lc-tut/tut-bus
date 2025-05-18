@@ -1,6 +1,12 @@
 import { format } from 'date-fns'
 import { busStopsInfo, sampleSchedule } from '../data/timetable'
-import { BusStatus, DisplayBusInfo, ScheduleForDate, SegmentForDate, StopInfo } from '../types/timetable'
+import {
+  BusStatus,
+  DisplayBusInfo,
+  ScheduleForDate,
+  SegmentForDate,
+  StopInfo,
+} from '../types/timetable'
 
 /**
  * 時刻表データから表示用バスデータを生成します
@@ -51,12 +57,12 @@ export const generateDisplayBuses = (
  * 固定時刻バスをリストに追加
  */
 const addFixedSegmentBuses = (
-  segment: SegmentForDate, 
-  schedule: ScheduleForDate, 
+  segment: SegmentForDate,
+  schedule: ScheduleForDate,
   displayBuses: DisplayBusInfo[]
 ): void => {
   if (segment.segmentType !== 'fixed') return
-  
+
   const times = segment.times
 
   // 最初と最後のバスを識別
@@ -81,15 +87,14 @@ const addFixedSegmentBuses = (
  * 頻度ベースバスをリストに追加
  */
 const addFrequencySegmentBuses = (
-  segment: SegmentForDate, 
-  schedule: ScheduleForDate, 
+  segment: SegmentForDate,
+  schedule: ScheduleForDate,
   displayBuses: DisplayBusInfo[]
 ): void => {
   if (segment.segmentType !== 'frequency') return
-  
+
   const startTimeMinutes =
-    parseInt(segment.startTime.split(':')[0]) * 60 +
-    parseInt(segment.startTime.split(':')[1])
+    parseInt(segment.startTime.split(':')[0]) * 60 + parseInt(segment.startTime.split(':')[1])
   const endTimeMinutes =
     parseInt(segment.endTime.split(':')[0]) * 60 + parseInt(segment.endTime.split(':')[1])
 
@@ -132,15 +137,14 @@ const addFrequencySegmentBuses = (
  * シャトル便をリストに追加
  */
 const addShuttleSegmentBus = (
-  segment: SegmentForDate, 
-  schedule: ScheduleForDate, 
+  segment: SegmentForDate,
+  schedule: ScheduleForDate,
   displayBuses: DisplayBusInfo[]
 ): void => {
   if (segment.segmentType !== 'shuttle') return
-  
+
   const startTimeMinutes =
-    parseInt(segment.startTime.split(':')[0]) * 60 +
-    parseInt(segment.startTime.split(':')[1])
+    parseInt(segment.startTime.split(':')[0]) * 60 + parseInt(segment.startTime.split(':')[1])
 
   // 到着時間を計算（平均移動時間を加算）
   const travelTimeMinutes = 20 // 平均移動時間（分）
@@ -173,7 +177,7 @@ const addShuttleSegmentBus = (
  */
 const setFirstAndLastBuses = (displayBuses: DisplayBusInfo[]): void => {
   if (displayBuses.length === 0) return
-  
+
   // 一旦すべてのバスをfalseに設定
   displayBuses.forEach((bus) => {
     bus.isFirstBus = false
@@ -219,7 +223,7 @@ export const filterTimetable = (
 ): DisplayBusInfo[] => {
   // 基本のバスデータを生成
   let displayBuses = generateDisplayBuses(selectedDeparture, selectedDestination, selectedDate)
-  
+
   // 各種フィルターを適用
   if (timeFilter === 'all') {
     // フィルターなし - すべてのバスを表示
@@ -241,22 +245,19 @@ export const filterTimetable = (
     // この場合は特別なソート順を適用（関数内で実施済み）
     return displayBuses // arrival フィルタの場合は早期リターン
   }
-  
+
   return displayBuses
 }
 
 /**
  * 出発前のバスのみフィルタリングする
  */
-const applyPreDepartureFilter = (
-  buses: DisplayBusInfo[], 
-  now: Date | null
-): DisplayBusInfo[] => {
+const applyPreDepartureFilter = (buses: DisplayBusInfo[], now: Date | null): DisplayBusInfo[] => {
   if (!now) return buses
-  
+
   // 現在時刻以降のバスをフィルタリング
   const nowTimeStr = format(now, 'HH:mm')
-  
+
   return buses.filter((bus) => {
     if (bus.segmentType === 'shuttle' && bus.shuttleTimeRange) {
       // シャトル便の場合、運行終了時刻が現在時刻以降であれば表示
@@ -270,16 +271,13 @@ const applyPreDepartureFilter = (
 /**
  * 指定出発時間以降のバスをフィルタリングする
  */
-const applyDepartureTimeFilter = (
-  buses: DisplayBusInfo[], 
-  startTime: string
-): DisplayBusInfo[] => {
+const applyDepartureTimeFilter = (buses: DisplayBusInfo[], startTime: string): DisplayBusInfo[] => {
   return buses.filter((bus) => {
     if (bus.segmentType === 'shuttle' && bus.shuttleTimeRange) {
       // シャトル便の場合、指定された開始時間が運行時間内に含まれているか、
       // または運行開始時間が指定時間以降なら表示
       return (
-        (isTimeBeforeOrEqual(bus.shuttleTimeRange.startTime, startTime) && 
+        (isTimeBeforeOrEqual(bus.shuttleTimeRange.startTime, startTime) &&
           isTimeAfterOrEqual(bus.shuttleTimeRange.endTime, startTime)) ||
         isTimeAfterOrEqual(bus.shuttleTimeRange.startTime, startTime)
       )
@@ -301,16 +299,13 @@ const toMinutes = (t: string) => {
 /**
  * 到着フィルタ＋シャトル含むソート
  */
-const applyArrivalTimeFilter = (
-  buses: DisplayBusInfo[],
-  endTime: string,
-): DisplayBusInfo[] => {
+const applyArrivalTimeFilter = (buses: DisplayBusInfo[], endTime: string): DisplayBusInfo[] => {
   const endM = toMinutes(endTime)
 
   type Enriched = { bus: DisplayBusInfo; nextArrival: number }
 
   // 1) 全便に nextArrival を付与
-  const enriched: Enriched[] = buses.map(bus => {
+  const enriched: Enriched[] = buses.map((bus) => {
     let nextArrival = toMinutes(bus.arrivalTime)
 
     if (bus.segmentType === 'shuttle' && bus.shuttleTimeRange) {
@@ -325,13 +320,13 @@ const applyArrivalTimeFilter = (
   })
 
   // 2) endTime 以内のものだけ残す
-  const filtered = enriched.filter(x => x.nextArrival <= endM)
+  const filtered = enriched.filter((x) => x.nextArrival <= endM)
 
   // 3) 降順ソート（大きい＝後に出発/到着する便ほど先頭に）
   filtered.sort((a, b) => b.nextArrival - a.nextArrival)
 
   // 4) DisplayBusInfo 配列に戻す
-  return filtered.map(x => x.bus)
+  return filtered.map((x) => x.bus)
 }
 
 /**
@@ -362,7 +357,7 @@ const getShuttleBusStatus = (bus: DisplayBusInfo, now: Date): BusStatus => {
   if (!bus.shuttleTimeRange) {
     return { status: 'scheduled', text: '' }
   }
-  
+
   // 現在時刻をシャトル便の運行時間と比較
   const nowStr = format(now, 'HH:mm')
   const startTime = bus.shuttleTimeRange.startTime
@@ -373,7 +368,7 @@ const getShuttleBusStatus = (bus: DisplayBusInfo, now: Date): BusStatus => {
   const isBeforeEnd = isTimeBeforeOrEqual(nowStr, endTime)
 
   if (isAfterStart && isBeforeEnd) {
-    // 運行中の場合、間隔情報も表示    
+    // 運行中の場合、間隔情報も表示
     return { status: 'imminent', text: '運行中' }
   } else if (isTimeBeforeOrEqual(nowStr, startTime)) {
     // シャトル運行開始前
@@ -422,10 +417,8 @@ const getRegularBusStatus = (
   }
 
   if (adjustedDiffMinutes < 5) return { status: 'imminent', text: 'まもなく出発' }
-  if (adjustedDiffMinutes < 15)
-    return { status: 'soon', text: `出発まで${adjustedDiffMinutes}分` }
-  if (adjustedDiffMinutes < 60)
-    return { status: 'scheduled', text: `あと${adjustedDiffMinutes}分` }
+  if (adjustedDiffMinutes < 15) return { status: 'soon', text: `出発まで${adjustedDiffMinutes}分` }
+  if (adjustedDiffMinutes < 60) return { status: 'scheduled', text: `あと${adjustedDiffMinutes}分` }
   return { status: 'scheduled', text: '' } // 1時間以上先は表示しない
 }
 
@@ -537,10 +530,10 @@ export const canSwapStations = (
 export const isTimeAfterOrEqual = (time1: string, time2: string): boolean => {
   const [hours1, minutes1] = time1.split(':').map(Number)
   const [hours2, minutes2] = time2.split(':').map(Number)
-  
+
   const totalMinutes1 = hours1 * 60 + minutes1
   const totalMinutes2 = hours2 * 60 + minutes2
-  
+
   return totalMinutes1 >= totalMinutes2
 }
 
@@ -550,10 +543,10 @@ export const isTimeAfterOrEqual = (time1: string, time2: string): boolean => {
 export const isTimeBeforeOrEqual = (time1: string, time2: string): boolean => {
   const [hours1, minutes1] = time1.split(':').map(Number)
   const [hours2, minutes2] = time2.split(':').map(Number)
-  
+
   const totalMinutes1 = hours1 * 60 + minutes1
   const totalMinutes2 = hours2 * 60 + minutes2
-  
+
   return totalMinutes1 <= totalMinutes2
 }
 
@@ -563,18 +556,18 @@ export const isTimeBeforeOrEqual = (time1: string, time2: string): boolean => {
 export const getTimeDifferenceInMinutes = (time1: string, time2: string): number => {
   const [hours1, minutes1] = time1.split(':').map(Number)
   const [hours2, minutes2] = time2.split(':').map(Number)
-  
+
   const totalMinutes1 = hours1 * 60 + minutes1
   const totalMinutes2 = hours2 * 60 + minutes2
-  
+
   let diff = totalMinutes2 - totalMinutes1
-  
+
   // 日をまたぐ場合の調整
   if (diff < -720) {
     diff += 1440 // 24時間分を加算
   } else if (diff > 720) {
     diff -= 1440 // 24時間分を減算
   }
-  
+
   return Math.abs(diff)
 }

@@ -30,27 +30,17 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
       <TableCell
         className={cn(
           'text-sm',
-          bus.segmentType === 'shuttle' &&
-          'bg-purple-100/40 border-l-2 border-purple-500'
+          bus.segmentType === 'shuttle' && 'bg-purple-100/40 border-l-2 border-purple-500'
         )}
       >
         <div className="flex items-center gap-1.5 px-4">
-          <span
-            className={
-              bus.segmentType === 'shuttle' ? 'font-medium text-purple-700' : ''
-            }
-          >
+          <span className={bus.segmentType === 'shuttle' ? 'font-medium text-purple-700' : ''}>
             {bus.destination.stopName}
           </span>
         </div>
       </TableCell>
 
-      <TableCell
-        className={cn(
-          'font-mono',
-          bus.segmentType === 'shuttle' && 'bg-purple-100/40'
-        )}
-      >
+      <TableCell className={cn('font-mono', bus.segmentType === 'shuttle' && 'bg-purple-100/40')}>
         {bus.segmentType === 'shuttle' && bus.shuttleTimeRange ? (
           <div className="flex items-start flex-col sm:flex-row">
             <span className="font-medium text-purple-700 text-xs md:text-sm">
@@ -77,20 +67,15 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
             </span>
           ) : (
             <span className="font-medium text-purple-700 text-xs">
-              約{bus.shuttleTimeRange.intervalRange.min}～
-              {bus.shuttleTimeRange.intervalRange.max}分間隔
+              約{bus.shuttleTimeRange.intervalRange.min}～{bus.shuttleTimeRange.intervalRange.max}
+              分間隔
             </span>
           )
         ) : (
           <span className="font-mono">{bus.arrivalTime}</span>
         )}
       </TableCell>
-      <TableCell
-        className={cn(
-          'text-right',
-          bus.segmentType === 'shuttle' && 'bg-purple-100/40'
-        )}
-      >
+      <TableCell className={cn('text-right', bus.segmentType === 'shuttle' && 'bg-purple-100/40')}>
         <div className="flex items-center justify-end gap-1.5">
           {/* シャトル便と通常のバスで表示内容を分ける */}
           {bus.segmentType === 'shuttle' ? (
@@ -115,20 +100,14 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
 
               {/* 始発バッジ */}
               {bus.isFirstBus && (
-                <Badge
-                  variant="default"
-                  className="font-semibold bg-blue-400 text-white"
-                >
+                <Badge variant="default" className="font-semibold bg-blue-400 text-white">
                   始
                 </Badge>
               )}
 
               {/* 最終便バッジ */}
               {bus.isLastBus && (
-                <Badge
-                  variant="default"
-                  className="font-semibold bg-red-400 text-white"
-                >
+                <Badge variant="default" className="font-semibold bg-red-400 text-white">
                   終
                 </Badge>
               )}
@@ -136,12 +115,11 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
                 variant="default"
                 className="md:hidden text-[10px] border-purple-400 bg-purple-700 text-white"
               >
-                {bus.shuttleTimeRange && bus.shuttleTimeRange.intervalRange.min === bus.shuttleTimeRange.intervalRange.max ? 
-                  `約${bus.shuttleTimeRange.intervalRange.min}分間隔` : 
-                  `約${bus.shuttleTimeRange?.intervalRange.min}～${bus.shuttleTimeRange?.intervalRange.max}分間隔`
-                }
+                {bus.shuttleTimeRange &&
+                bus.shuttleTimeRange.intervalRange.min === bus.shuttleTimeRange.intervalRange.max
+                  ? `約${bus.shuttleTimeRange.intervalRange.min}分間隔`
+                  : `約${bus.shuttleTimeRange?.intervalRange.min}～${bus.shuttleTimeRange?.intervalRange.max}分間隔`}
               </Badge>
-
             </div>
           ) : (
             <div className="flex items-center gap-1.5">
@@ -163,28 +141,19 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
 
               {/* 始発バッジ */}
               {bus.isFirstBus && (
-                <Badge
-                  variant="default"
-                  className="font-semibold bg-blue-400 text-white"
-                >
+                <Badge variant="default" className="font-semibold bg-blue-400 text-white">
                   始
                 </Badge>
               )}
 
               {/* 最終便バッジ */}
               {bus.isLastBus && (
-                <Badge
-                  variant="default"
-                  className="font-semibold bg-red-400 text-white"
-                >
+                <Badge variant="default" className="font-semibold bg-red-400 text-white">
                   終
                 </Badge>
               )}
 
-              <Badge
-                variant="secondary"
-                className="md:hidden"
-              >
+              <Badge variant="secondary" className="md:hidden">
                 {bus.arrivalTime}
               </Badge>
             </div>

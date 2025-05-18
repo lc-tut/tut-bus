@@ -485,44 +485,44 @@ export default function TimetablePage() {
     } else if (timeFilter === 'arrival') {
       // 到着時間を指定（endTimeまでに到着するバス）
       displayBuses = displayBuses.filter((bus) => bus.arrivalTime <= endTime)
-      
+
       // 現在時刻がある場合は、現在時刻との差が小さい順にソート
       if (now) {
-        const nowStr = format(now, 'HH:mm');
-        const nowHours = parseInt(nowStr.split(':')[0]);
-        const nowMinutes = parseInt(nowStr.split(':')[1]);
-        const nowTotalMinutes = nowHours * 60 + nowMinutes;
-        
+        const nowStr = format(now, 'HH:mm')
+        const nowHours = parseInt(nowStr.split(':')[0])
+        const nowMinutes = parseInt(nowStr.split(':')[1])
+        const nowTotalMinutes = nowHours * 60 + nowMinutes
+
         // 各バスの到着時刻と現在時刻の差を計算してソート
         displayBuses.sort((a, b) => {
           // a の到着時間を分換算
-          const aHours = parseInt(a.arrivalTime.split(':')[0]);
-          const aMinutes = parseInt(a.arrivalTime.split(':')[1]);
-          const aTotalMinutes = aHours * 60 + aMinutes;
-          
+          const aHours = parseInt(a.arrivalTime.split(':')[0])
+          const aMinutes = parseInt(a.arrivalTime.split(':')[1])
+          const aTotalMinutes = aHours * 60 + aMinutes
+
           // b の到着時間を分換算
-          const bHours = parseInt(b.arrivalTime.split(':')[0]);
-          const bMinutes = parseInt(b.arrivalTime.split(':')[1]);
-          const bTotalMinutes = bHours * 60 + bMinutes;
-          
+          const bHours = parseInt(b.arrivalTime.split(':')[0])
+          const bMinutes = parseInt(b.arrivalTime.split(':')[1])
+          const bTotalMinutes = bHours * 60 + bMinutes
+
           // 現在時刻との差（絶対値）を計算
-          const aDiff = Math.abs(aTotalMinutes - nowTotalMinutes);
-          const bDiff = Math.abs(bTotalMinutes - nowTotalMinutes);
-          
+          const aDiff = Math.abs(aTotalMinutes - nowTotalMinutes)
+          const bDiff = Math.abs(bTotalMinutes - nowTotalMinutes)
+
           // 差が小さい順にソート
-          return aDiff - bDiff;
-        });
+          return aDiff - bDiff
+        })
       } else {
         // 現在時刻がない場合は到着時間順
-        displayBuses.sort((a, b) => a.arrivalTime.localeCompare(b.arrivalTime));
+        displayBuses.sort((a, b) => a.arrivalTime.localeCompare(b.arrivalTime))
       }
-      
-      return displayBuses;
+
+      return displayBuses
     }
-    
+
     // arrival以外の場合は常に出発時間でソート
     displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime))
-    
+
     return displayBuses
   }, [selectedDeparture, selectedDestination, timeFilter, startTime, endTime, selectedDate, now])
 
@@ -675,9 +675,7 @@ export default function TimetablePage() {
                     <div className="grid grid-cols-3 gap-3">
                       <div>
                         <p className="text-purple-500 mb-1">行き先</p>
-                        <div className="font-medium">
-                          {segment.destination.stopName}
-                        </div>
+                        <div className="font-medium">{segment.destination.stopName}</div>
                       </div>
 
                       <div>
@@ -977,7 +975,6 @@ export default function TimetablePage() {
                 </div>
                 {/* 区切り線 */}
                 <div className="border-t my-4"></div>
-                
                 {/* 時間帯設定（簡略化）*/}
                 <div>
                   <div className="mb-2">
@@ -986,7 +983,7 @@ export default function TimetablePage() {
                       時間帯
                     </label>
                   </div>
-                  
+
                   <Select defaultValue="all" onValueChange={(value) => setTimeFilter(value)}>
                     <SelectTrigger className="rounded-md h-10 w-full mb-4">
                       <SelectValue placeholder="すべての時間" />
@@ -1033,9 +1030,7 @@ export default function TimetablePage() {
                 {selectedDeparture && (
                   <div className="flex flex-wrap items-center">
                     <span className="font-normal text-sm mx-2">|</span>
-                    <span>
-                      {busStopsInfo.find((stop) => stop.id === selectedDeparture)?.name}
-                    </span>
+                    <span>{busStopsInfo.find((stop) => stop.id === selectedDeparture)?.name}</span>
                     {selectedDestination && (
                       <>
                         <FaArrowRight className="h-2.5 w-2.5 text-muted-foreground mx-2" />

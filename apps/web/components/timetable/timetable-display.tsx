@@ -1,12 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { FaClock, FaMapMarkerAlt, FaArrowRight } from 'react-icons/fa'
 import { busStopsInfo } from '@/lib/data/timetable'
 import { DisplayBusInfo } from '@/lib/types/timetable'
@@ -41,9 +35,7 @@ export function TimetableDisplay({
             {selectedDeparture && (
               <div className="flex flex-wrap items-center">
                 <span className="font-normal text-sm mx-2">|</span>
-                <span>
-                  {busStopsInfo.find((stop) => stop.id === selectedDeparture)?.name}
-                </span>
+                <span>{busStopsInfo.find((stop) => stop.id === selectedDeparture)?.name}</span>
                 {selectedDestination && (
                   <>
                     <FaArrowRight className="h-2.5 w-2.5 text-muted-foreground mx-2" />
@@ -63,12 +55,12 @@ export function TimetableDisplay({
             )}
             {selectedDeparture &&
               filteredTimetable.some((bus) => bus.segmentType === 'shuttle') && (
-                <Badge 
-                  variant="default" 
+                <Badge
+                  variant="default"
                   className="px-2.5 py-0.5 text-xs border-purple-400 bg-purple-700 text-white"
                 >
-                  シャトル{' '}
-                  {filteredTimetable.filter((bus) => bus.segmentType === 'shuttle').length}便
+                  シャトル {filteredTimetable.filter((bus) => bus.segmentType === 'shuttle').length}
+                  便
                 </Badge>
               )}
           </div>

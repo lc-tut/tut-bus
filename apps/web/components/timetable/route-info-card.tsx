@@ -44,22 +44,20 @@ export function RouteInfoCard({ selectedDeparture, selectedDestination }: RouteI
               return (
                 <div key={`shuttle-${index}`} className="text-xs text-purple-800">
                   {shuttleSegments.length > 1 && (
-                  <div className="flex items-center mb-2">
-                    <Badge 
-                      variant="default"
-                      className="bg-purple-200 text-purple-800 text-[10px] py-0 px-2 h-5 font-medium border-0"
-                    >
-                      時間帯 {index + 1}
-                    </Badge>
-                  </div>
-                )}
+                    <div className="flex items-center mb-2">
+                      <Badge
+                        variant="default"
+                        className="bg-purple-200 text-purple-800 text-[10px] py-0 px-2 h-5 font-medium border-0"
+                      >
+                        時間帯 {index + 1}
+                      </Badge>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <p className="text-purple-500 mb-1">行き先</p>
-                      <div className="font-medium">
-                        {segment.destination.stopName}
-                      </div>
+                      <div className="font-medium">{segment.destination.stopName}</div>
                     </div>
 
                     <div>
