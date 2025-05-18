@@ -1,36 +1,36 @@
-import { OperationParameter, OperationURLParameter } from "@azure/core-client";
+import { OperationParameter, OperationURLParameter } from '@azure/core-client'
 
 export const accept: OperationParameter = {
-  parameterPath: "accept",
+  parameterPath: 'accept',
   mapper: {
-    defaultValue: "application/json",
+    defaultValue: 'application/json',
     isConstant: true,
-    serializedName: "Accept",
+    serializedName: 'Accept',
     type: {
-      name: "String",
+      name: 'String',
     },
   },
-};
+}
 
 export const $host: OperationURLParameter = {
-  parameterPath: "$host",
+  parameterPath: '$host',
   mapper: {
-    serializedName: "$host",
+    serializedName: '$host',
     required: true,
     type: {
-      name: "String",
+      name: 'String',
     },
   },
   skipEncoding: true,
-};
+}
 
 export const id: OperationURLParameter = {
-  parameterPath: "id",
+  parameterPath: 'id',
   mapper: {
-    serializedName: "id",
+    serializedName: 'id',
     required: true,
     type: {
-      name: "String",
+      name: 'String',
     },
   },
-};
+}

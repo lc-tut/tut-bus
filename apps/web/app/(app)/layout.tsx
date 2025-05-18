@@ -9,7 +9,7 @@ export default function AppLayout({
   return (
     <div>
       <Header />
-      <div className="p-1">{children}</div>
+      <div className="p-1 my-20 min-h-screen mx-auto max-w-6xl">{children}</div>
       <NavBar />
     </div>
   )

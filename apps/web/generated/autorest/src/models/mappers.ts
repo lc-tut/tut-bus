@@ -1,54 +1,54 @@
-import * as coreClient from "@azure/core-client";
+import * as coreClient from '@azure/core-client'
 
 export const ModelsBusStop: coreClient.CompositeMapper = {
   type: {
-    name: "Composite",
-    className: "ModelsBusStop",
+    name: 'Composite',
+    className: 'ModelsBusStop',
     modelProperties: {
       id: {
-        serializedName: "id",
+        serializedName: 'id',
         required: true,
         type: {
-          name: "Number",
+          name: 'Number',
         },
       },
       name: {
-        serializedName: "name",
+        serializedName: 'name',
         required: true,
         type: {
-          name: "String",
+          name: 'String',
         },
       },
       lat: {
-        serializedName: "lat",
+        serializedName: 'lat',
         required: true,
         type: {
-          name: "Number",
+          name: 'Number',
         },
       },
       lon: {
-        serializedName: "lon",
+        serializedName: 'lon',
         required: true,
         type: {
-          name: "Number",
+          name: 'Number',
         },
       },
     },
   },
-};
+}
 
 export const ModelsBusStopTimetable: coreClient.CompositeMapper = {
   type: {
-    name: "Composite",
-    className: "ModelsBusStopTimetable",
+    name: 'Composite',
+    className: 'ModelsBusStopTimetable',
     modelProperties: {
       busStopId: {
-        serializedName: "busStopId",
+        serializedName: 'busStopId',
         required: true,
         type: {
-          name: "Number",
+          name: 'Number',
         },
       },
     },
   },
-};
+}

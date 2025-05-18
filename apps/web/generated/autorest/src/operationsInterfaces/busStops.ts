@@ -3,7 +3,7 @@ import {
   BusStopsGetAllBusStopsResponse,
   BusStopsGetBusStopTimetableOptionalParams,
   BusStopsGetBusStopTimetableResponse,
-} from "../models/index.js";
+} from '../models/index.js'
 
 /** Interface representing a BusStops. */
 export interface BusStops {
@@ -12,8 +12,8 @@ export interface BusStops {
    * @param options The options parameters.
    */
   getAllBusStops(
-    options?: BusStopsGetAllBusStopsOptionalParams,
-  ): Promise<BusStopsGetAllBusStopsResponse>;
+    options?: BusStopsGetAllBusStopsOptionalParams
+  ): Promise<BusStopsGetAllBusStopsResponse>
   /**
    * バス停の時刻表を取得します。
    * @param id
@@ -21,6 +21,6 @@ export interface BusStops {
    */
   getBusStopTimetable(
     id: string,
-    options?: BusStopsGetBusStopTimetableOptionalParams,
-  ): Promise<BusStopsGetBusStopTimetableResponse>;
+    options?: BusStopsGetBusStopTimetableOptionalParams
+  ): Promise<BusStopsGetBusStopTimetableResponse>
 }
