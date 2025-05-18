@@ -977,60 +977,46 @@ export default function TimetablePage() {
                 </div>
                 {/* 区切り線 */}
                 <div className="border-t my-4"></div>
-                {/* 時間帯設定 */}
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <div className="mb-2">
-                      <label className="text-sm font-medium flex items-center">
-                        <FaClock className="mr-2 h-3 w-3" />
-                        時間帯
-                      </label>
-                    </div>
-                    <Select defaultValue="all" onValueChange={(value) => setTimeFilter(value)}>
-                      <SelectTrigger className="rounded-md h-10 w-full">
-                        <SelectValue placeholder="すべての時間" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">すべての時間</SelectItem>
-                        <SelectItem value="preDeparture">出発前</SelectItem>
-                        <SelectItem value="departure">出発時間を指定</SelectItem>
-                        <SelectItem value="arrival">到着時間を指定</SelectItem>
-                      </SelectContent>
-                    </Select>
+                
+                {/* 時間帯設定（簡略化）*/}
+                <div>
+                  <div className="mb-2">
+                    <label className="text-sm font-medium flex items-center">
+                      <FaClock className="mr-2 h-3 w-3" />
+                      時間帯
+                    </label>
                   </div>
+                  
+                  <Select defaultValue="all" onValueChange={(value) => setTimeFilter(value)}>
+                    <SelectTrigger className="rounded-md h-10 w-full mb-4">
+                      <SelectValue placeholder="すべての時間" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">すべての時間</SelectItem>
+                      <SelectItem value="preDeparture">出発前のみ</SelectItem>
+                      <SelectItem value="departure">出発時間指定</SelectItem>
+                      <SelectItem value="arrival">到着時間指定</SelectItem>
+                    </SelectContent>
+                  </Select>
 
                   {timeFilter === 'departure' && (
-                    <div>
-                      <div className="mb-2">
-                        <label className="text-sm font-medium flex items-center">
-                          <FaArrowRight className="mr-2 h-3 w-3" />
-                          出発時間
-                        </label>
-                      </div>
-                      <Input
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        className="rounded-md h-10 w-fulll"
-                      />
-                    </div>
+                    <Input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="rounded-md h-10 w-full"
+                      placeholder="出発時間を入力"
+                    />
                   )}
 
                   {timeFilter === 'arrival' && (
-                    <div>
-                      <div className="mb-2">
-                        <label className="text-sm font-medium flex items-center">
-                          <FaArrowRight className="mr-2 h-3 w-3" />
-                          到着時間
-                        </label>
-                      </div>
-                      <Input
-                        type="time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        className="rounded-md h-10 w-full"
-                      />
-                    </div>
+                    <Input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="rounded-md h-10 w-full"
+                      placeholder="到着時間を入力"
+                    />
                   )}
                 </div>
               </div>
