@@ -4,16 +4,64 @@
 package schema
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/runtime"
 )
+
+// ModelsBusStop defines model for Models.BusStop.
+type ModelsBusStop struct {
+	Id   int     `json:"id"`
+	Lat  float32 `json:"lat"`
+	Lon  float32 `json:"lon"`
+	Name string  `json:"name"`
+}
+
+// ModelsBusStopTimetable defines model for Models.BusStopTimetable.
+type ModelsBusStopTimetable struct {
+	BusStopId int `json:"busStopId"`
+}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (GET /api/bus-stops)
+	BusStopsGetAllBusStops(ctx echo.Context) error
+
+	// (GET /api/bus-stops/{id})
+	BusStopsGetBusStopTimetable(ctx echo.Context, id string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// BusStopsGetAllBusStops converts echo context to params.
+func (w *ServerInterfaceWrapper) BusStopsGetAllBusStops(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.BusStopsGetAllBusStops(ctx)
+	return err
+}
+
+// BusStopsGetBusStopTimetable converts echo context to params.
+func (w *ServerInterfaceWrapper) BusStopsGetBusStopTimetable(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.BusStopsGetBusStopTimetable(ctx, id)
+	return err
 }
 
 // This is a simple interface which specifies echo.Route addition functions which
@@ -39,5 +87,12 @@ func RegisterHandlers(router EchoRouter, si ServerInterface) {
 // Registers handlers, and prepends BaseURL to the paths, so that the paths
 // can be served under a prefix.
 func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string) {
+
+	wrapper := ServerInterfaceWrapper{
+		Handler: si,
+	}
+
+	router.GET(baseURL+"/api/bus-stops", wrapper.BusStopsGetAllBusStops)
+	router.GET(baseURL+"/api/bus-stops/:id", wrapper.BusStopsGetBusStopTimetable)
 
 }

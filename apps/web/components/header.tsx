@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image'
 
 const Header: React.FC = () => {
   return (
@@ -8,7 +8,7 @@ const Header: React.FC = () => {
         <h1 className="text-2xl font-bold">スクールバス</h1>
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

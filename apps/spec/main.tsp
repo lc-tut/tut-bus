@@ -1,10 +1,12 @@
 import "@typespec/http";
 
+import "./models/busStop.tsp";
+import "./routes/busStops.tsp";
+
 using Http;
 
-@service(#{
-  title: "Tokyo University of Technology Bus Web API Service"
-})
+@service(#{ title: "Tokyo University of Technology Bus Web API Service" })
 @route("/api")
-namespace API {}
+namespace BusAPI {
 
+}
