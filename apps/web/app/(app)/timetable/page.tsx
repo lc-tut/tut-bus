@@ -1,10 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { TimetableFilter } from '@/components/timetable/timetable-filter'
 import { TimetableDisplay } from '@/components/timetable/timetable-display'
-import { filterTimetable, canSwapStations } from '@/lib/utils/timetable'
+import { TimetableFilter } from '@/components/timetable/timetable-filter'
 import { TimeFilterType } from '@/lib/types/timetable'
+import { canSwapStations, filterTimetable } from '@/lib/utils/timetable'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export default function TimetablePage() {
   // 状態管理
@@ -32,29 +32,14 @@ export default function TimetablePage() {
 
   // 出発地と目的地を入れ替える
   const swapStations = useCallback(() => {
-    const tempDeparture = selectedDeparture
-    const tempDestination = selectedDestination
-
-    if (!tempDeparture || !tempDestination) return
-
-    // 出発地と目的地を一時的にクリアしてから入れ替える
-    setSelectedDeparture('')
-    setSelectedDestination('')
-
-    // 少し遅延を入れて状態の更新を確実にする
-    setTimeout(() => {
-      setSelectedDeparture(tempDestination)
-      // さらに少し遅延を入れて、先に出発地が更新されてから目的地を選択する
-      setTimeout(() => {
-        // バリデーション - 出発地から目的地への経路があるか確認
-        const canSwap = canSwapStations(tempDestination, tempDeparture)
-
-        // 出発地と目的地が同じでなく、経路が存在する場合のみスワップを完了
-        if (canSwap && tempDeparture !== tempDestination) {
-          setSelectedDestination(tempDeparture)
-        }
-      }, 50)
-    }, 10)
+    if (!selectedDeparture || !selectedDestination) return
+    if (
+      selectedDeparture === selectedDestination ||
+      !canSwapStations(selectedDestination, selectedDeparture)
+    )
+      return
+    setSelectedDeparture(selectedDestination)
+    setSelectedDestination(selectedDeparture)
   }, [selectedDeparture, selectedDestination])
 
   // フィルタリングされた時刻表データ
