@@ -157,7 +157,7 @@ export function TimetableFilter({
                                 now &&
                                 format(selectedDate, 'yyyy-MM-dd') !== format(now, 'yyyy-MM-dd') &&
                                 format(selectedDate, 'yyyy-MM-dd') !==
-                                format(addDays(now, 1), 'yyyy-MM-dd') && (
+                                  format(addDays(now, 1), 'yyyy-MM-dd') && (
                                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full" />
                                 )}
                             </span>
@@ -207,7 +207,7 @@ export function TimetableFilter({
                       format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
                         ? 'text-green-500 dark:text-green-400'
                         : format(selectedDate, 'yyyy-MM-dd') ===
-                          format(addDays(now, 1), 'yyyy-MM-dd')
+                            format(addDays(now, 1), 'yyyy-MM-dd')
                           ? 'text-blue-500 dark:text-blue-400'
                           : 'text-muted-foreground'
                     )}

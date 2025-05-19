@@ -7,8 +7,7 @@ model BusStop {
   lon: float;
 }
 
-model BusStopTimetableItem {
-}
+model BusStopTimetableItem {}
 
 model BusStopTimetable {
   id: integer;

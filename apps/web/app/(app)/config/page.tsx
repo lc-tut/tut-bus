@@ -5,7 +5,13 @@ import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ModeToggle } from '@/components/mode-toggle'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ExternalLink } from 'lucide-react'
 
 export default function ConfigPage() {
@@ -69,7 +75,7 @@ export default function ConfigPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-sm">通知を有効にする</span>
               <Switch checked={notifications} onCheckedChange={setNotifications} />
@@ -85,9 +91,9 @@ export default function ConfigPage() {
           <CardContent>
             <div className="flex items-center gap-2">
               <ExternalLink className="h-4 w-4" />
-              <a 
-                href="https://twitter.com/lc_tut" 
-                target="_blank" 
+              <a
+                href="https://twitter.com/lc_tut"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:underline"
               >

@@ -42,7 +42,10 @@ export function RouteInfoCard({ selectedDeparture, selectedDestination }: RouteI
               if (segment.segmentType !== 'shuttle') return null
 
               return (
-                <div key={`shuttle-${index}`} className="text-xs text-purple-800 dark:text-purple-300">
+                <div
+                  key={`shuttle-${index}`}
+                  className="text-xs text-purple-800 dark:text-purple-300"
+                >
                   {shuttleSegments.length > 1 && (
                     <div className="flex items-center mb-2">
                       <Badge
