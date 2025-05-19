@@ -128,37 +128,37 @@ export function TimetableFilter({
                   }
                 }}
               >
-                <TabsList className="grid grid-cols-3 w-full bg-muted p-1 h-auto">
+                <TabsList className="grid grid-cols-3 w-full bg-muted dark:bg-muted/80 p-1 h-auto border dark:border-slate-700 rounded-md">
                   {dateTabs.map((tab) => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="px-3 py-2 text-xs font-medium relative rounded-md data-[state=active]:bg-background"
+                      className="px-3 py-2 text-xs font-medium relative rounded-md data-[state=active]:bg-background dark:data-[state=active]:bg-background/90 dark:data-[state=active]:border dark:data-[state=active]:border-slate-700 dark:data-[state=active]:shadow-sm"
                     >
                       {tab.value === 'today' && (
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        <span className="flex items-center gap-1.5 data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90">
+                          <span className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></span>
                           {tab.label}
                         </span>
                       )}
                       {tab.value === 'tomorrow' && (
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        <span className="flex items-center gap-1.5 data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90">
+                          <span className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></span>
                           {tab.label}
                         </span>
                       )}
                       {tab.value === 'custom' && (
                         <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
                           <DialogTrigger asChild>
-                            <span className="flex items-center gap-1.5 cursor-pointer">
+                            <span className="flex items-center gap-1.5 cursor-pointer data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90">
                               <FaCalendarAlt className="h-3 w-3" />
                               {tab.label}
                               {selectedDate &&
                                 now &&
                                 format(selectedDate, 'yyyy-MM-dd') !== format(now, 'yyyy-MM-dd') &&
                                 format(selectedDate, 'yyyy-MM-dd') !==
-                                  format(addDays(now, 1), 'yyyy-MM-dd') && (
-                                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
+                                format(addDays(now, 1), 'yyyy-MM-dd') && (
+                                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full" />
                                 )}
                             </span>
                           </DialogTrigger>
@@ -195,9 +195,9 @@ export function TimetableFilter({
                   className={cn(
                     'px-4 py-3 text-sm font-medium rounded-md flex items-center justify-center',
                     format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
-                      ? 'bg-green-50 text-green-700 border border-green-200'
+                      ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
                       : format(selectedDate, 'yyyy-MM-dd') === format(addDays(now, 1), 'yyyy-MM-dd')
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                         : 'border'
                   )}
                 >
@@ -205,10 +205,10 @@ export function TimetableFilter({
                     className={cn(
                       'mr-2 h-3.5 w-3.5',
                       format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
-                        ? 'text-green-500'
+                        ? 'text-green-500 dark:text-green-400'
                         : format(selectedDate, 'yyyy-MM-dd') ===
-                            format(addDays(now, 1), 'yyyy-MM-dd')
-                          ? 'text-blue-500'
+                          format(addDays(now, 1), 'yyyy-MM-dd')
+                          ? 'text-blue-500 dark:text-blue-400'
                           : 'text-muted-foreground'
                     )}
                   />

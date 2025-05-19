@@ -57,7 +57,7 @@ export function TimetableDisplay({
               filteredTimetable.some((bus) => bus.segmentType === 'shuttle') && (
                 <Badge
                   variant="default"
-                  className="px-2.5 py-0.5 text-xs border-purple-400 bg-purple-700 text-white"
+                  className="px-2.5 py-0.5 text-xs border-purple-400 dark:border-purple-600 bg-purple-700 dark:bg-purple-600 text-white"
                 >
                   シャトル {filteredTimetable.filter((bus) => bus.segmentType === 'shuttle').length}
                   便
