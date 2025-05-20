@@ -8,13 +8,13 @@ model BusStop {
   id: int32;
   name: string;
   lat?: Latitude;
-  lon?: Longitude;
+  lng?: Longitude;
 }
 
 model BusStopGroup {
   id: int32;
   name: string;
-  stops: BusStop[];
+  busStops: BusStop[];
 }
 
 model TimePair {

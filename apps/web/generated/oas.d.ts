@@ -4,6 +4,57 @@
  */
 
 export interface paths {
+    "/api/bus-stop-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description 全バス停グループの一覧を取得します。 */
+        get: operations["BusStopGroupService_getAllBusStopGroups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bus-stop-groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description バス停グループの詳細について取得します。 */
+        get: operations["BusStopGroupService_getBusStopGroupDetails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bus-stop-groups/{id}/timetable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description グループ内全停留所の時刻表をまとめて取得します。 */
+        get: operations["BusStopGroupService_getBusStopGroupsTimetable"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/bus-stops": {
         parameters: {
             query?: never;
@@ -11,8 +62,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description 全バス停の一覧を取得します。 */
-        get: operations["BusStops_getAllBusStops"];
+        /** @description 全バス停の一覧を取得します。オプションで group_id を指定するとグループで絞り込み可能です。 */
+        get: operations["BusStopService_getAllBusStops"];
         put?: never;
         post?: never;
         delete?: never;
@@ -29,7 +80,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description バス停の詳細について取得します。 */
-        get: operations["BusStops_getBusStopDetails"];
+        get: operations["BusStopService_getBusStopDetails"];
         put?: never;
         post?: never;
         delete?: never;
@@ -38,15 +89,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/bus-stops/{id}/timetables": {
+    "/api/bus-stops/{id}/timetable": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description バス停の時刻表を取得します。最大で 7 日間の時刻表を取得できます。 */
-        get: operations["BusStops_getBusStopTimetable"];
+        /** @description バス停の時刻表を取得します。複数件返却します。 */
+        get: operations["BusStopService_getBusStopTimetable"];
         put?: never;
         post?: never;
         delete?: never;
@@ -112,7 +163,20 @@ export interface components {
             id: number;
             name: string;
             lat?: components["schemas"]["Scalars.Latitude"];
-            lon?: components["schemas"]["Scalars.Longitude"];
+            lng?: components["schemas"]["Scalars.Longitude"];
+        };
+        "Models.BusStopGroup": {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            busStops: components["schemas"]["Models.BusStop"][];
+        };
+        "Models.BusStopGroupTimetable": {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            date: components["schemas"]["Scalars.DateISO"];
+            segments: components["schemas"]["Models.BusStopSegment"][];
         };
         "Models.BusStopSegment": components["schemas"]["Models.FixedSegment"] | components["schemas"]["Models.FrequencySegment"] | components["schemas"]["Models.ShuttleSegment"];
         "Models.BusStopTimetable": {
@@ -163,6 +227,7 @@ export interface components {
             arrival: components["schemas"]["Scalars.TimeISO"];
             departure: components["schemas"]["Scalars.TimeISO"];
         };
+        /** @description HTTP 400 Bad Request - The request cannot be processed due to client error. */
         "Routes.TimetableBadRequest": {
             /** @enum {string} */
             code: "BadRequest";
@@ -170,34 +235,6 @@ export interface components {
             message: "InvalidDate";
             /** @enum {string} */
             detail: "The 'date' query must be in YYYY-MM-DD format.";
-        } | {
-            /** @enum {string} */
-            code: "BadRequest";
-            /** @enum {string} */
-            message: "InvalidRange";
-            /** @enum {string} */
-            detail: "Both 'from' and 'to' queries must be in YYYY-MM-DD format.";
-        } | {
-            /** @enum {string} */
-            code: "BadRequest";
-            /** @enum {string} */
-            message: "RangeTooLong";
-            /** @enum {string} */
-            detail: "The requested date range exceeds 7 days.";
-        } | {
-            /** @enum {string} */
-            code: "BadRequest";
-            /** @enum {string} */
-            message: "DateRangeExclusive";
-            /** @enum {string} */
-            detail: "Provide either 'date' or 'from'/'to', but not both.";
-        } | {
-            /** @enum {string} */
-            code: "BadRequest";
-            /** @enum {string} */
-            message: "FromAfterTo";
-            /** @enum {string} */
-            detail: "The 'from' date must be on or before the 'to' date.";
         };
         /** Format: date */
         "Scalars.DateISO": string;
@@ -213,9 +250,118 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    BusStops_getAllBusStops: {
+    BusStopGroupService_getAllBusStopGroups: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request has succeeded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStopGroup"][];
+                };
+            };
+        };
+    };
+    BusStopGroupService_getBusStopGroupDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request has succeeded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStopGroup"];
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "NotFound";
+                        /** @enum {string} */
+                        message: "BusStopGroupNotFound";
+                        /** @enum {string} */
+                        details?: "The requested bus stop group does not exist.";
+                    };
+                };
+            };
+        };
+    };
+    BusStopGroupService_getBusStopGroupsTimetable: {
+        parameters: {
+            query: {
+                date: components["schemas"]["Scalars.DateISO"];
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 指定した日付の時刻表を取得します。 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStopGroupTimetable"][];
+                };
+            };
+            /** @description 指定した日付の時刻表を取得します。 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Routes.TimetableBadRequest"];
+                };
+            };
+            /** @description 指定した日付の時刻表を取得します。 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "NotFound";
+                        /** @enum {string} */
+                        message: "BusStopGroupNotFound";
+                        /** @enum {string} */
+                        details?: "The requested bus stop group does not exist.";
+                    };
+                };
+            };
+        };
+    };
+    BusStopService_getAllBusStops: {
+        parameters: {
+            query?: {
+                group_id?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -233,7 +379,7 @@ export interface operations {
             };
         };
     };
-    BusStops_getBusStopDetails: {
+    BusStopService_getBusStopDetails: {
         parameters: {
             query?: never;
             header?: never;
@@ -271,12 +417,10 @@ export interface operations {
             };
         };
     };
-    BusStops_getBusStopTimetable: {
+    BusStopService_getBusStopTimetable: {
         parameters: {
             query: {
                 date: components["schemas"]["Scalars.DateISO"];
-                from: components["schemas"]["Scalars.DateISO"];
-                to: components["schemas"]["Scalars.DateISO"];
             };
             header?: never;
             path: {
@@ -286,16 +430,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description 指定した日付の時刻表を取得します。 */
+            /** @description 指定日の時刻表リストを返します。 */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Models.BusStopTimetable"][];
+                    "application/json": components["schemas"]["Models.BusStopTimetable"];
                 };
             };
-            /** @description 指定した日付の時刻表を取得します。 */
+            /** @description 指定日の時刻表リストを返します。 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -304,7 +448,7 @@ export interface operations {
                     "application/json": components["schemas"]["Routes.TimetableBadRequest"];
                 };
             };
-            /** @description 指定した日付の時刻表を取得します。 */
+            /** @description 指定日の時刻表リストを返します。 */
             404: {
                 headers: {
                     [name: string]: unknown;
