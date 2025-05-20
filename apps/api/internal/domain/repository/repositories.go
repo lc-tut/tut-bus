@@ -1,3 +1,5 @@
 package repository
 
-type Repositories struct{}
+type Repositories struct {
+	BusStop *BusStopRepository
+}

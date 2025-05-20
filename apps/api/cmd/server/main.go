@@ -11,20 +11,21 @@ import (
 
 func main() {
 	e := echo.New()
+	appCon := app.Initialize()
+
+	addr := appCon.Config.GetAddr()
+
+	server := app.NewServer(appCon.Handlers)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	// e.Use(middleware.CORS())
-
-	cfg, logger := app.Initialize()
-	addr := cfg.GetAddr()
-
-	server := app.NewServer(logger)
+	e.Use(appCon.Middleware.ErrorHandlingMiddleware)
 
 	oapi.RegisterHandlers(e, server)
 
 	log.Println("Server running...")
 	if err := e.Start(addr); err != nil {
-		logger.Sugar().Fatalf("failed to start server. %+v", err)
+		appCon.Logger.Sugar().Fatalf("failed to start server. %+v", err)
 	}
 }

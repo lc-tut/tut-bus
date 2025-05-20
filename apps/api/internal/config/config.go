@@ -10,9 +10,12 @@ import (
 )
 
 type Config struct {
-	Enviroment string
-	Host       string
-	Port       int
+	Enviroment        string
+	Host              string
+	Port              int
+	DataPath          string
+	BusStopsFile      string
+	BusStopGroupsFile string
 }
 
 func (c *Config) GetAddr() string {
@@ -27,15 +30,26 @@ func (c *Config) IsProd() bool {
 	return c.Enviroment == "prod" || c.Enviroment == "production"
 }
 
+func (c *Config) GetBusStopsFilePath() string {
+	return fmt.Sprintf("%s/%s", c.DataPath, c.BusStopsFile)
+}
+
+func (c *Config) GetBusStopGroupsFilePath() string {
+	return fmt.Sprintf("%s/%s", c.DataPath, c.BusStopGroupsFile)
+}
+
 func LoadConfig() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("No .env file found or error loading .env: %v", err)
 	}
 
 	return &Config{
-		Enviroment: getEnv("API_ENV", "prod"),
-		Host:       getEnv("HOST", "localhost"),
-		Port:       getEnvAsInt("PORT", 8080),
+		Enviroment:        getEnv("API_ENV", "prod"),
+		Host:              getEnv("HOST", "localhost"),
+		Port:              getEnvAsInt("PORT", 8080),
+		DataPath:          getEnv("DATA_PATH", "./data"),
+		BusStopsFile:      getEnv("BUS_STOPS_FILE", "bus_stops.json"),
+		BusStopGroupsFile: getEnv("BUS_STOP_GROUPS_FILE", "bus_stop_groups.json"),
 	}, nil
 }
 

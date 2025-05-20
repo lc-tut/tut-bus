@@ -10,14 +10,16 @@ import (
 type BusStopUseCase interface {
 	GetBusStops(groupID *int32) ([]domain.BusStop, error)
 	GetBusStopGroups() ([]domain.BusStopGroup, error)
+	GetBusStopByID(id int32) (domain.BusStop, error)
+	GetBusStopGroupByID(id int32) (domain.BusStopGroup, error)
 }
 
 type busStopUseCase struct {
-	busStopRepo repository.BusStopRepository
+	busStopRepo *repository.BusStopRepository
 	log         *zap.Logger
 }
 
-func NewBusStopUseCase(r repository.BusStopRepository, l *zap.Logger) BusStopUseCase {
+func NewBusStopUseCase(r *repository.BusStopRepository, l *zap.Logger) BusStopUseCase {
 	return &busStopUseCase{
 		busStopRepo: r,
 		log:         l,
@@ -28,8 +30,12 @@ func (u *busStopUseCase) GetBusStops(groupID *int32) ([]domain.BusStop, error) {
 	if groupID != nil {
 		busStopGroup, err := u.busStopRepo.GetBusStopGroupByID(*groupID)
 		if err != nil {
-			u.log.Error("failed to get bus stop group by ID", zap.Error(err))
+			u.log.Error("failed to get bus stop group by ID", zap.Error(err), zap.Int32("groupID", *groupID))
 			return nil, err
+		}
+
+		if len(busStopGroup.BusStops) == 0 {
+			u.log.Warn("no bus stops found in group", zap.Int32("groupID", *groupID))
 		}
 
 		return busStopGroup.BusStops, nil
@@ -39,6 +45,11 @@ func (u *busStopUseCase) GetBusStops(groupID *int32) ([]domain.BusStop, error) {
 			u.log.Error("failed to get all bus stops", zap.Error(err))
 			return nil, err
 		}
+
+		if len(busStops) == 0 {
+			u.log.Warn("no bus stops found")
+		}
+
 		return busStops, nil
 	}
 }
@@ -51,4 +62,22 @@ func (u *busStopUseCase) GetBusStopGroups() ([]domain.BusStopGroup, error) {
 	}
 
 	return busStopGroups, nil
+}
+
+func (u *busStopUseCase) GetBusStopByID(id int32) (domain.BusStop, error) {
+	busStop, err := u.busStopRepo.GetBusStopByID(id)
+	if err != nil {
+		u.log.Error("failed to get bus stop by ID", zap.Error(err), zap.Int32("id", id))
+		return domain.BusStop{}, err
+	}
+	return busStop, nil
+}
+
+func (u *busStopUseCase) GetBusStopGroupByID(id int32) (domain.BusStopGroup, error) {
+	busStopGroup, err := u.busStopRepo.GetBusStopGroupByID(id)
+	if err != nil {
+		u.log.Error("failed to get bus stop group by ID", zap.Error(err), zap.Int32("id", id))
+		return domain.BusStopGroup{}, err
+	}
+	return busStopGroup, nil
 }
