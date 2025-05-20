@@ -5,14 +5,14 @@
     "lint": "tsp format . --check",
     "fix": "tsp format .",
     "build": "run-s gen:*",
-    "clean:go": "node -e \"require('fs').rmSync('../api/models', { recursive: true, force: true });\"",
+    "clean:go": "node -e \"require('fs').rmSync('../api/gen_entities', { recursive: true, force: true });\"",
     "clean:ts": "node -e \"require('fs').rmSync('../web/generated', { recursive: true, force: true });\"",
     "gen:spec": "tsp compile .",
     "pregen:ts": "npm run clean:ts",
     "gen:ts": "openapi-typescript ./dist/openapi.yaml -o ../web/generated/oas.d.ts",
     "pregen:go": "npm run clean:go",
-    "gen:go": "mkdir -p ../api/models && oapi-codegen --config=./oapi-codegen.yaml ./dist/openapi.yaml",
-    "clean:generate": "node -e \"const fs = require('fs'); ['../api/models','../web/generated'].forEach(dir => fs.rmSync(dir, { recursive: true, force: true }));\""
+    "gen:go": "mkdir -p ../api/gen_entities && oapi-codegen --config=./oapi-codegen.yaml ./dist/openapi.yaml",
+    "clean:gen": "node -e \"const fs = require('fs'); ['../api/gen_entities','../web/generated'].forEach(dir => fs.rmSync(dir, { recursive: true, force: true }));\""
   },
   "devDependencies": {
     "@typespec/compiler": "^1.0.0",
