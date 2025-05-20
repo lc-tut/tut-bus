@@ -11,6 +11,12 @@ model BusStop {
   lon?: Longitude;
 }
 
+model BusStopGroup {
+  id: int32;
+  name: string;
+  stops: BusStop[];
+}
+
 model TimePair {
   arrival: TimeISO;
   departure: TimeISO;
@@ -60,6 +66,13 @@ model BusStopTimetable {
   name: string;
   lat: Latitude;
   lon: Longitude;
+  date: DateISO;
+  segments: BusStopSegment[];
+}
+
+model BusStopGroupTimetable {
+  id: int32;
+  name: string;
   date: DateISO;
   segments: BusStopSegment[];
 }

@@ -1,6 +1,6 @@
-package: schema
+package: oapi
 generate:
   - models
   - echo-server
 
-output: ../api/models/models.gen.go
+output: ../api/pkg/oapi/models.gen.go

@@ -66,5 +66,5 @@ union ServiceError {
   NotFound,
   Conflict,
   ValidationError,
-  InternalServerError
+  InternalServerError,
 }
