@@ -1,25 +1,27 @@
-import { BusStops } from '../operationsInterfaces/index.js'
-import * as coreClient from '@azure/core-client'
-import * as Mappers from '../models/mappers.js'
-import * as Parameters from '../models/parameters.js'
-import { TokyoUniversityOfTechnologyBusWebAPIService } from '../tokyoUniversityOfTechnologyBusWebAPIService.js'
+import { BusStops } from "../operationsInterfaces/index.js";
+import * as coreClient from "@azure/core-client";
+import * as Mappers from "../models/mappers.js";
+import * as Parameters from "../models/parameters.js";
+import { TokyoUniversityOfTechnologyBusWebAPIService } from "../tokyoUniversityOfTechnologyBusWebAPIService.js";
 import {
   BusStopsGetAllBusStopsOptionalParams,
   BusStopsGetAllBusStopsResponse,
+  BusStopsGetBusStopDetailsOptionalParams,
+  BusStopsGetBusStopDetailsResponse,
   BusStopsGetBusStopTimetableOptionalParams,
   BusStopsGetBusStopTimetableResponse,
-} from '../models/index.js'
+} from "../models/index.js";
 
 /** Class containing BusStops operations. */
 export class BusStopsImpl implements BusStops {
-  private readonly client: TokyoUniversityOfTechnologyBusWebAPIService
+  private readonly client: TokyoUniversityOfTechnologyBusWebAPIService;
 
   /**
    * Initialize a new instance of the class BusStops class.
    * @param client Reference to the service client
    */
   constructor(client: TokyoUniversityOfTechnologyBusWebAPIService) {
-    this.client = client
+    this.client = client;
   }
 
   /**
@@ -27,35 +29,62 @@ export class BusStopsImpl implements BusStops {
    * @param options The options parameters.
    */
   getAllBusStops(
-    options?: BusStopsGetAllBusStopsOptionalParams
+    options?: BusStopsGetAllBusStopsOptionalParams,
   ): Promise<BusStopsGetAllBusStopsResponse> {
-    return this.client.sendOperationRequest({ options }, getAllBusStopsOperationSpec)
+    return this.client.sendOperationRequest(
+      { options },
+      getAllBusStopsOperationSpec,
+    );
   }
 
   /**
-   * バス停の時刻表を取得します。
+   * バス停の詳細について取得します。
    * @param id
    * @param options The options parameters.
    */
+  getBusStopDetails(
+    id: number,
+    options?: BusStopsGetBusStopDetailsOptionalParams,
+  ): Promise<BusStopsGetBusStopDetailsResponse> {
+    return this.client.sendOperationRequest(
+      { id, options },
+      getBusStopDetailsOperationSpec,
+    );
+  }
+
+  /**
+   * バス停の時刻表を取得します。最大で 7 日間の時刻表を取得できます。
+   * @param id
+   * @param dateParam
+   * @param fromParam
+   * @param to
+   * @param options The options parameters.
+   */
   getBusStopTimetable(
-    id: string,
-    options?: BusStopsGetBusStopTimetableOptionalParams
+    id: number,
+    dateParam: Date,
+    fromParam: Date,
+    to: Date,
+    options?: BusStopsGetBusStopTimetableOptionalParams,
   ): Promise<BusStopsGetBusStopTimetableResponse> {
-    return this.client.sendOperationRequest({ id, options }, getBusStopTimetableOperationSpec)
+    return this.client.sendOperationRequest(
+      { id, dateParam, fromParam, to, options },
+      getBusStopTimetableOperationSpec,
+    );
   }
 }
 // Operation Specifications
-const serializer = coreClient.createSerializer(Mappers, /* isXml */ false)
+const serializer = coreClient.createSerializer(Mappers, /* isXml */ false);
 
 const getAllBusStopsOperationSpec: coreClient.OperationSpec = {
-  path: '/api/bus-stops',
-  httpMethod: 'GET',
+  path: "/api/bus-stops",
+  httpMethod: "GET",
   responses: {
     200: {
       bodyMapper: {
         type: {
-          name: 'Sequence',
-          element: { type: { name: 'Composite', className: 'ModelsBusStop' } },
+          name: "Sequence",
+          element: { type: { name: "Composite", className: "ModelsBusStop" } },
         },
       },
     },
@@ -63,16 +92,47 @@ const getAllBusStopsOperationSpec: coreClient.OperationSpec = {
   urlParameters: [Parameters.$host],
   headerParameters: [Parameters.accept],
   serializer,
-}
-const getBusStopTimetableOperationSpec: coreClient.OperationSpec = {
-  path: '/api/bus-stops/{id}',
-  httpMethod: 'GET',
+};
+const getBusStopDetailsOperationSpec: coreClient.OperationSpec = {
+  path: "/api/bus-stops/{id}",
+  httpMethod: "GET",
   responses: {
     200: {
-      bodyMapper: Mappers.ModelsBusStopTimetable,
+      bodyMapper: Mappers.ModelsBusStop,
+    },
+    404: {
+      bodyMapper:
+        Mappers.PathsDyok9LApiBusStopsIdGetResponses404ContentApplicationJsonSchema,
     },
   },
   urlParameters: [Parameters.$host, Parameters.id],
   headerParameters: [Parameters.accept],
   serializer,
-}
+};
+const getBusStopTimetableOperationSpec: coreClient.OperationSpec = {
+  path: "/api/bus-stops/{id}/timetables",
+  httpMethod: "GET",
+  responses: {
+    200: {
+      bodyMapper: {
+        type: {
+          name: "Sequence",
+          element: {
+            type: { name: "Composite", className: "ModelsBusStopTimetable" },
+          },
+        },
+      },
+    },
+    400: {
+      bodyMapper: { type: { name: "String" } },
+    },
+    404: {
+      bodyMapper:
+        Mappers.Paths1255ZxxApiBusStopsIdTimetablesGetResponses404ContentApplicationJsonSchema,
+    },
+  },
+  queryParameters: [Parameters.dateParam, Parameters.fromParam, Parameters.to],
+  urlParameters: [Parameters.$host, Parameters.id],
+  headerParameters: [Parameters.accept],
+  serializer,
+};

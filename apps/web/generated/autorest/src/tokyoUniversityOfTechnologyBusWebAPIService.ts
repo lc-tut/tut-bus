@@ -1,12 +1,12 @@
-import * as coreClient from '@azure/core-client'
-import * as coreRestPipeline from '@azure/core-rest-pipeline'
-import * as coreAuth from '@azure/core-auth'
-import { BusStopsImpl } from './operations/index.js'
-import { BusStops } from './operationsInterfaces/index.js'
-import { TokyoUniversityOfTechnologyBusWebAPIServiceOptionalParams } from './models/index.js'
+import * as coreClient from "@azure/core-client";
+import * as coreRestPipeline from "@azure/core-rest-pipeline";
+import * as coreAuth from "@azure/core-auth";
+import { BusStopsImpl } from "./operations/index.js";
+import { BusStops } from "./operationsInterfaces/index.js";
+import { TokyoUniversityOfTechnologyBusWebAPIServiceOptionalParams } from "./models/index.js";
 
 export class TokyoUniversityOfTechnologyBusWebAPIService extends coreClient.ServiceClient {
-  $host: string
+  $host: string;
 
   /**
    * Initializes a new instance of the TokyoUniversityOfTechnologyBusWebAPIService class.
@@ -17,32 +17,33 @@ export class TokyoUniversityOfTechnologyBusWebAPIService extends coreClient.Serv
   constructor(
     credentials: coreAuth.TokenCredential,
     $host: string,
-    options?: TokyoUniversityOfTechnologyBusWebAPIServiceOptionalParams
+    options?: TokyoUniversityOfTechnologyBusWebAPIServiceOptionalParams,
   ) {
     if (credentials === undefined) {
-      throw new Error("'credentials' cannot be null")
+      throw new Error("'credentials' cannot be null");
     }
     if ($host === undefined) {
-      throw new Error("'$host' cannot be null")
+      throw new Error("'$host' cannot be null");
     }
 
     // Initializing default values for options
     if (!options) {
-      options = {}
+      options = {};
     }
-    const defaults: TokyoUniversityOfTechnologyBusWebAPIServiceOptionalParams = {
-      requestContentType: 'application/json; charset=utf-8',
-      credential: credentials,
-    }
+    const defaults: TokyoUniversityOfTechnologyBusWebAPIServiceOptionalParams =
+      {
+        requestContentType: "application/json; charset=utf-8",
+        credential: credentials,
+      };
 
-    const packageDetails = `azsdk-js-tokyoUniversityOfTechnologyBusWebAPIService/1.0.0-beta.1`
+    const packageDetails = `azsdk-js-tokyoUniversityOfTechnologyBusWebAPIService/1.0.0-beta.1`;
     const userAgentPrefix =
       options.userAgentOptions && options.userAgentOptions.userAgentPrefix
         ? `${options.userAgentOptions.userAgentPrefix} ${packageDetails}`
-        : `${packageDetails}`
+        : `${packageDetails}`;
 
     if (!options.credentialScopes) {
-      options.credentialScopes = ['https://management.azure.com/.default']
+      options.credentialScopes = ["https://management.azure.com/.default"];
     }
     const optionsWithDefaults = {
       ...defaults,
@@ -50,18 +51,19 @@ export class TokyoUniversityOfTechnologyBusWebAPIService extends coreClient.Serv
       userAgentOptions: {
         userAgentPrefix,
       },
-      endpoint: options.endpoint ?? options.baseUri ?? '{$host}',
-    }
-    super(optionsWithDefaults)
+      endpoint: options.endpoint ?? options.baseUri ?? "{$host}",
+    };
+    super(optionsWithDefaults);
 
-    let bearerTokenAuthenticationPolicyFound: boolean = false
+    let bearerTokenAuthenticationPolicyFound: boolean = false;
     if (options?.pipeline && options.pipeline.getOrderedPolicies().length > 0) {
       const pipelinePolicies: coreRestPipeline.PipelinePolicy[] =
-        options.pipeline.getOrderedPolicies()
+        options.pipeline.getOrderedPolicies();
       bearerTokenAuthenticationPolicyFound = pipelinePolicies.some(
         (pipelinePolicy) =>
-          pipelinePolicy.name === coreRestPipeline.bearerTokenAuthenticationPolicyName
-      )
+          pipelinePolicy.name ===
+          coreRestPipeline.bearerTokenAuthenticationPolicyName,
+      );
     }
     if (
       !options ||
@@ -71,22 +73,24 @@ export class TokyoUniversityOfTechnologyBusWebAPIService extends coreClient.Serv
     ) {
       this.pipeline.removePolicy({
         name: coreRestPipeline.bearerTokenAuthenticationPolicyName,
-      })
+      });
       this.pipeline.addPolicy(
         coreRestPipeline.bearerTokenAuthenticationPolicy({
           credential: credentials,
           scopes:
-            optionsWithDefaults.credentialScopes ?? `${optionsWithDefaults.endpoint}/.default`,
+            optionsWithDefaults.credentialScopes ??
+            `${optionsWithDefaults.endpoint}/.default`,
           challengeCallbacks: {
-            authorizeRequestOnChallenge: coreClient.authorizeRequestOnClaimChallenge,
+            authorizeRequestOnChallenge:
+              coreClient.authorizeRequestOnClaimChallenge,
           },
-        })
-      )
+        }),
+      );
     }
     // Parameter assignments
-    this.$host = $host
-    this.busStops = new BusStopsImpl(this)
+    this.$host = $host;
+    this.busStops = new BusStopsImpl(this);
   }
 
-  busStops: BusStops
+  busStops: BusStops;
 }

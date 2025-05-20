@@ -41,6 +41,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@autorest/modelerfour':
+        specifier: 4.24.0-dev.4
+        version: 4.24.0-dev.4
       '@azure/core-auth':
         specifier: ^1.9.0
         version: 1.9.0
@@ -214,6 +217,10 @@ packages:
 
   '@autorest/go@4.0.0-preview.72':
     resolution: {integrity: sha512-l8dZt693L1RnwvjgyMwxTIJV126j2qShKuxYbAAgyauusV2RwVGnUBGqktmogyyFwz0Z6rAt0RAmShsGxOCdtQ==}
+    engines: {node: '>=12.0.0'}
+
+  '@autorest/modelerfour@4.24.0-dev.4':
+    resolution: {integrity: sha512-J0I7OuEQYoo6Om35LgBgZmL9lcg4mX2koR5q2WpaaV+Gmc9+zh+bf8pbVY68x5mlg6AbjyJvjCn47Me0k+5LSw==}
     engines: {node: '>=12.0.0'}
 
   '@azure-tools/async-io@3.0.254':
@@ -3474,6 +3481,8 @@ snapshots:
       js-yaml: 4.1.0
       showdown: 1.9.1
       source-map-support: 0.5.21
+
+  '@autorest/modelerfour@4.24.0-dev.4': {}
 
   '@azure-tools/async-io@3.0.254':
     dependencies:

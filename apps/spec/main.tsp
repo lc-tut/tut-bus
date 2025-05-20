@@ -1,6 +1,6 @@
 import "@typespec/http";
 
-import "./models/busStop.tsp";
+import "./models/transport.tsp";
 import "./routes/busStops.tsp";
 
 using Http;

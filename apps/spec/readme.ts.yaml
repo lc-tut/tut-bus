@@ -6,3 +6,4 @@ typescript:
   generate-test: false
   source-map: false
   generate-package-json: false
+  output-artifact: typescript-files

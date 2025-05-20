@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@autorest/modelerfour": "4.24.0-dev.4",
     "@azure/core-auth": "^1.9.0",
     "@azure/core-client": "^1.9.4",
     "@azure/core-rest-pipeline": "^1.20.0",

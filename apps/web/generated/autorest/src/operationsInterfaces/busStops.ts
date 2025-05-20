@@ -1,9 +1,11 @@
 import {
   BusStopsGetAllBusStopsOptionalParams,
   BusStopsGetAllBusStopsResponse,
+  BusStopsGetBusStopDetailsOptionalParams,
+  BusStopsGetBusStopDetailsResponse,
   BusStopsGetBusStopTimetableOptionalParams,
   BusStopsGetBusStopTimetableResponse,
-} from '../models/index.js'
+} from "../models/index.js";
 
 /** Interface representing a BusStops. */
 export interface BusStops {
@@ -12,15 +14,30 @@ export interface BusStops {
    * @param options The options parameters.
    */
   getAllBusStops(
-    options?: BusStopsGetAllBusStopsOptionalParams
-  ): Promise<BusStopsGetAllBusStopsResponse>
+    options?: BusStopsGetAllBusStopsOptionalParams,
+  ): Promise<BusStopsGetAllBusStopsResponse>;
   /**
-   * バス停の時刻表を取得します。
+   * バス停の詳細について取得します。
    * @param id
    * @param options The options parameters.
    */
+  getBusStopDetails(
+    id: number,
+    options?: BusStopsGetBusStopDetailsOptionalParams,
+  ): Promise<BusStopsGetBusStopDetailsResponse>;
+  /**
+   * バス停の時刻表を取得します。最大で 7 日間の時刻表を取得できます。
+   * @param id
+   * @param dateParam
+   * @param fromParam
+   * @param to
+   * @param options The options parameters.
+   */
   getBusStopTimetable(
-    id: string,
-    options?: BusStopsGetBusStopTimetableOptionalParams
-  ): Promise<BusStopsGetBusStopTimetableResponse>
+    id: number,
+    dateParam: Date,
+    fromParam: Date,
+    to: Date,
+    options?: BusStopsGetBusStopTimetableOptionalParams,
+  ): Promise<BusStopsGetBusStopTimetableResponse>;
 }
