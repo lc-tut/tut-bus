@@ -58,7 +58,8 @@ model InternalServerError {
   details?: string;
 }
 
-enum ServiceError {
+@TypeSpec.OpenAPI.oneOf
+union ServiceError {
   BadRequest,
   Unauthorized,
   Forbidden,

@@ -5,16 +5,21 @@
     "lint": "tsp format . --check",
     "fix": "tsp format .",
     "build": "run-s gen:*",
+    "clean:go": "node -e \"require('fs').rmSync('../api/models', { recursive: true, force: true });\"",
+    "clean:ts": "node -e \"require('fs').rmSync('../web/generated', { recursive: true, force: true });\"",
     "gen:spec": "tsp compile .",
-    "gen:ts": "autorest ./readme.ts.yaml --typescript",
-    "gen:go": "mkdir -p ../api/models && oapi-codegen --config=./oapi-codegen.yaml ./dist/openapi.yaml"
+    "pregen:ts": "npm run clean:ts",
+    "gen:ts": "openapi-typescript ./dist/openapi.yaml -o ../web/generated/oas.d.ts",
+    "pregen:go": "npm run clean:go",
+    "gen:go": "mkdir -p ../api/models && oapi-codegen --config=./oapi-codegen.yaml ./dist/openapi.yaml",
+    "clean:generate": "node -e \"const fs = require('fs'); ['../api/models','../web/generated'].forEach(dir => fs.rmSync(dir, { recursive: true, force: true }));\""
   },
   "devDependencies": {
-    "@autorest/go": "4.0.0-preview.72",
     "@typespec/compiler": "^1.0.0",
     "@typespec/http": "^1.0.1",
     "@typespec/openapi3": "^1.0.0",
     "autorest": "^3.7.1",
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "openapi-typescript": "^7.8.0"
   }
 }

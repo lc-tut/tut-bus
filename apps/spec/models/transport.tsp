@@ -1,3 +1,5 @@
+import "@typespec/openapi3";
+
 namespace BusAPI.Models;
 
 using BusAPI.Scalars;
@@ -46,7 +48,8 @@ model ShuttleSegment {
   };
 }
 
-enum BusStopSegment {
+@TypeSpec.OpenAPI.oneOf
+union BusStopSegment {
   FixedSegment,
   FrequencySegment,
   ShuttleSegment,

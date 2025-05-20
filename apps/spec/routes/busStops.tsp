@@ -1,4 +1,5 @@
 import "@typespec/http";
+import "@typespec/openapi3";
 
 import "../models/transport.tsp";
 import "../common/scalars.tsp";
@@ -37,7 +38,8 @@ alias FromAfterToBadRequest = BadRequest<
   "The 'from' date must be on or before the 'to' date."
 >;
 
-enum TimetableBadRequest {
+@TypeSpec.OpenAPI.oneOf
+union TimetableBadRequest {
   InvalidDateBadRequest,
   InvalidRangeBadRequest,
   RangeTooLongBadRequest,
@@ -83,7 +85,7 @@ interface BusStops {
     - 指定した日付の時刻表が存在しない場合は、`segments` が空の配列で返されます。
     - `date` クエリが `YYYY-MM-DD` 形式でない場合は **400 Bad Request** を返します。
     - `from`・`to` クエリが `YYYY-MM-DD` 形式でない場合は **400 Bad Request** を返します。
-    - `date` と `from`／`to` を同時に指定した場合は **400 Bad Request** を返します。
+    - `date` と `from` / `to` を同時に指定した場合は **400 Bad Request** を返します。
     - `from` と `to` を同時に指定した場合に
       - `from` が `to` より後の日付である
       - または範囲が 7 日を超えている
