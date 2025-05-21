@@ -4,6 +4,7 @@ import (
 	"api/internal/config"
 	"api/internal/domain"
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -17,47 +18,33 @@ func NewBusStopRepositoryImpl(cfg *config.Config) BusStopRepositoryImpl {
 	}
 }
 
-func (r *BusStopRepositoryImpl) loadJSONFile(filePath string, v interface{}) error {
+func loadData[T any](filePath string) ([]T, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to read file %s: %w", filePath, err)
 	}
-
-	err = json.Unmarshal(data, v)
-	if err != nil {
-		return err
+	var items []T
+	if err := json.Unmarshal(data, &items); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON from %s: %w", filePath, err)
 	}
-
-	return nil
+	return items, nil
 }
 
-func (r *BusStopRepositoryImpl) GetAllBusStops() ([]domain.BusStop, error) {
+func (r BusStopRepositoryImpl) GetAllBusStops() ([]domain.BusStop, error) {
 	filePath := r.config.GetBusStopsFilePath()
 
-	var busStops []domain.BusStop
-	if err := r.loadJSONFile(filePath, &busStops); err != nil {
-		return nil, err
-	}
-
-	return busStops, nil
+	return loadData[domain.BusStop](filePath)
 }
 
-func (r *BusStopRepositoryImpl) GetAllBusStopGroups() ([]domain.BusStopGroup, error) {
+func (r BusStopRepositoryImpl) GetAllBusStopGroups() ([]domain.BusStopGroup, error) {
 	filePath := r.config.GetBusStopGroupsFilePath()
 
-	var busStopGroups []domain.BusStopGroup
-	if err := r.loadJSONFile(filePath, &busStopGroups); err != nil {
-		return nil, err
-	}
-
-	return busStopGroups, nil
+	return loadData[domain.BusStopGroup](filePath)
 }
 
-func (r *BusStopRepositoryImpl) GetBusStopGroupByID(id int32) (*domain.BusStopGroup, error) {
-	filePath := r.config.GetBusStopGroupsFilePath()
-
-	var busStopGroups []domain.BusStopGroup
-	if err := r.loadJSONFile(filePath, &busStopGroups); err != nil {
+func (r BusStopRepositoryImpl) GetBusStopGroupByID(id int32) (*domain.BusStopGroup, error) {
+	busStopGroups, err := r.GetAllBusStopGroups()
+	if err != nil {
 		return nil, err
 	}
 
@@ -67,17 +54,17 @@ func (r *BusStopRepositoryImpl) GetBusStopGroupByID(id int32) (*domain.BusStopGr
 		}
 	}
 
-	return nil, domain.NotFoundError{
+	detail := "The requested bus stop group does not exist."
+	return nil, &domain.NotFoundError{
 		Code:    "NotFound",
-		Message: "resource not found",
+		Message: "BusStopGroupNotFound",
+		Detail:  &detail,
 	}
 }
 
-func (r *BusStopRepositoryImpl) GetBusStopByID(id int32) (*domain.BusStop, error) {
-	filePath := r.config.GetBusStopsFilePath()
-
-	var busStops []domain.BusStop
-	if err := r.loadJSONFile(filePath, &busStops); err != nil {
+func (r BusStopRepositoryImpl) GetBusStopByID(id int32) (*domain.BusStop, error) {
+	busStops, err := r.GetAllBusStops()
+	if err != nil {
 		return nil, err
 	}
 
@@ -87,5 +74,10 @@ func (r *BusStopRepositoryImpl) GetBusStopByID(id int32) (*domain.BusStop, error
 		}
 	}
 
-	return nil, domain.NewErrBusStopNotFound(id)
+	detail := "The requested bus stop does not exist."
+	return nil, &domain.NotFoundError{
+		Code:    "NotFound",
+		Message: "BusStopNotFound",
+		Detail:  &detail,
+	}
 }

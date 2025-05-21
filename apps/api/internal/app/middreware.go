@@ -28,8 +28,8 @@ func (m *Middleware) ErrorHandlingMiddleware(next echo.HandlerFunc) echo.Handler
 
 		var svcErr domain.ServiceError
 		if errors.As(err, &svcErr) {
-			m.log.Info("service error", zap.String("code", svcErr.Code()), zap.Error(err))
-			return c.JSON(svcErr.StatusCode(), err)
+			m.log.Error("service error", zap.String("code", svcErr.Code), zap.String("message", svcErr.Message))
+			return c.JSON(http.StatusInternalServerError, err)
 		}
 
 		m.log.Error("unexpected error", zap.Error(err))

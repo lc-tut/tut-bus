@@ -10,16 +10,16 @@ import (
 type BusStopUseCase interface {
 	GetBusStops(groupID *int32) ([]domain.BusStop, error)
 	GetBusStopGroups() ([]domain.BusStopGroup, error)
-	GetBusStopByID(id int32) (domain.BusStop, error)
-	GetBusStopGroupByID(id int32) (domain.BusStopGroup, error)
+	GetBusStopByID(id int32) (*domain.BusStop, error)
+	GetBusStopGroupByID(id int32) (*domain.BusStopGroup, error)
 }
 
 type busStopUseCase struct {
-	busStopRepo *repository.BusStopRepository
+	busStopRepo repository.BusStopRepository
 	log         *zap.Logger
 }
 
-func NewBusStopUseCase(r *repository.BusStopRepository, l *zap.Logger) BusStopUseCase {
+func NewBusStopUseCase(r repository.BusStopRepository, l *zap.Logger) BusStopUseCase {
 	return &busStopUseCase{
 		busStopRepo: r,
 		log:         l,
@@ -64,20 +64,22 @@ func (u *busStopUseCase) GetBusStopGroups() ([]domain.BusStopGroup, error) {
 	return busStopGroups, nil
 }
 
-func (u *busStopUseCase) GetBusStopByID(id int32) (domain.BusStop, error) {
+func (u *busStopUseCase) GetBusStopByID(id int32) (*domain.BusStop, error) {
 	busStop, err := u.busStopRepo.GetBusStopByID(id)
 	if err != nil {
 		u.log.Error("failed to get bus stop by ID", zap.Error(err), zap.Int32("id", id))
-		return domain.BusStop{}, err
+		return nil, err
 	}
+
 	return busStop, nil
 }
 
-func (u *busStopUseCase) GetBusStopGroupByID(id int32) (domain.BusStopGroup, error) {
+func (u *busStopUseCase) GetBusStopGroupByID(id int32) (*domain.BusStopGroup, error) {
 	busStopGroup, err := u.busStopRepo.GetBusStopGroupByID(id)
 	if err != nil {
 		u.log.Error("failed to get bus stop group by ID", zap.Error(err), zap.Int32("id", id))
-		return domain.BusStopGroup{}, err
+		return nil, err
 	}
+
 	return busStopGroup, nil
 }

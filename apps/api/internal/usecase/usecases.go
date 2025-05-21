@@ -7,7 +7,7 @@ import (
 )
 
 type UseCases struct {
-	BusStop *BusStopUseCase
+	BusStop BusStopUseCase
 }
 
 func NewUseCases(repos *repository.Repositories, logger *zap.Logger) *UseCases {

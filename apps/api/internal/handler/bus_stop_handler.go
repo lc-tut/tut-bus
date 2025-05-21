@@ -6,12 +6,18 @@ import (
 	"api/internal/usecase"
 	"api/pkg/oapi"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
 type BusStopHandler struct {
 	busStopUsecase usecase.BusStopUseCase
+}
+
+func isValidDate(date string) bool {
+	_, err := time.Parse("2006-01-02", date)
+	return err == nil
 }
 
 func NewBusStopHandler(busStopUsecase usecase.BusStopUseCase) *BusStopHandler {
@@ -59,16 +65,18 @@ func (h *BusStopHandler) GetBusStopDetails(ctx echo.Context, id int32) error {
 	if err != nil {
 		if _, ok := err.(*domain.NotFoundError); ok {
 			return ctx.JSON(http.StatusNotFound, map[string]interface{}{
+				"code":    "NotFound",
 				"message": "BusStopNotFound",
 				"detail":  "The requested bus stop does not exist.",
 			})
 		}
-		return HandleError(ctx, err)
+		return err
 	}
 
-	model := dto.DomainBusStopToModelBusStop(busStop)
+	model := dto.DomainBusStopToModelBusStop(*busStop)
 	if model == nil {
 		return ctx.JSON(http.StatusNotFound, map[string]interface{}{
+			"code":    "NotFound",
 			"message": "BusStopNotFound",
 			"detail":  "The requested bus stop does not exist.",
 		})
@@ -82,15 +90,20 @@ func (h *BusStopHandler) GetBusStopTimetable(ctx echo.Context, id int32, date oa
 	if err != nil {
 		if _, ok := err.(*domain.NotFoundError); ok {
 			return ctx.JSON(http.StatusNotFound, map[string]interface{}{
+				"code":    "NotFound",
 				"message": "BusStopNotFound",
 				"detail":  "The requested bus stop does not exist.",
 			})
 		}
-		return HandleError(ctx, err)
+		return err
 	}
 
 	if !isValidDate(date.String()) {
-		return ctx.JSON(http.StatusBadRequest, NewInvalidDateError())
+		return ctx.JSON(http.StatusBadRequest, map[string]interface{}{
+			"code":    "BadRequest",
+			"message": "InvalidDate",
+			"detail":  "The provided date is invalid. Please use YYYY-MM-DD format.",
+		})
 	}
 
 	timetable := oapi.ModelsBusStopTimetable{
@@ -116,24 +129,22 @@ func (h *BusStopHandler) GetBusStopGroupDetails(ctx echo.Context, id int32) erro
 	if err != nil {
 		if _, ok := err.(*domain.NotFoundError); ok {
 			return ctx.JSON(http.StatusNotFound, map[string]interface{}{
-				"code":    "BusStopGroupNotFound",
-				"message": "The requested bus stop group does not exist.",
+				"code":    "NotFound",
+				"message": "BusStopGroupNotFound",
+				"detail":  "The requested bus stop group does not exist.",
 			})
 		}
-		return HandleError(ctx, err)
+		return err
 	}
 
-	model := dto.DomainBusStopGroupToModelBusStopGroup(busStopGroup)
+	model := dto.DomainBusStopGroupToModelBusStopGroup(*busStopGroup)
 	if model == nil {
 		return ctx.JSON(http.StatusNotFound, map[string]interface{}{
-			"code":    "BusStopGroupNotFound",
-			"message": "The requested bus stop group does not exist.",
+			"code":    "NotFound",
+			"message": "BusStopGroupNotFound",
+			"detail":  "The requested bus stop group does not exist.",
 		})
 	}
 
 	return ctx.JSON(http.StatusOK, model)
-}
-
-func isValidDate(date string) bool {
-	return len(date) == 10 && date[4] == '-' && date[7] == '-'
 }

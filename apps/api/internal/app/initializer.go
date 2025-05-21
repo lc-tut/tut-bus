@@ -37,8 +37,9 @@ func Initialize() *AppContext {
 	}
 
 	busStopRepository := repo.NewBusStopRepositoryImpl(cfg)
+
 	repositories := repository.Repositories{
-		BusStop: &busStopRepository,
+		BusStop: busStopRepository,
 	}
 
 	useCases := usecase.NewUseCases(&repositories, logger)
