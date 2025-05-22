@@ -4,57 +4,6 @@
  */
 
 export interface paths {
-  '/api/bus-stop-groups': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description 全バス停グループの一覧を取得します。 */
-    get: operations['BusStopGroupService_getAllBusStopGroups']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/bus-stop-groups/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description バス停グループの詳細について取得します。 */
-    get: operations['BusStopGroupService_getBusStopGroupDetails']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/bus-stop-groups/{id}/timetable': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description グループ内全停留所の時刻表をまとめて取得します。 */
-    get: operations['BusStopGroupService_getBusStopGroupsTimetable']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/api/bus-stops': {
     parameters: {
       query?: never
@@ -64,6 +13,57 @@ export interface paths {
     }
     /** @description 全バス停の一覧を取得します。オプションで group_id を指定するとグループで絞り込み可能です。 */
     get: operations['BusStopService_getAllBusStops']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/bus-stops/groups': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** @description 全バス停グループの一覧を取得します。 */
+    get: operations['BusStopGroupsService_getAllBusStopGroups']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/bus-stops/groups/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** @description バス停グループの詳細について取得します。 */
+    get: operations['BusStopGroupsService_getBusStopGroupDetails']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/bus-stops/groups/{id}/timetable': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** @description グループ内全停留所の時刻表をまとめて取得します。 */
+    get: operations['BusStopGroupsService_getBusStopGroupsTimetable']
     put?: never
     post?: never
     delete?: never
@@ -97,7 +97,7 @@ export interface paths {
       cookie?: never
     }
     /** @description バス停の時刻表を取得します。複数件返却します。 */
-    get: operations['BusStopService_getBusStopTimetable']
+    get: operations['BusStopTimetableService_getBusStopTimetable']
     put?: never
     post?: never
     delete?: never
@@ -231,7 +231,7 @@ export interface components {
       stopId: number
       stopName: string
       lat?: components['schemas']['Scalars.Latitude']
-      lon?: components['schemas']['Scalars.Longitude']
+      lng?: components['schemas']['Scalars.Longitude']
     }
     'Models.TimePair': {
       arrival: components['schemas']['Scalars.TimeISO']
@@ -248,7 +248,9 @@ export interface components {
     }
     /** Format: date */
     'Scalars.DateISO': string
+    /** Format: double */
     'Scalars.Latitude': number
+    /** Format: double */
     'Scalars.Longitude': number
     'Scalars.TimeISO': string
   }
@@ -260,7 +262,29 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
-  BusStopGroupService_getAllBusStopGroups: {
+  BusStopService_getAllBusStops: {
+    parameters: {
+      query?: {
+        group_id?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The request has succeeded. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Models.BusStop'][]
+        }
+      }
+    }
+  }
+  BusStopGroupsService_getAllBusStopGroups: {
     parameters: {
       query?: never
       header?: never
@@ -280,7 +304,7 @@ export interface operations {
       }
     }
   }
-  BusStopGroupService_getBusStopGroupDetails: {
+  BusStopGroupsService_getBusStopGroupDetails: {
     parameters: {
       query?: never
       header?: never
@@ -318,7 +342,7 @@ export interface operations {
       }
     }
   }
-  BusStopGroupService_getBusStopGroupsTimetable: {
+  BusStopGroupsService_getBusStopGroupsTimetable: {
     parameters: {
       query: {
         date: components['schemas']['Scalars.DateISO']
@@ -367,28 +391,6 @@ export interface operations {
       }
     }
   }
-  BusStopService_getAllBusStops: {
-    parameters: {
-      query?: {
-        group_id?: number
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The request has succeeded. */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Models.BusStop'][]
-        }
-      }
-    }
-  }
   BusStopService_getBusStopDetails: {
     parameters: {
       query?: never
@@ -427,7 +429,7 @@ export interface operations {
       }
     }
   }
-  BusStopService_getBusStopTimetable: {
+  BusStopTimetableService_getBusStopTimetable: {
     parameters: {
       query: {
         date: components['schemas']['Scalars.DateISO']

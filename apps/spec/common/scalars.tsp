@@ -8,8 +8,8 @@ scalar TimeISO extends string;
 
 @minValue(-90)
 @maxValue(90)
-scalar Latitude extends float;
+scalar Latitude extends float64;
 
 @minValue(-180)
 @maxValue(180)
-scalar Longitude extends float;
+scalar Longitude extends float64;

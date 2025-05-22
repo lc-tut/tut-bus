@@ -113,11 +113,11 @@ func (h *BusStopHandler) GetBusStopTimetable(ctx echo.Context, id int32, date oa
 		Segments: []oapi.ModelsBusStopSegment{},
 	}
 	if busStop.Lat != nil {
-		lat := float32(*busStop.Lat)
+		lat := float64(*busStop.Lat)
 		timetable.Lat = lat
 	}
 	if busStop.Lng != nil {
-		lon := float32(*busStop.Lng)
+		lon := float64(*busStop.Lng)
 		timetable.Lon = lon
 	}
 

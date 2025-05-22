@@ -128,7 +128,7 @@ type ModelsShuttleSegmentSegmentType string
 // ModelsStopRef defines model for Models.StopRef.
 type ModelsStopRef struct {
 	Lat      *ScalarsLatitude  `json:"lat,omitempty"`
-	Lon      *ScalarsLongitude `json:"lon,omitempty"`
+	Lng      *ScalarsLongitude `json:"lng,omitempty"`
 	StopId   int32             `json:"stopId"`
 	StopName string            `json:"stopName"`
 }
@@ -159,26 +159,26 @@ type RoutesTimetableBadRequestMessage string
 type ScalarsDateISO = openapi_types.Date
 
 // ScalarsLatitude defines model for Scalars.Latitude.
-type ScalarsLatitude = float32
+type ScalarsLatitude = float64
 
 // ScalarsLongitude defines model for Scalars.Longitude.
-type ScalarsLongitude = float32
+type ScalarsLongitude = float64
 
 // ScalarsTimeISO defines model for Scalars.TimeISO.
 type ScalarsTimeISO = string
-
-// BusStopGroupServiceGetBusStopGroupsTimetableParams defines parameters for BusStopGroupServiceGetBusStopGroupsTimetable.
-type BusStopGroupServiceGetBusStopGroupsTimetableParams struct {
-	Date ScalarsDateISO `form:"date" json:"date"`
-}
 
 // BusStopServiceGetAllBusStopsParams defines parameters for BusStopServiceGetAllBusStops.
 type BusStopServiceGetAllBusStopsParams struct {
 	GroupId *int32 `form:"group_id,omitempty" json:"group_id,omitempty"`
 }
 
-// BusStopServiceGetBusStopTimetableParams defines parameters for BusStopServiceGetBusStopTimetable.
-type BusStopServiceGetBusStopTimetableParams struct {
+// BusStopGroupsServiceGetBusStopGroupsTimetableParams defines parameters for BusStopGroupsServiceGetBusStopGroupsTimetable.
+type BusStopGroupsServiceGetBusStopGroupsTimetableParams struct {
+	Date ScalarsDateISO `form:"date" json:"date"`
+}
+
+// BusStopTimetableServiceGetBusStopTimetableParams defines parameters for BusStopTimetableServiceGetBusStopTimetable.
+type BusStopTimetableServiceGetBusStopTimetableParams struct {
 	Date ScalarsDateISO `form:"date" json:"date"`
 }
 
@@ -273,78 +273,28 @@ func (t *ModelsBusStopSegment) UnmarshalJSON(b []byte) error {
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /api/bus-stop-groups)
-	BusStopGroupServiceGetAllBusStopGroups(ctx echo.Context) error
-
-	// (GET /api/bus-stop-groups/{id})
-	BusStopGroupServiceGetBusStopGroupDetails(ctx echo.Context, id int32) error
-
-	// (GET /api/bus-stop-groups/{id}/timetable)
-	BusStopGroupServiceGetBusStopGroupsTimetable(ctx echo.Context, id int32, params BusStopGroupServiceGetBusStopGroupsTimetableParams) error
-
 	// (GET /api/bus-stops)
 	BusStopServiceGetAllBusStops(ctx echo.Context, params BusStopServiceGetAllBusStopsParams) error
+
+	// (GET /api/bus-stops/groups)
+	BusStopGroupsServiceGetAllBusStopGroups(ctx echo.Context) error
+
+	// (GET /api/bus-stops/groups/{id})
+	BusStopGroupsServiceGetBusStopGroupDetails(ctx echo.Context, id int32) error
+
+	// (GET /api/bus-stops/groups/{id}/timetable)
+	BusStopGroupsServiceGetBusStopGroupsTimetable(ctx echo.Context, id int32, params BusStopGroupsServiceGetBusStopGroupsTimetableParams) error
 
 	// (GET /api/bus-stops/{id})
 	BusStopServiceGetBusStopDetails(ctx echo.Context, id int32) error
 
 	// (GET /api/bus-stops/{id}/timetable)
-	BusStopServiceGetBusStopTimetable(ctx echo.Context, id int32, params BusStopServiceGetBusStopTimetableParams) error
+	BusStopTimetableServiceGetBusStopTimetable(ctx echo.Context, id int32, params BusStopTimetableServiceGetBusStopTimetableParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
-}
-
-// BusStopGroupServiceGetAllBusStopGroups converts echo context to params.
-func (w *ServerInterfaceWrapper) BusStopGroupServiceGetAllBusStopGroups(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.BusStopGroupServiceGetAllBusStopGroups(ctx)
-	return err
-}
-
-// BusStopGroupServiceGetBusStopGroupDetails converts echo context to params.
-func (w *ServerInterfaceWrapper) BusStopGroupServiceGetBusStopGroupDetails(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "id" -------------
-	var id int32
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.BusStopGroupServiceGetBusStopGroupDetails(ctx, id)
-	return err
-}
-
-// BusStopGroupServiceGetBusStopGroupsTimetable converts echo context to params.
-func (w *ServerInterfaceWrapper) BusStopGroupServiceGetBusStopGroupsTimetable(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "id" -------------
-	var id int32
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params BusStopGroupServiceGetBusStopGroupsTimetableParams
-	// ------------- Required query parameter "date" -------------
-
-	err = runtime.BindQueryParameter("form", false, true, "date", ctx.QueryParams(), &params.Date)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.BusStopGroupServiceGetBusStopGroupsTimetable(ctx, id, params)
-	return err
 }
 
 // BusStopServiceGetAllBusStops converts echo context to params.
@@ -365,6 +315,56 @@ func (w *ServerInterfaceWrapper) BusStopServiceGetAllBusStops(ctx echo.Context) 
 	return err
 }
 
+// BusStopGroupsServiceGetAllBusStopGroups converts echo context to params.
+func (w *ServerInterfaceWrapper) BusStopGroupsServiceGetAllBusStopGroups(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.BusStopGroupsServiceGetAllBusStopGroups(ctx)
+	return err
+}
+
+// BusStopGroupsServiceGetBusStopGroupDetails converts echo context to params.
+func (w *ServerInterfaceWrapper) BusStopGroupsServiceGetBusStopGroupDetails(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.BusStopGroupsServiceGetBusStopGroupDetails(ctx, id)
+	return err
+}
+
+// BusStopGroupsServiceGetBusStopGroupsTimetable converts echo context to params.
+func (w *ServerInterfaceWrapper) BusStopGroupsServiceGetBusStopGroupsTimetable(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params BusStopGroupsServiceGetBusStopGroupsTimetableParams
+	// ------------- Required query parameter "date" -------------
+
+	err = runtime.BindQueryParameter("form", false, true, "date", ctx.QueryParams(), &params.Date)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.BusStopGroupsServiceGetBusStopGroupsTimetable(ctx, id, params)
+	return err
+}
+
 // BusStopServiceGetBusStopDetails converts echo context to params.
 func (w *ServerInterfaceWrapper) BusStopServiceGetBusStopDetails(ctx echo.Context) error {
 	var err error
@@ -381,8 +381,8 @@ func (w *ServerInterfaceWrapper) BusStopServiceGetBusStopDetails(ctx echo.Contex
 	return err
 }
 
-// BusStopServiceGetBusStopTimetable converts echo context to params.
-func (w *ServerInterfaceWrapper) BusStopServiceGetBusStopTimetable(ctx echo.Context) error {
+// BusStopTimetableServiceGetBusStopTimetable converts echo context to params.
+func (w *ServerInterfaceWrapper) BusStopTimetableServiceGetBusStopTimetable(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id int32
@@ -393,7 +393,7 @@ func (w *ServerInterfaceWrapper) BusStopServiceGetBusStopTimetable(ctx echo.Cont
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params BusStopServiceGetBusStopTimetableParams
+	var params BusStopTimetableServiceGetBusStopTimetableParams
 	// ------------- Required query parameter "date" -------------
 
 	err = runtime.BindQueryParameter("form", false, true, "date", ctx.QueryParams(), &params.Date)
@@ -402,7 +402,7 @@ func (w *ServerInterfaceWrapper) BusStopServiceGetBusStopTimetable(ctx echo.Cont
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.BusStopServiceGetBusStopTimetable(ctx, id, params)
+	err = w.Handler.BusStopTimetableServiceGetBusStopTimetable(ctx, id, params)
 	return err
 }
 
@@ -434,45 +434,45 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/api/bus-stop-groups", wrapper.BusStopGroupServiceGetAllBusStopGroups)
-	router.GET(baseURL+"/api/bus-stop-groups/:id", wrapper.BusStopGroupServiceGetBusStopGroupDetails)
-	router.GET(baseURL+"/api/bus-stop-groups/:id/timetable", wrapper.BusStopGroupServiceGetBusStopGroupsTimetable)
 	router.GET(baseURL+"/api/bus-stops", wrapper.BusStopServiceGetAllBusStops)
+	router.GET(baseURL+"/api/bus-stops/groups", wrapper.BusStopGroupsServiceGetAllBusStopGroups)
+	router.GET(baseURL+"/api/bus-stops/groups/:id", wrapper.BusStopGroupsServiceGetBusStopGroupDetails)
+	router.GET(baseURL+"/api/bus-stops/groups/:id/timetable", wrapper.BusStopGroupsServiceGetBusStopGroupsTimetable)
 	router.GET(baseURL+"/api/bus-stops/:id", wrapper.BusStopServiceGetBusStopDetails)
-	router.GET(baseURL+"/api/bus-stops/:id/timetable", wrapper.BusStopServiceGetBusStopTimetable)
+	router.GET(baseURL+"/api/bus-stops/:id/timetable", wrapper.BusStopTimetableServiceGetBusStopTimetable)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

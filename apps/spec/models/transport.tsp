@@ -26,7 +26,7 @@ model StopRef {
   stopId: int32;
   stopName: string;
   lat?: Latitude;
-  lon?: Longitude;
+  lng?: Longitude;
 }
 
 model FixedSegment {

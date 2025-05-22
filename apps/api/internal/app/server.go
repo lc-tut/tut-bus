@@ -11,19 +11,29 @@ type Server struct {
 	Handlers *handler.Handlers
 }
 
-// BusStopGroupServiceGetAllBusStopGroups implements oapi.ServerInterface.
-func (s *Server) BusStopGroupServiceGetAllBusStopGroups(ctx echo.Context) error {
+// BusStopGroupsServiceGetAllBusStopGroups implements oapi.ServerInterface.
+func (s *Server) BusStopGroupsServiceGetAllBusStopGroups(ctx echo.Context) error {
 	return s.Handlers.BusStop.GetBusStopGroups(ctx)
 }
 
-// BusStopGroupServiceGetBusStopGroupDetails implements oapi.ServerInterface.
-func (s *Server) BusStopGroupServiceGetBusStopGroupDetails(ctx echo.Context, id int32) error {
+// BusStopGroupsServiceGetBusStopGroupDetails implements oapi.ServerInterface.
+func (s *Server) BusStopGroupsServiceGetBusStopGroupDetails(ctx echo.Context, id int32) error {
+	return s.Handlers.BusStop.GetBusStopGroupDetails(ctx, id)
+}
+
+// BusStopGroupsServiceGetBusStopGroupsTimetable implements oapi.ServerInterface.
+func (s *Server) BusStopGroupsServiceGetBusStopGroupsTimetable(ctx echo.Context, id int32, params oapi.BusStopGroupsServiceGetBusStopGroupsTimetableParams) error {
 	panic("unimplemented")
 }
 
-// BusStopGroupServiceGetBusStopGroupsTimetable implements oapi.ServerInterface.
-func (s *Server) BusStopGroupServiceGetBusStopGroupsTimetable(ctx echo.Context, id int32, params oapi.BusStopGroupServiceGetBusStopGroupsTimetableParams) error {
+// BusStopTimetableServiceGetBusStopTimetable implements oapi.ServerInterface.
+func (s *Server) BusStopTimetableServiceGetBusStopTimetable(ctx echo.Context, id int32, params oapi.BusStopTimetableServiceGetBusStopTimetableParams) error {
 	panic("unimplemented")
+}
+
+// BusStopGroupServiceGetAllBusStopGroups implements oapi.ServerInterface.
+func (s *Server) BusStopGroupServiceGetAllBusStopGroups(ctx echo.Context) error {
+	return s.Handlers.BusStop.GetBusStopGroups(ctx)
 }
 
 // BusStopServiceGetAllBusStops implements oapi.ServerInterface.
@@ -34,11 +44,6 @@ func (s *Server) BusStopServiceGetAllBusStops(ctx echo.Context, params oapi.BusS
 // BusStopServiceGetBusStopDetails implements oapi.ServerInterface.
 func (s *Server) BusStopServiceGetBusStopDetails(ctx echo.Context, id int32) error {
 	return s.Handlers.BusStop.GetBusStopDetails(ctx, id)
-}
-
-// BusStopServiceGetBusStopTimetable implements oapi.ServerInterface.
-func (s *Server) BusStopServiceGetBusStopTimetable(ctx echo.Context, id int32, params oapi.BusStopServiceGetBusStopTimetableParams) error {
-	panic("unimplemented")
 }
 
 var _ oapi.ServerInterface = (*Server)(nil)
