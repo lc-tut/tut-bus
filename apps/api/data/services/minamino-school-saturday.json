@@ -1,0 +1,40 @@
+{
+  "id": "minamino-school-saturday",
+  "name": "八王子みなみ野駅 -> 大学（みなみ野駅行） (土曜日) ",
+  "from": {
+    "stopId": 2,
+    "displayName": "八王子みなみ野駅"
+  },
+  "to": {
+    "stopId": 5,
+    "displayName": "大学（みなみ野駅行）"
+  },
+  "direction": "inbound",
+  "validityPeriods": [{ "from": "2025-04-07", "to": "2025-08-10" }],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "dayType",
+        "value": "saturday"
+      },
+      "times": [
+        { "departure": "8:16", "arrival": "8:28" },
+        { "departure": "8:43", "arrival": "8:55" },
+        { "departure": "9:10", "arrival": "9:22" },
+        { "departure": "9:33", "arrival": "9:45" },
+        { "departure": "10:25", "arrival": "10:37" },
+        { "departure": "11:23", "arrival": "11:35" },
+        { "departure": "12:36", "arrival": "12:48" },
+        { "departure": "13:16", "arrival": "13:28" },
+        { "departure": "14:16", "arrival": "14:28" },
+        { "departure": "15:29", "arrival": "15:41" },
+        { "departure": "16:29", "arrival": "16:41" },
+        { "departure": "17:09", "arrival": "17:21" },
+        { "departure": "17:49", "arrival": "18:01" },
+        { "departure": "18:19", "arrival": "18:31" },
+        { "departure": "19:18", "arrival": "19:30" }
+      ]
+    }
+  ]
+}
