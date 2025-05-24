@@ -82,8 +82,8 @@ export const generateDisplayBuses = (
   if (displayBuses.length > 0) {
     // 目的地IDごとにバスをグループ化
     const busesByDestination: { [key: string]: DisplayBusInfo[] } = {}
-    
-    displayBuses.forEach(bus => {
+
+    displayBuses.forEach((bus) => {
       const destId = bus.destination.stopId.toString()
       if (!busesByDestination[destId]) {
         busesByDestination[destId] = []
@@ -92,11 +92,11 @@ export const generateDisplayBuses = (
     })
 
     // 各目的地グループ内で、最初と最後のバスを設定
-    Object.values(busesByDestination).forEach(destinationBuses => {
+    Object.values(busesByDestination).forEach((destinationBuses) => {
       if (destinationBuses.length > 0) {
         // 各目的地ごとの最初と最後を設定
         destinationBuses.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
-        destinationBuses.forEach(bus => {
+        destinationBuses.forEach((bus) => {
           bus.isFirstBus = false
           bus.isLastBus = false
         })
@@ -213,7 +213,7 @@ const applyArrivalTimeFilter = (buses: DisplayBusInfo[], endTime: string): Displ
     if (!arrivalTimeToCompare) return false // 到着時刻がない場合はフィルタリング対象外
     return isTimeBeforeOrEqual(arrivalTimeToCompare, endTime)
   })
-  
+
   // filterTimetable関数内でソートするため、ここではソートせずにフィルタリングしたリストをそのまま返す
   return filtered
 }

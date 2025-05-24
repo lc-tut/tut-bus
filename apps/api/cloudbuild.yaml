@@ -11,18 +11,18 @@ steps:
       - compute
       - scp
       - /workspace/apps/api/api_server
-      - "tut-bus-api:/tmp/api_server"
+      - 'tut-bus-api:/tmp/api_server'
       - --zone
-      - "us-central1-c"
+      - 'us-central1-c'
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy, git pull, and restart service'
     args:
       - compute
       - ssh
-      - "tut-bus-api"
+      - 'tut-bus-api'
       - --zone
-      - "us-central1-c"
+      - 'us-central1-c'
       - --command
       - |
         cd /opt/tut-bus/apps/api && \
