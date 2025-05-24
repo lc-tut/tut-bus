@@ -169,7 +169,7 @@ export function TimetableFilter({
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="px-3 py-2 text-xs font-medium relative rounded-md data-[state=active]:bg-background dark:data-[state=active]:bg-background/90 dark:data-[state=active]:border dark:data-[state=active]:border-slate-700 dark:data-[state=active]:shadow-sm"
+                      className="px-3 py-2 text-xs font-medium relative cursor-pointer rounded-md data-[state=active]:bg-background dark:data-[state=active]:bg-background/90 dark:data-[state=active]:border dark:data-[state=active]:border-slate-700 dark:data-[state=active]:shadow-sm"
                     >
                       {tab.value === 'today' && (
                         <span className="flex items-center gap-1.5 data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90">

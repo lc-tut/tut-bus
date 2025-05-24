@@ -77,6 +77,16 @@ export const generateDisplayBuses = (
 
   // displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime)) // 元のコード
   displayBuses.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
+
+  // ソート後に isFirstBus と isLastBus を再設定
+  if (displayBuses.length > 0) {
+    displayBuses.forEach((bus, index) => {
+      // シャトル便も通常の便と同様に最初と最後を判定する
+      bus.isFirstBus = index === 0
+      bus.isLastBus = index === displayBuses.length - 1
+    })
+  }
+
   return displayBuses
 }
 
@@ -119,6 +129,29 @@ export const filterTimetable = (
       const arrivalB = b.arrivalTime || b.departureTime // フォールバック
       // return arrivalA.localeCompare(arrivalB); // 元のコード
       return toMinutes(arrivalA) - toMinutes(arrivalB)
+    })
+  }
+
+  // フィルタリング後のバスリストに対して、目的地ごとに isFirstBus と isLastBus を設定
+  if (displayBuses.length > 0) {
+    const busesByDestination: { [key: string]: DisplayBusInfo[] } = {}
+    displayBuses.forEach(bus => {
+      const destId = bus.destination.stopId.toString()
+      if (!busesByDestination[destId]) {
+        busesByDestination[destId] = []
+      }
+      busesByDestination[destId].push(bus)
+    })
+
+    Object.values(busesByDestination).forEach(destinationBuses => {
+      if (destinationBuses.length > 0) {
+        destinationBuses.forEach(bus => {
+          bus.isFirstBus = false
+          bus.isLastBus = false
+        })
+        destinationBuses[0].isFirstBus = true
+        destinationBuses[destinationBuses.length - 1].isLastBus = true
+      }
     })
   }
 
