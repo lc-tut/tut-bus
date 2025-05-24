@@ -30,11 +30,6 @@ const (
 	Frequency ModelsFrequencySegmentSegmentType = "frequency"
 )
 
-// Defines values for ModelsShuttleSegmentSegmentType.
-const (
-	Shuttle ModelsShuttleSegmentSegmentType = "shuttle"
-)
-
 // Defines values for RoutesTimetableBadRequestCode.
 const (
 	BadRequest RoutesTimetableBadRequestCode = "BadRequest"
@@ -109,21 +104,6 @@ type ModelsFrequencySegment struct {
 
 // ModelsFrequencySegmentSegmentType defines model for ModelsFrequencySegment.SegmentType.
 type ModelsFrequencySegmentSegmentType string
-
-// ModelsShuttleSegment defines model for Models.ShuttleSegment.
-type ModelsShuttleSegment struct {
-	Destination   ModelsStopRef  `json:"destination"`
-	EndTime       ScalarsTimeISO `json:"endTime"`
-	IntervalRange struct {
-		Max int32 `json:"max"`
-		Min int32 `json:"min"`
-	} `json:"intervalRange"`
-	SegmentType ModelsShuttleSegmentSegmentType `json:"segmentType"`
-	StartTime   ScalarsTimeISO                  `json:"startTime"`
-}
-
-// ModelsShuttleSegmentSegmentType defines model for ModelsShuttleSegment.SegmentType.
-type ModelsShuttleSegmentSegmentType string
 
 // ModelsStopRef defines model for Models.StopRef.
 type ModelsStopRef struct {
@@ -224,32 +204,6 @@ func (t *ModelsBusStopSegment) FromModelsFrequencySegment(v ModelsFrequencySegme
 
 // MergeModelsFrequencySegment performs a merge with any union data inside the ModelsBusStopSegment, using the provided ModelsFrequencySegment
 func (t *ModelsBusStopSegment) MergeModelsFrequencySegment(v ModelsFrequencySegment) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsModelsShuttleSegment returns the union data inside the ModelsBusStopSegment as a ModelsShuttleSegment
-func (t ModelsBusStopSegment) AsModelsShuttleSegment() (ModelsShuttleSegment, error) {
-	var body ModelsShuttleSegment
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromModelsShuttleSegment overwrites any union data inside the ModelsBusStopSegment as the provided ModelsShuttleSegment
-func (t *ModelsBusStopSegment) FromModelsShuttleSegment(v ModelsShuttleSegment) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeModelsShuttleSegment performs a merge with any union data inside the ModelsBusStopSegment, using the provided ModelsShuttleSegment
-func (t *ModelsBusStopSegment) MergeModelsShuttleSegment(v ModelsShuttleSegment) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -446,33 +400,33 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"mDvp1d8hAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

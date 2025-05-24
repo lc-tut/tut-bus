@@ -43,22 +43,10 @@ model FrequencySegment {
   intervalMins: int32;
 }
 
-model ShuttleSegment {
-  segmentType: "shuttle";
-  destination: StopRef;
-  startTime: TimeISO;
-  endTime: TimeISO;
-  intervalRange: {
-    min: int32;
-    max: int32;
-  };
-}
-
 @TypeSpec.OpenAPI.oneOf
 union BusStopSegment {
   FixedSegment,
   FrequencySegment,
-  ShuttleSegment,
 }
 
 model BusStopTimetable {
