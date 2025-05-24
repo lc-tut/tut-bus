@@ -14,6 +14,7 @@ steps:
       - "tut-bus-api:/tmp/api_server"
       - --zone
       - "us-central1-c"
+      - --impersonate-service-account=cloud-build@main-vcompute.iam.gserviceaccount.com
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Deploy, git pull, and restart service'
@@ -23,9 +24,13 @@ steps:
       - "tut-bus-api"
       - --zone
       - "us-central1-c"
+      - --impersonate-service-account=cloud-build@main-vcompute.iam.gserviceaccount.com
       - --command
       - |
         cd /opt/tut-bus/apps/api && \
+        sudo rm .git/index.lock && \
+        sudo rm .git/COMMIT_EDITMSG && \
+        sudo rm .git/.COMMIT_EDITMSG.swp && \
         git config --global --add safe.directory /opt/tut-bus && \
         git checkout main && \
         git pull origin main && \
