@@ -2,7 +2,7 @@ steps:
   # Step 1: Go バイナリをビルドして api_server として保存
   - name: 'golang:1.20'
     id: 'Build Go binary'
-    workingDir: 'apps/api'
+    dir: 'apps/api'
     entrypoint: 'go'
     args: ['build', '-o', 'api_server', './cmd/server']
 
