@@ -45,8 +45,11 @@ func (c *Config) GetDataDir() string {
 }
 
 func LoadConfig() (*Config, error) {
-	if err := godotenv.Load(); err != nil {
-		log.Printf("No .env file found or error loading .env: %v", err)
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("⚠️  No .env file found or error loading .env: %v", err)
+	} else {
+		log.Println("✅ .env file loaded successfully")
 	}
 
 	env := getEnv("API_ENV", "prod")
