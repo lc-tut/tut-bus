@@ -97,7 +97,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description バス停の時刻表を取得します。複数件返却します。 */
-        get: operations["BusStopTimetableService_getBusStopTimetable"];
+        get: operations["BusStopService_getBusStopTimetable"];
         put?: never;
         post?: never;
         delete?: never;
@@ -178,7 +178,7 @@ export interface components {
             date: components["schemas"]["Scalars.DateISO"];
             segments: components["schemas"]["Models.BusStopSegment"][];
         };
-        "Models.BusStopSegment": components["schemas"]["Models.FixedSegment"] | components["schemas"]["Models.FrequencySegment"];
+        "Models.BusStopSegment": components["schemas"]["Models.FixedSegment"] | components["schemas"]["Models.ShuttleSegment"];
         "Models.BusStopTimetable": {
             /** Format: int32 */
             id: number;
@@ -194,14 +194,18 @@ export interface components {
             destination: components["schemas"]["Models.StopRef"];
             times: components["schemas"]["Models.TimePair"][];
         };
-        "Models.FrequencySegment": {
+        "Models.ShuttleSegment": {
             /** @enum {string} */
-            segmentType: "frequency";
+            segmentType: "shuttle";
             destination: components["schemas"]["Models.StopRef"];
             startTime: components["schemas"]["Scalars.TimeISO"];
             endTime: components["schemas"]["Scalars.TimeISO"];
-            /** Format: int32 */
-            intervalMins: number;
+            intervalRange: {
+                /** Format: int32 */
+                min: number;
+                /** Format: int32 */
+                max: number;
+            };
         };
         "Models.StopRef": {
             /** Format: int32 */
@@ -211,8 +215,8 @@ export interface components {
             lng?: components["schemas"]["Scalars.Longitude"];
         };
         "Models.TimePair": {
-            arrival: components["schemas"]["Scalars.TimeISO"];
             departure: components["schemas"]["Scalars.TimeISO"];
+            arrival: components["schemas"]["Scalars.TimeISO"];
         };
         /** @description HTTP 400 Bad Request - The request cannot be processed due to client error. */
         "Routes.TimetableBadRequest": {
@@ -321,8 +325,8 @@ export interface operations {
     };
     BusStopGroupsService_getBusStopGroupsTimetable: {
         parameters: {
-            query: {
-                date: components["schemas"]["Scalars.DateISO"];
+            query?: {
+                date?: components["schemas"]["Scalars.DateISO"];
             };
             header?: never;
             path: {
@@ -338,7 +342,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Models.BusStopGroupTimetable"][];
+                    "application/json": components["schemas"]["Models.BusStopGroupTimetable"];
                 };
             };
             /** @description 指定した日付の時刻表を取得します。 */
@@ -406,10 +410,10 @@ export interface operations {
             };
         };
     };
-    BusStopTimetableService_getBusStopTimetable: {
+    BusStopService_getBusStopTimetable: {
         parameters: {
-            query: {
-                date: components["schemas"]["Scalars.DateISO"];
+            query?: {
+                date?: components["schemas"]["Scalars.DateISO"];
             };
             header?: never;
             path: {

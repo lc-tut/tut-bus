@@ -18,8 +18,8 @@ model BusStopGroup {
 }
 
 model TimePair {
-  arrival: TimeISO;
   departure: TimeISO;
+  arrival: TimeISO;
 }
 
 model StopRef {
@@ -35,18 +35,21 @@ model FixedSegment {
   times: TimePair[];
 }
 
-model FrequencySegment {
-  segmentType: "frequency";
+model ShuttleSegment {
+  segmentType: "shuttle";
   destination: StopRef;
   startTime: TimeISO;
   endTime: TimeISO;
-  intervalMins: int32;
+  intervalRange: {
+    min: int32;
+    max: int32;
+  };
 }
 
 @TypeSpec.OpenAPI.oneOf
 union BusStopSegment {
   FixedSegment,
-  FrequencySegment,
+  ShuttleSegment,
 }
 
 model BusStopTimetable {

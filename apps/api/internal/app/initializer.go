@@ -2,6 +2,7 @@ package app
 
 import (
 	"api/internal/config"
+	"api/internal/domain"
 	"api/internal/domain/repository"
 	"api/internal/handler"
 	repo "api/internal/repository"
@@ -18,6 +19,7 @@ type AppContext struct {
 	UseCases     *usecase.UseCases
 	Handlers     *handler.Handlers
 	Middleware   *Middleware
+	Services     []domain.ServiceData
 }
 
 func Initialize() *AppContext {
@@ -36,10 +38,30 @@ func Initialize() *AppContext {
 		log.Fatalf("failed to initialize zap logger: %v", err)
 	}
 
+	// サービスデータの読み込み
+	services, err := domain.LoadServiceData(cfg.GetDataDir())
+	if err != nil {
+		logger.Error("サービスデータの読み込みに失敗しました", zap.Error(err))
+	} else {
+		logger.Info("サービスデータを読み込みました",
+			zap.Int("サービス数", len(services)),
+			zap.String("データディレクトリ", cfg.GetDataDir()))
+
+		// 各サービスの詳細をデバッグレベルでログに出力
+		for _, service := range services {
+			logger.Debug("サービス詳細",
+				zap.String("ID", service.ID),
+				zap.String("名前", service.Name),
+				zap.Int("セグメント数", len(service.ParsedSegments)))
+		}
+	}
+
 	busStopRepository := repo.NewBusStopRepositoryImpl(cfg)
+	serviceRepository := repo.NewServiceRepositoryImpl(cfg, logger)
 
 	repositories := repository.Repositories{
 		BusStop: busStopRepository,
+		Service: serviceRepository,
 	}
 
 	useCases := usecase.NewUseCases(&repositories, logger)
@@ -55,5 +77,6 @@ func Initialize() *AppContext {
 		UseCases:     useCases,
 		Handlers:     handlers,
 		Middleware:   middleware,
+		Services:     services,
 	}
 }

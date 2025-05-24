@@ -15,11 +15,6 @@ type BusStopHandler struct {
 	busStopUsecase usecase.BusStopUseCase
 }
 
-func isValidDate(date string) bool {
-	_, err := time.Parse("2006-01-02", date)
-	return err == nil
-}
-
 func NewBusStopHandler(busStopUsecase usecase.BusStopUseCase) *BusStopHandler {
 	return &BusStopHandler{
 		busStopUsecase: busStopUsecase,
@@ -85,8 +80,8 @@ func (h *BusStopHandler) GetBusStopDetails(ctx echo.Context, id int32) error {
 	return ctx.JSON(http.StatusOK, model)
 }
 
-func (h *BusStopHandler) GetBusStopTimetable(ctx echo.Context, id int32, date oapi.ScalarsDateISO) error {
-	busStop, err := h.busStopUsecase.GetBusStopByID(id)
+func (h *BusStopHandler) GetBusStopTimetable(ctx echo.Context, id int32, params oapi.BusStopServiceGetBusStopTimetableParams) error {
+	_, err := h.busStopUsecase.GetBusStopByID(id)
 	if err != nil {
 		if _, ok := err.(*domain.NotFoundError); ok {
 			return ctx.JSON(http.StatusNotFound, map[string]interface{}{
@@ -97,28 +92,78 @@ func (h *BusStopHandler) GetBusStopTimetable(ctx echo.Context, id int32, date oa
 		}
 		return err
 	}
+	dateStr := ""
 
-	if !isValidDate(date.String()) {
-		return ctx.JSON(http.StatusBadRequest, map[string]interface{}{
-			"code":    "BadRequest",
-			"message": "InvalidDate",
-			"detail":  "The provided date is invalid. Please use YYYY-MM-DD format.",
-		})
+	if params.Date != nil {
+		dateStr = params.Date.String()
 	}
 
-	timetable := oapi.ModelsBusStopTimetable{
-		Id:       busStop.ID,
-		Name:     busStop.Name,
-		Date:     date,
-		Segments: []oapi.ModelsBusStopSegment{},
+	if dateStr != "" {
+		t, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return ctx.JSON(http.StatusBadRequest, map[string]interface{}{
+				"code":    "BadRequest",
+				"message": "InvalidDate",
+				"detail":  "The 'date' query must be in YYYY-MM-DD format.",
+			})
+		}
+		date := oapi.ScalarsDateISO{}
+		date.Time = t
+		params.Date = &date
+	} else {
+		now := time.Now()
+		date := oapi.ScalarsDateISO{}
+		date.Time = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		params.Date = &date
 	}
-	if busStop.Lat != nil {
-		lat := float64(*busStop.Lat)
-		timetable.Lat = lat
+
+	timetable, err := h.busStopUsecase.GetBusStopTimetable(id, params.Date)
+	if err != nil {
+		return err
 	}
-	if busStop.Lng != nil {
-		lon := float64(*busStop.Lng)
-		timetable.Lon = lon
+
+	return ctx.JSON(http.StatusOK, timetable)
+}
+
+func (h *BusStopHandler) GetBusStopGroupsTimetable(ctx echo.Context, id int32, params oapi.BusStopGroupsServiceGetBusStopGroupsTimetableParams) error {
+	_, err := h.busStopUsecase.GetBusStopGroupByID(id)
+	if err != nil {
+		if _, ok := err.(*domain.NotFoundError); ok {
+			return ctx.JSON(http.StatusNotFound, map[string]interface{}{
+				"code":    "NotFound",
+				"message": "BusStopGroupNotFound",
+				"detail":  "The requested bus stop group does not exist.",
+			})
+		}
+		return err
+	}
+
+	dateStr := ""
+	if params.Date != nil {
+		dateStr = params.Date.String()
+	}
+	if dateStr != "" {
+		t, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return ctx.JSON(http.StatusBadRequest, map[string]interface{}{
+				"code":    "BadRequest",
+				"message": "InvalidDate",
+				"detail":  "The provided date is invalid. Please use YYYY-MM-DD format.",
+			})
+		}
+		date := oapi.ScalarsDateISO{}
+		date.Time = t
+		params.Date = &date
+	} else {
+		now := time.Now()
+		date := oapi.ScalarsDateISO{}
+		date.Time = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		params.Date = &date
+	}
+
+	timetable, err := h.busStopUsecase.GetBusStopGroupTimetable(id, params.Date)
+	if err != nil {
+		return err
 	}
 
 	return ctx.JSON(http.StatusOK, timetable)

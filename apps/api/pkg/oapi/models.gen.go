@@ -25,9 +25,9 @@ const (
 	Fixed ModelsFixedSegmentSegmentType = "fixed"
 )
 
-// Defines values for ModelsFrequencySegmentSegmentType.
+// Defines values for ModelsShuttleSegmentSegmentType.
 const (
-	Frequency ModelsFrequencySegmentSegmentType = "frequency"
+	Shuttle ModelsShuttleSegmentSegmentType = "shuttle"
 )
 
 // Defines values for RoutesTimetableBadRequestCode.
@@ -93,17 +93,20 @@ type ModelsFixedSegment struct {
 // ModelsFixedSegmentSegmentType defines model for ModelsFixedSegment.SegmentType.
 type ModelsFixedSegmentSegmentType string
 
-// ModelsFrequencySegment defines model for Models.FrequencySegment.
-type ModelsFrequencySegment struct {
-	Destination  ModelsStopRef                     `json:"destination"`
-	EndTime      ScalarsTimeISO                    `json:"endTime"`
-	IntervalMins int32                             `json:"intervalMins"`
-	SegmentType  ModelsFrequencySegmentSegmentType `json:"segmentType"`
-	StartTime    ScalarsTimeISO                    `json:"startTime"`
+// ModelsShuttleSegment defines model for Models.ShuttleSegment.
+type ModelsShuttleSegment struct {
+	Destination   ModelsStopRef  `json:"destination"`
+	EndTime       ScalarsTimeISO `json:"endTime"`
+	IntervalRange struct {
+		Max int32 `json:"max"`
+		Min int32 `json:"min"`
+	} `json:"intervalRange"`
+	SegmentType ModelsShuttleSegmentSegmentType `json:"segmentType"`
+	StartTime   ScalarsTimeISO                  `json:"startTime"`
 }
 
-// ModelsFrequencySegmentSegmentType defines model for ModelsFrequencySegment.SegmentType.
-type ModelsFrequencySegmentSegmentType string
+// ModelsShuttleSegmentSegmentType defines model for ModelsShuttleSegment.SegmentType.
+type ModelsShuttleSegmentSegmentType string
 
 // ModelsStopRef defines model for Models.StopRef.
 type ModelsStopRef struct {
@@ -154,12 +157,12 @@ type BusStopServiceGetAllBusStopsParams struct {
 
 // BusStopGroupsServiceGetBusStopGroupsTimetableParams defines parameters for BusStopGroupsServiceGetBusStopGroupsTimetable.
 type BusStopGroupsServiceGetBusStopGroupsTimetableParams struct {
-	Date ScalarsDateISO `form:"date" json:"date"`
+	Date *ScalarsDateISO `form:"date,omitempty" json:"date,omitempty"`
 }
 
-// BusStopTimetableServiceGetBusStopTimetableParams defines parameters for BusStopTimetableServiceGetBusStopTimetable.
-type BusStopTimetableServiceGetBusStopTimetableParams struct {
-	Date ScalarsDateISO `form:"date" json:"date"`
+// BusStopServiceGetBusStopTimetableParams defines parameters for BusStopServiceGetBusStopTimetable.
+type BusStopServiceGetBusStopTimetableParams struct {
+	Date *ScalarsDateISO `form:"date,omitempty" json:"date,omitempty"`
 }
 
 // AsModelsFixedSegment returns the union data inside the ModelsBusStopSegment as a ModelsFixedSegment
@@ -188,22 +191,22 @@ func (t *ModelsBusStopSegment) MergeModelsFixedSegment(v ModelsFixedSegment) err
 	return err
 }
 
-// AsModelsFrequencySegment returns the union data inside the ModelsBusStopSegment as a ModelsFrequencySegment
-func (t ModelsBusStopSegment) AsModelsFrequencySegment() (ModelsFrequencySegment, error) {
-	var body ModelsFrequencySegment
+// AsModelsShuttleSegment returns the union data inside the ModelsBusStopSegment as a ModelsShuttleSegment
+func (t ModelsBusStopSegment) AsModelsShuttleSegment() (ModelsShuttleSegment, error) {
+	var body ModelsShuttleSegment
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromModelsFrequencySegment overwrites any union data inside the ModelsBusStopSegment as the provided ModelsFrequencySegment
-func (t *ModelsBusStopSegment) FromModelsFrequencySegment(v ModelsFrequencySegment) error {
+// FromModelsShuttleSegment overwrites any union data inside the ModelsBusStopSegment as the provided ModelsShuttleSegment
+func (t *ModelsBusStopSegment) FromModelsShuttleSegment(v ModelsShuttleSegment) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeModelsFrequencySegment performs a merge with any union data inside the ModelsBusStopSegment, using the provided ModelsFrequencySegment
-func (t *ModelsBusStopSegment) MergeModelsFrequencySegment(v ModelsFrequencySegment) error {
+// MergeModelsShuttleSegment performs a merge with any union data inside the ModelsBusStopSegment, using the provided ModelsShuttleSegment
+func (t *ModelsBusStopSegment) MergeModelsShuttleSegment(v ModelsShuttleSegment) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -243,7 +246,7 @@ type ServerInterface interface {
 	BusStopServiceGetBusStopDetails(ctx echo.Context, id int32) error
 
 	// (GET /api/bus-stops/{id}/timetable)
-	BusStopTimetableServiceGetBusStopTimetable(ctx echo.Context, id int32, params BusStopTimetableServiceGetBusStopTimetableParams) error
+	BusStopServiceGetBusStopTimetable(ctx echo.Context, id int32, params BusStopServiceGetBusStopTimetableParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -307,9 +310,9 @@ func (w *ServerInterfaceWrapper) BusStopGroupsServiceGetBusStopGroupsTimetable(c
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params BusStopGroupsServiceGetBusStopGroupsTimetableParams
-	// ------------- Required query parameter "date" -------------
+	// ------------- Optional query parameter "date" -------------
 
-	err = runtime.BindQueryParameter("form", false, true, "date", ctx.QueryParams(), &params.Date)
+	err = runtime.BindQueryParameter("form", true, false, "date", ctx.QueryParams(), &params.Date)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
 	}
@@ -335,8 +338,8 @@ func (w *ServerInterfaceWrapper) BusStopServiceGetBusStopDetails(ctx echo.Contex
 	return err
 }
 
-// BusStopTimetableServiceGetBusStopTimetable converts echo context to params.
-func (w *ServerInterfaceWrapper) BusStopTimetableServiceGetBusStopTimetable(ctx echo.Context) error {
+// BusStopServiceGetBusStopTimetable converts echo context to params.
+func (w *ServerInterfaceWrapper) BusStopServiceGetBusStopTimetable(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id int32
@@ -347,16 +350,16 @@ func (w *ServerInterfaceWrapper) BusStopTimetableServiceGetBusStopTimetable(ctx 
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params BusStopTimetableServiceGetBusStopTimetableParams
-	// ------------- Required query parameter "date" -------------
+	var params BusStopServiceGetBusStopTimetableParams
+	// ------------- Optional query parameter "date" -------------
 
-	err = runtime.BindQueryParameter("form", false, true, "date", ctx.QueryParams(), &params.Date)
+	err = runtime.BindQueryParameter("form", true, false, "date", ctx.QueryParams(), &params.Date)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.BusStopTimetableServiceGetBusStopTimetable(ctx, id, params)
+	err = w.Handler.BusStopServiceGetBusStopTimetable(ctx, id, params)
 	return err
 }
 
@@ -393,40 +396,40 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/bus-stops/groups/:id", wrapper.BusStopGroupsServiceGetBusStopGroupDetails)
 	router.GET(baseURL+"/api/bus-stops/groups/:id/timetable", wrapper.BusStopGroupsServiceGetBusStopGroupsTimetable)
 	router.GET(baseURL+"/api/bus-stops/:id", wrapper.BusStopServiceGetBusStopDetails)
-	router.GET(baseURL+"/api/bus-stops/:id/timetable", wrapper.BusStopTimetableServiceGetBusStopTimetable)
+	router.GET(baseURL+"/api/bus-stops/:id/timetable", wrapper.BusStopServiceGetBusStopTimetable)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"mDvp1d8hAAA=",
+	"H4sIAAAAAAAC/+xYa28TRxf+K6N5kXhfyYkN5JVaf6mIImikclGSqopCWo29x87Q3Z1lZjZK5Fpi7abQ",
+	"m6giaEqFepGApCBRKugFQeHHDA7+GdXM2l7bu3HWiRtQy5couzuX5zznPGeecQUXmeMxF1wpcL6CRXEJ",
+	"HGL+PcUssMX4pC9mJfP0G48zD7ikYL5TS/8tMe4QifOYuvLYUZzBctWD8BHKwHE1g239vYIPcSjhPP5P",
+	"Ntox29ouO1skNuFi/B0iqfQtMNPccuppzC135rnEAT2xBURITt0yrlYzmMMFn3KwcH5Bo28NXexgZoXz",
+	"UJR6jd7YT3LmJxBQCL+GZEhwxG5w+xitdjYmnJNV/Zya02GDzERoU8Y7Rx2QpGBDPHCLSEibmikiYXr2",
+	"zCiCy2ABZaddqXtgfDacHid+AG0m1q6dd2evvUu+gpkLZ0o4v5AK5Am6AlYEMdWc2SVfShs6sxZjaF5i",
+	"Gveqe+aOUvcvpWp06GEkQ1VQTwnE8wVCUpdIujtB7fKQzJuBUhcJc2bnCgbXdzTokt6xC1LEmqQODE2Z",
+	"rrazhPJdyeqGk+mJrL3zAJr6qn60RIFr6SjSlqAe2xaGK4EvE3uGuOUEuTlkJaVwHOqmGtnHqZ6WMdsk",
+	"cbdDAYiQy8QSEJJwuScyhsh2tEnEfT+Xg2qhlbkY3QfsOoRk3nTazqgHn051greW7ZoygIuO+mJkEM7p",
+	"MrH3UNQWeIRLn++7BqKFMh04SbHMMF9CuIw5tyaJNQMXfBCyJe0ip14obfz23NxZNJHLoUliodYoNIbm",
+	"lgDx1lORuC6TqADI46wIQoCFLB+QZKhoU3AlAs4ZH8eZPsqKzOoRSheOJK1YIAm1uydoFId18z+MLvjA",
+	"V5HjCwOEumh+fn5+7NSpsakpFJbLeOKiDghByj0wpt1lYlNLn8cJU/o4NzFEy3RQJvHef9J3V3LrCIvh",
+	"iwmoZxLzte0wHYk6Gv2bOdPbwocx/dRa0fWdQqiMuLYGL3nkjZ41zeOOi7ZLU8uDSAlc19D7/30rv5A7",
+	"snjunPXR0YXc2LHF/+UXcmP/1y8OxYOumkZfYka6VHfOPJ5jH64y9K5Ll4ELKlcRK6E5KC65zGblVTTp",
+	"C/QeFNDxs9NoFvgyLeoQzFhTxbnx3HhO42QeuMSjOI+PmVcZDXPJVGOWeDRb8MWYaN84ypAgiMbalqp/",
+	"pWqPGsENFdx7/sfF5u1NVVtvXPm68XRDBRsqeKqC6+piTdXuqPqGqv2u6puq/kAFm6isbf8H1EKqtr79",
+	"xaXGvW/10NrnKthStfuqflfVn+g5weaLX79Ttc+aT5+o4Fnjys/N+p8q2AzXxSYMbrq77oe446JM4CdB",
+	"HrftyfZdREfIiQMSuDA+GVY82wivRGwBmmqcx0Y+bXOVx22cuiua5pPusFzU2hAec0Uo8KO5XKhzV7Zc",
+	"BPE8mxYN9Ox5EZqHaIeRXPGqplV0p6y7WS0RgYRfLAJYYI0bOUtSFqb9+AK17m/6dW89ZA0lKcuiJ5WD",
+	"SmSnVJrroUhKaPgFHzzR4Q199GyjVkQ7c56tUKu6I/E7sd786cGLh/dVcFcFN1XwsQpu753+7tdTpr8n",
+	"6MroSHeTSEZGQNFpIbkPByuoodM7XDozeCI3MRSgRHMxgU4ziU4w37V6rQVYiINgPi8CshgIpH0GrFAh",
+	"dzcTp5k0Kw6wEqLfS0TbFnyBdA2GHTu2eUon0c3tADyDLUXcSSQnSQBfBt52YyXqWkgmUrkvHWZl968d",
+	"yYrsEmLjk7XG2lYjuPHi2vXtTy+q4N729Vrj8uPmj1uqtm6EuKVqwcjUKaIfYw5EoJlK4vnZ/kEilRBj",
+	"PwAdtOwjzhJKq21TNlTw/fbGreePv+lLYkLiTGMYHeQB95VRAn7dyV6BTran7A3ZzlL6if15iFh/+oca",
+	"h6Qkxjncrq81fvjl3yu+/cnub1XckMlKfWFK6xa6th+s8+bNS9vX7j9//Fvz2dXGlw/3JMLX9mAocadw",
+	"Btsbt3oyV7+jao9U/bKqrTefXX3VbMGwaF+3pZfVlobP106dKXpfaQsw+q4l2veybR2qi9W/AgAA///B",
+	"lCLVvCEAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

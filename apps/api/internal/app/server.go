@@ -23,17 +23,12 @@ func (s *Server) BusStopGroupsServiceGetBusStopGroupDetails(ctx echo.Context, id
 
 // BusStopGroupsServiceGetBusStopGroupsTimetable implements oapi.ServerInterface.
 func (s *Server) BusStopGroupsServiceGetBusStopGroupsTimetable(ctx echo.Context, id int32, params oapi.BusStopGroupsServiceGetBusStopGroupsTimetableParams) error {
-	panic("unimplemented")
+	return s.Handlers.BusStop.GetBusStopGroupsTimetable(ctx, id, params)
 }
 
-// BusStopTimetableServiceGetBusStopTimetable implements oapi.ServerInterface.
-func (s *Server) BusStopTimetableServiceGetBusStopTimetable(ctx echo.Context, id int32, params oapi.BusStopTimetableServiceGetBusStopTimetableParams) error {
-	panic("unimplemented")
-}
-
-// BusStopGroupServiceGetAllBusStopGroups implements oapi.ServerInterface.
-func (s *Server) BusStopGroupServiceGetAllBusStopGroups(ctx echo.Context) error {
-	return s.Handlers.BusStop.GetBusStopGroups(ctx)
+// BusStopServiceGetBusStopTimetable implements oapi.ServerInterface.
+func (s *Server) BusStopServiceGetBusStopTimetable(ctx echo.Context, id int32, params oapi.BusStopServiceGetBusStopTimetableParams) error {
+	return s.Handlers.BusStop.GetBusStopTimetable(ctx, id, params)
 }
 
 // BusStopServiceGetAllBusStops implements oapi.ServerInterface.

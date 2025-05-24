@@ -38,6 +38,10 @@ func (c *Config) GetBusStopGroupsFilePath() string {
 	return fmt.Sprintf("%s/%s", c.DataPath, c.BusStopGroupsFile)
 }
 
+func (c *Config) GetDataDir() string {
+	return c.DataPath
+}
+
 func LoadConfig() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("No .env file found or error loading .env: %v", err)

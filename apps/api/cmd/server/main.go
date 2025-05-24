@@ -20,7 +20,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	// e.Use(middleware.CORS())
-	e.Use(appCon.Middleware.OpenAPIMiddleware)
+	// e.Use(appCon.Middleware.OpenAPIMiddleware) // 一時的にコメントアウトして日付パラメータの処理問題を回避
 	e.Use(appCon.Middleware.ErrorHandlingMiddleware)
 
 	oapi.RegisterHandlers(e, server)

@@ -1,5 +1,5 @@
 {
-  "id": "school-to-hachioji-sturday",
+  "id": "school-to-hachioji-saturday",
   "name": "大学（八王子駅行） → 八王子駅 (土曜日)",
   "from": {
     "stopId": 3,
@@ -16,7 +16,7 @@
       "segmentType": "fixed",
       "condition": {
         "type": "dayType",
-        "value": "sturday"
+        "value": "saturday"
       },
       "times": [
         { "departure": "7:48", "arrival": "8:00" },
