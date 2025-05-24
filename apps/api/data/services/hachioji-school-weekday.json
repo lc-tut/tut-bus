@@ -1,13 +1,13 @@
 {
   "id": "hachioji-to-school-weekday",
-  "name": "八王子駅 → 大学（八王子駅行） (平日)",
+  "name": "八王子駅 → 大学（八王子駅方面） (平日)",
   "from": {
     "stopId": 1,
     "displayName": "八王子駅"
   },
   "to": {
     "stopId": 3,
-    "displayName": "大学（八王子駅行）"
+    "displayName": "大学（八王子駅方面）"
   },
   "direction": "inbound",
   "validityPeriods": [{ "from": "2025-04-07", "to": "2025-08-10" }],

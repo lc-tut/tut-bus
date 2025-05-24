@@ -1,9 +1,9 @@
 {
   "id": "school-to-gakuseikaikan-weekday",
-  "name": "大学（学生会館行） → 学生会館 (平日)",
+  "name": "大学（学生会館方面） → 学生会館 (平日)",
   "from": {
     "stopId": 4,
-    "displayName": "大学（学生会館行）"
+    "displayName": "大学（学生会館方面）"
   },
   "to": {
     "stopId": 6,

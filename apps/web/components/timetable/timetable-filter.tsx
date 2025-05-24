@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react' // useEffect を追加
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
@@ -23,13 +23,14 @@ import { ja } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { FaCalendarAlt, FaClock, FaExchangeAlt, FaMapMarkerAlt } from 'react-icons/fa'
 import { TimeFilterType } from '@/lib/types/timetable'
-import { getAvailableDepartures, getAvailableDestinations } from '@/lib/utils/timetable'
+import { components } from '@/generated/oas'
+import { client } from '@/lib/client'
 
 interface TimetableFilterProps {
-  selectedDeparture: string
-  setSelectedDeparture: (value: string) => void
-  selectedDestination: string
-  setSelectedDestination: (value: string) => void
+  selectedDeparture: number | null
+  setSelectedDeparture: (value: number | null) => void
+  selectedDestination: number | null
+  setSelectedDestination: (value: number | null) => void
   selectedDate: Date | null
   setSelectedDate: (date: Date | null) => void
   now: Date | null
@@ -62,6 +63,37 @@ export function TimetableFilter({
   setEndTime,
   swapStations,
 }: TimetableFilterProps) {
+  const [busStopGroups, setBusStopGroups] = useState<
+    components['schemas']['Models.BusStopGroup'][]
+  >([])
+  const [loadingDepartures, setLoadingDepartures] = useState<boolean>(true)
+
+  useEffect(() => {
+    const fetchBusStopGroups = async () => {
+      setLoadingDepartures(true)
+      try {
+        const { data, error } = await client.GET('/api/bus-stops/groups')
+
+        if (error) {
+          console.error('Error fetching bus stop groups:', error)
+          setBusStopGroups([])
+        } else if (data) {
+          // data.groups を data に変更
+          setBusStopGroups(data) // data.groups を data に変更
+        } else {
+          setBusStopGroups([])
+        }
+      } catch (err) {
+        console.error('Exception fetching bus stop groups:', err)
+        setBusStopGroups([])
+      } finally {
+        setLoadingDepartures(false)
+      }
+    }
+
+    fetchBusStopGroups()
+  }, [])
+
   // 日付タブの設定
   const dateTabs = useMemo(
     () => [
@@ -72,15 +104,19 @@ export function TimetableFilter({
     [now]
   )
 
-  // 出発地に基づく利用可能な目的地を取得
-  const availableDestinations = useMemo(() => {
-    return getAvailableDestinations(selectedDeparture)
-  }, [selectedDeparture])
-
-  // 目的地に基づく利用可能な出発地を取得
+  // 出発地リスト: APIデータがあればそれを使う
   const availableDepartures = useMemo(() => {
-    return getAvailableDepartures(selectedDestination)
-  }, [selectedDestination])
+    return busStopGroups.map((group) => ({ id: group.id, name: group.name }))
+  }, [busStopGroups])
+
+  // 目的地リスト: APIデータがあればそれを使う
+  const availableDestinations = useMemo(() => {
+    // APIから取得したバス停グループを目的地の候補として使用
+    // 選択された出発地と同じものは除外する
+    return busStopGroups
+      .map((group) => ({ id: group.id, name: group.name }))
+      .filter((group) => selectedDeparture === null || group.id !== selectedDeparture)
+  }, [busStopGroups, selectedDeparture])
 
   // カレンダーのオープン状態
   const [calendarOpen, setCalendarOpen] = useState<boolean>(false)
@@ -232,9 +268,9 @@ export function TimetableFilter({
               </label>
             </div>
             <Select
-              value={selectedDeparture}
+              value={selectedDeparture !== null ? String(selectedDeparture) : ''}
               onValueChange={(value) => {
-                setSelectedDeparture(value)
+                setSelectedDeparture(value === '' ? null : Number(value))
               }}
             >
               <SelectTrigger
@@ -245,36 +281,35 @@ export function TimetableFilter({
               >
                 <SelectValue
                   placeholder={
-                    selectedDestination && availableDepartures.length === 0
-                      ? '利用可能な出発地がありません'
-                      : '出発地を選択'
+                    loadingDepartures
+                      ? '出発地を読み込み中...'
+                      : availableDepartures.length === 0
+                        ? '利用可能な出発地がありません'
+                        : '出発地を選択'
                   }
                 />
               </SelectTrigger>
               <SelectContent>
-                {availableDepartures.length === 0 && selectedDestination ? (
+                {loadingDepartures ? (
                   <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                    選択した目的地への経路がありません
+                    読み込み中...
+                  </div>
+                ) : availableDepartures.length === 0 ? (
+                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
+                    利用可能な出発地がありません
                   </div>
                 ) : (
-                  <div>
-                    {availableDepartures.map((stop) => (
-                      <SelectItem key={stop.id} value={stop.id}>
-                        {stop.name}
-                      </SelectItem>
-                    ))}
-                    {availableDepartures.length === 0 && (
-                      <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                        利用可能な出発地がありません
-                      </div>
-                    )}
-                  </div>
+                  availableDepartures.map((stop) => (
+                    <SelectItem key={stop.id} value={String(stop.id)}>
+                      {stop.name}
+                    </SelectItem>
+                  ))
                 )}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-2 h-[28px]">
               <label className="text-sm font-medium flex items-center">
                 <FaMapMarkerAlt className="mr-2 h-3 w-3" />
                 目的地
@@ -292,13 +327,12 @@ export function TimetableFilter({
               )}
             </div>{' '}
             <Select
-              value={selectedDestination}
+              value={selectedDestination !== null ? String(selectedDestination) : ''}
               onValueChange={(value) => {
-                // 未選択が選ばれた場合は空文字列をセット
-                if (value === '__unselected__') {
-                  setSelectedDestination('')
+                if (value === '__UNSELECTED_DESTINATION__') {
+                  setSelectedDestination(null)
                 } else {
-                  setSelectedDestination(value)
+                  setSelectedDestination(value === '' ? null : Number(value)) // Keep original logic for empty string just in case, though Number('') is 0
                 }
               }}
             >
@@ -310,30 +344,40 @@ export function TimetableFilter({
               >
                 <SelectValue
                   placeholder={
-                    !selectedDeparture
-                      ? '先に出発地を選択してください'
-                      : availableDestinations.length === 0
-                        ? '利用可能な目的地がありません'
-                        : '目的地を選択'
+                    loadingDepartures // 読み込み状態を最初にチェック
+                      ? '停留所を読み込み中...'
+                      : !selectedDeparture
+                        ? '先に出発地を選択してください'
+                        : availableDestinations.length === 0
+                          ? selectedDeparture !== null
+                            ? '選択した出発地からの目的地がありません'
+                            : '利用可能な目的地がありません'
+                          : '目的地を選択'
                   }
                 />
               </SelectTrigger>
               <SelectContent>
-                {!selectedDeparture ? (
+                {loadingDepartures ? (
+                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
+                    読み込み中...
+                  </div>
+                ) : !selectedDeparture ? (
                   <div className="py-2 px-2 text-xs text-muted-foreground text-center">
                     先に出発地を選択してください
                   </div>
                 ) : availableDestinations.length === 0 ? (
                   <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                    選択した出発地からの経路がありません
+                    {selectedDeparture !== null
+                      ? '選択した出発地からの有効な目的地がありません'
+                      : '利用可能な目的地がありません'}
                   </div>
                 ) : (
                   <div>
-                    <SelectItem key="__unselected__" value="__unselected__">
+                    <SelectItem key="__unselected__" value="__UNSELECTED_DESTINATION__">
                       未選択
                     </SelectItem>
                     {availableDestinations.map((stop) => (
-                      <SelectItem key={stop.id} value={stop.id}>
+                      <SelectItem key={stop.id} value={String(stop.id)}>
                         {stop.name}
                       </SelectItem>
                     ))}

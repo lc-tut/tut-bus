@@ -1,6 +1,6 @@
 // バス停情報
 export interface StopInfo {
-  id: string
+  id: number
   name: string
 }
 
@@ -19,17 +19,6 @@ export type SegmentForDate =
         stopName: string
       }
       times: TimePair[]
-    }
-  | {
-      // 時刻表ではそれぞれの便が個別に表示される
-      segmentType: 'frequency'
-      destination: {
-        stopId: string
-        stopName: string
-      }
-      startTime: string // "HH:mm"
-      endTime: string // "HH:mm"
-      intervalMins: number
     }
   | {
       // 時刻表では、特別な枠として[シャトル運行期間中] というような感じで表示される

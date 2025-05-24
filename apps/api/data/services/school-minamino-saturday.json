@@ -1,9 +1,9 @@
 {
   "id": "school-minamino-saturday",
-  "name": "大学（みなみ野駅行）-> 八王子みなみ野駅 (土曜日)",
+  "name": "大学（みなみ野駅方面）-> 八王子みなみ野駅 (土曜日)",
   "from": {
     "stopId": 5,
-    "displayName": "大学（みなみ野駅行）"
+    "displayName": "大学（みなみ野駅方面）"
   },
   "to": {
     "stopId": 2,

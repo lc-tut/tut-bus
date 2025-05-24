@@ -1,24 +1,34 @@
-# Stage 1: Build
-FROM node:22-slim AS builder
+# syntax=docker.io/docker/dockerfile:1
 
-WORKDIR /app
+FROM node:22-slim
 
-COPY package*.json ./
+WORKDIR /works
 
-RUN npm install
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+
+RUN corepack prepare pnpm@10.11.0 --activate
+
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i; \
+  # Allow install without lockfile, so example works even without Node.js installed locally
+  else echo "Warning: Lockfile not found. It is recommended to commit lockfiles to version control." && yarn install; \
+  fi
 
 COPY . .
 
-RUN npm run build
+# Next.js collects completely anonymous telemetry data about general usage. Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line to disable telemetry at run time
+# ENV NEXT_TELEMETRY_DISABLED 1
 
-FROM node:18-slim
+# Note: Don't expose ports here, Compose will handle that for us
 
-WORKDIR /app
-
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/.next/standalone ./
-
-CMD ["npm", "start"]
+# Start Next.js in development mode based on the preferred package manager
+CMD  \
+  if [ -f yarn.lock ]; then yarn dev; \
+  elif [ -f package-lock.json ]; then npm run dev; \
+  elif [ -f pnpm-lock.yaml ]; then pnpm dev; \
+  else npm run dev; \
+  fi

@@ -2,6 +2,8 @@ import createClient from 'openapi-fetch'
 
 import type { paths } from '@/generated/oas'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 export const client = createClient<paths>({
-  baseUrl: `https://petstore3.swagger.io/api/v3`,
+  baseUrl: API_URL,
 })

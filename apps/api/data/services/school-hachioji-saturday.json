@@ -1,9 +1,9 @@
 {
   "id": "school-to-hachioji-saturday",
-  "name": "大学（八王子駅行） → 八王子駅 (土曜日)",
+  "name": "大学（八王子駅方面） → 八王子駅 (土曜日)",
   "from": {
     "stopId": 3,
-    "displayName": "大学（八王子駅行）"
+    "displayName": "大学（八王子駅方面）"
   },
   "to": {
     "stopId": 1,
