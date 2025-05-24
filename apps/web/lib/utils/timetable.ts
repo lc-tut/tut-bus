@@ -36,7 +36,7 @@ export const generateDisplayBuses = (
     }
 
     if (segment.segmentType === 'fixed' && segment.times && segment.times.length > 0) {
-      segment.times.forEach((time, index) => {
+      segment.times.forEach((time) => {
         displayBuses.push({
           departureTime: time.departure,
           arrivalTime: time.arrival,
@@ -44,8 +44,8 @@ export const generateDisplayBuses = (
           destination: destinationInfo,
           date: timetableData.date,
           segmentType: 'fixed',
-          isFirstBus: index === 0,
-          isLastBus: index === segment.times.length - 1,
+          isFirstBus: false, // 後でソート後に設定するため初期値はfalse
+          isLastBus: false, // 後でソート後に設定するため初期値はfalse
         })
       })
     } else if (
@@ -61,8 +61,8 @@ export const generateDisplayBuses = (
         destination: destinationInfo,
         date: timetableData.date,
         segmentType: 'shuttle',
-        isFirstBus: true, // シャトルセグメントは通常1つなのでtrue
-        isLastBus: true, // シャトルセグメントは通常1つなのでtrue
+        isFirstBus: false, // 後でソート後に設定するため初期値はfalse
+        isLastBus: false, // 後でソート後に設定するため初期値はfalse
         shuttleTimeRange: {
           startTime: segment.startTime,
           endTime: segment.endTime,
@@ -78,12 +78,31 @@ export const generateDisplayBuses = (
   // displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime)) // 元のコード
   displayBuses.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
 
-  // ソート後に isFirstBus と isLastBus を再設定
+  // ソート後に目的地ごとにグループ化して、その日全体での最初と最後のバスを特定する
   if (displayBuses.length > 0) {
-    displayBuses.forEach((bus, index) => {
-      // シャトル便も通常の便と同様に最初と最後を判定する
-      bus.isFirstBus = index === 0
-      bus.isLastBus = index === displayBuses.length - 1
+    // 目的地IDごとにバスをグループ化
+    const busesByDestination: { [key: string]: DisplayBusInfo[] } = {}
+    
+    displayBuses.forEach(bus => {
+      const destId = bus.destination.stopId.toString()
+      if (!busesByDestination[destId]) {
+        busesByDestination[destId] = []
+      }
+      busesByDestination[destId].push(bus)
+    })
+
+    // 各目的地グループ内で、最初と最後のバスを設定
+    Object.values(busesByDestination).forEach(destinationBuses => {
+      if (destinationBuses.length > 0) {
+        // 各目的地ごとの最初と最後を設定
+        destinationBuses.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
+        destinationBuses.forEach(bus => {
+          bus.isFirstBus = false
+          bus.isLastBus = false
+        })
+        destinationBuses[0].isFirstBus = true
+        destinationBuses[destinationBuses.length - 1].isLastBus = true
+      }
     })
   }
 
@@ -132,28 +151,8 @@ export const filterTimetable = (
     })
   }
 
-  // フィルタリング後のバスリストに対して、目的地ごとに isFirstBus と isLastBus を設定
-  if (displayBuses.length > 0) {
-    const busesByDestination: { [key: string]: DisplayBusInfo[] } = {}
-    displayBuses.forEach(bus => {
-      const destId = bus.destination.stopId.toString()
-      if (!busesByDestination[destId]) {
-        busesByDestination[destId] = []
-      }
-      busesByDestination[destId].push(bus)
-    })
-
-    Object.values(busesByDestination).forEach(destinationBuses => {
-      if (destinationBuses.length > 0) {
-        destinationBuses.forEach(bus => {
-          bus.isFirstBus = false
-          bus.isLastBus = false
-        })
-        destinationBuses[0].isFirstBus = true
-        destinationBuses[destinationBuses.length - 1].isLastBus = true
-      }
-    })
-  }
+  // フィルタリング後も、元の isFirstBus と isLastBus の設定を維持する
+  // フィルタリングでは isFirstBus と isLastBus の状態を変更しない
 
   return displayBuses
 }
