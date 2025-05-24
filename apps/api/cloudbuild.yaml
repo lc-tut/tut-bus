@@ -26,9 +26,9 @@ steps:
       - --command
       - |
         cd /opt/tut-bus/apps/api && \
-        sudo rm .git/index.lock && \
-        sudo rm .git/COMMIT_EDITMSG && \
-        sudo rm .git/.COMMIT_EDITMSG.swp && \
+        sudo rm -f .git/index.lock && \
+        sudo rm -f .git/COMMIT_EDITMSG && \
+        sudo rm -f .git/.COMMIT_EDITMSG.swp && \
         sudo git config --global --add safe.directory /opt/tut-bus && \
         sudo git checkout main && \
         sudo git pull origin main && \
