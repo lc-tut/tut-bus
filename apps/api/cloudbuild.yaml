@@ -33,3 +33,5 @@ steps:
         sudo chown tut-bus:nogroup /opt/tut-bus/apps/api/api_server && \
         sudo chmod 755 /opt/tut-bus/apps/api/api_server && \
         sudo systemctl restart tut-bus
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
