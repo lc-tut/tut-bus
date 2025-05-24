@@ -26,6 +26,7 @@ steps:
       - --command
       - |
         cd /opt/tut-bus/apps/api && \
+        git config --global --add safe.directory /opt/tut-bus && \
         git checkout main && \
         git pull origin main && \
         sudo mv /tmp/api_server /opt/tut-bus/apps/api/api_server && \
