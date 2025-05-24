@@ -247,6 +247,12 @@ const getShuttleBusStatus = (bus: DisplayBusInfo, now: Date): BusStatus => {
     return { status: 'scheduled', text: '' }
   }
 
+  // バスの日付が今日でない場合は状態を表示しない
+  const today = format(now, 'yyyy-MM-dd')
+  if (bus.date !== today) {
+    return { status: 'scheduled', text: '' }
+  }
+
   // 現在時刻をシャトル便の運行時間と比較
   const nowStr = format(now, 'HH:mm')
   const startTime = bus.shuttleTimeRange.startTime
