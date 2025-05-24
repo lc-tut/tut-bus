@@ -1,0 +1,35 @@
+steps:
+  # Step 1: Go バイナリをビルドして api_server として保存
+  - name: 'golang:1.20'
+    id: 'Build Go binary'
+    workingDir: 'apps/api'
+    entrypoint: 'go'
+    args: ['build', '-o', 'api_server', './cmd/server']
+
+  # Step 2: VM にバイナリ転送（/tmp に一旦置く）
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Copy binary'
+    args:
+      - compute
+      - scp
+      - /workspace/apps/api/api_server
+      - "tut-bus-api:/tmp/api_server"
+      - --zone
+      - "us-central1-c"
+
+  # Step 3: 正しい場所に配置・権限設定・サービス再起動
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Deploy and restart service'
+    args:
+      - compute
+      - ssh
+      - "tut-bus-api"
+      - --zone
+      - "us-central1-c"
+      - --command
+      - |
+        sudo mkdir -p /opt/tut-bus/apps/api && \
+        sudo mv /tmp/api_server /opt/tut-bus/apps/api/api_server && \
+        sudo chown tut-bus:nogroup /opt/tut-bus/apps/api/api_server && \
+        sudo chmod 755 /opt/tut-bus/apps/api/api_server && \
+        sudo systemctl restart tut-bus
