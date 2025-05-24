@@ -19,7 +19,11 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	// e.Use(middleware.CORS())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: appCon.Config.AllowedOrigins,
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
+	}))
 	// e.Use(appCon.Middleware.OpenAPIMiddleware) // 一時的にコメントアウトして日付パラメータの処理問題を回避
 	e.Use(appCon.Middleware.ErrorHandlingMiddleware)
 

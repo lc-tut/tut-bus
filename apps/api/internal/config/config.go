@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -16,6 +17,7 @@ type Config struct {
 	DataPath          string
 	BusStopsFile      string
 	BusStopGroupsFile string
+	AllowedOrigins    []string
 }
 
 func (c *Config) GetAddr() string {
@@ -47,13 +49,32 @@ func LoadConfig() (*Config, error) {
 		log.Printf("No .env file found or error loading .env: %v", err)
 	}
 
+	env := getEnv("API_ENV", "prod")
+	allowedOrigins := []string{}
+	if env == "dev" || env == "development" {
+		allowedOrigins = []string{
+			// nextjs in development
+			"http://web:3000",
+			"http://localhost:3000",
+			// swagger ui in development
+			"http://swagger:8080",
+			"http://localhost:8080",
+		}
+	} else {
+		originsStr := getEnv("CORS_ALLOWED_ORIGINS", "")
+		if originsStr != "" {
+			allowedOrigins = strings.Split(originsStr, ",")
+		}
+	}
+
 	return &Config{
-		Enviroment:        getEnv("API_ENV", "prod"),
+		Enviroment:        env,
 		Host:              getEnv("HOST", "localhost"),
 		Port:              getEnvAsInt("PORT", 8080),
 		DataPath:          getEnv("DATA_PATH", "./data"),
 		BusStopsFile:      getEnv("BUS_STOPS_FILE", "bus_stops.json"),
 		BusStopGroupsFile: getEnv("BUS_STOP_GROUPS_FILE", "bus_stop_groups.json"),
+		AllowedOrigins:    allowedOrigins,
 	}, nil
 }
 

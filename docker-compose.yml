@@ -8,9 +8,9 @@ services:
     env_file:
       - ./apps/web/.env
     volumes:
-      - ./:/works
-      - next_build:/works/apps/web/.next
-      - node_modules:/works/apps/web/node_modules
+      - ./apps/web:/works
+      - next_build:/works/.next
+      - node_modules:/works/node_modules
     restart: always
     tty: true
     stdin_open: true
@@ -18,12 +18,32 @@ services:
       - 3000:3000
     environment:
       - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - api
+
+  api:
+    container_name: api
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./apps/api:/app
+    environment:
+      - ENVIRONMENT=development
+      - HOST=api
+      - PORT=8000
+    restart: always
+    tty: true
+    stdin_open: true
+    command: ['air', '-c', '.air.toml']
 
   swagger:
     image: swaggerapi/swagger-ui
     container_name: swagger
     ports:
-      - 9090:8080
+      - 8080:8080
     volumes:
       - ./apps/spec/dist/openapi.yaml:/spec/dist/openapi.yaml:ro
     environment:
