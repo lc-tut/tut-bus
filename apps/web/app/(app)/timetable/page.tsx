@@ -7,9 +7,13 @@ import { TimeFilterType } from '@/lib/types/timetable'
 import { canSwapStations, filterTimetable } from '@/lib/utils/timetable'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { operations, components } from '@/generated/oas' // operations をインポートリストに追加 (既に存在する場合あり)
-import { format } from 'date-fns' // date-fns から format をインポート
+import { format, parseISO } from 'date-fns' // date-fns から format, parseISO をインポート
+import { useRouter, useSearchParams } from 'next/navigation' // URLパラメータ処理用
 
 export default function TimetablePage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   // 状態管理
   const [selectedDeparture, setSelectedDeparture] = useState<number | null>(null)
   const [selectedDestination, setSelectedDestination] = useState<number | null>(null)
@@ -21,12 +25,85 @@ export default function TimetablePage() {
   // APIからの時刻表データを保持するstate (型を修正)
   const [timetableData, setTimetableData] = useState<
     components['schemas']['Models.BusStopGroupTimetable'] | null
-  >(null)
+  >(null)  // URLパラメータを更新する関数
+  const updateUrlParams = useCallback(() => {
+    const params = new URLSearchParams()
+    
+    if (selectedDeparture !== null) {
+      params.set('from', selectedDeparture.toString())
+    }
+    
+    if (selectedDestination !== null) {
+      params.set('to', selectedDestination.toString())
+    }
+    
+    if (selectedDate !== null) {
+      params.set('date', format(selectedDate, 'yyyy-MM-dd'))
+    }
+    
+    if (timeFilter !== 'all') {
+      params.set('filter', timeFilter)
+    }
+    
+    if (timeFilter === 'departure') {
+      params.set('startTime', startTime)
+    }
+    
+    if (timeFilter === 'arrival') {
+      params.set('endTime', endTime)
+    }
+
+    // URLを更新（履歴を残さない）
+    router.replace(`/timetable?${params.toString()}`, { scroll: false })
+  }, [selectedDeparture, selectedDestination, selectedDate, timeFilter, startTime, endTime, router])  // URLパラメータから状態を読み込む
+  useEffect(() => {
+    // 両方の形式のパラメータ名に対応
+    const departureParam = searchParams.get('departure') || searchParams.get('from')
+    const destinationParam = searchParams.get('destination') || searchParams.get('to')
+    const dateParam = searchParams.get('date')
+    const timeFilterParam = (searchParams.get('timeFilter') || searchParams.get('filter')) as TimeFilterType | null
+    const startTimeParam = searchParams.get('startTime')
+    const endTimeParam = searchParams.get('endTime')
+    
+    // パラメータがある場合のみ状態を更新
+    if (departureParam) {
+      setSelectedDeparture(Number(departureParam))
+    }
+    
+    if (destinationParam) {
+      setSelectedDestination(Number(destinationParam))
+    }
+
+    if (dateParam) {
+      // 日付パラメータがあれば、その日付を設定
+      try {
+        const parsedDate = parseISO(dateParam)
+        setSelectedDate(parsedDate)
+      } catch (e) {
+        console.error('Invalid date format in URL', e)
+      }
+    }
+
+    if (timeFilterParam && ['all', 'preDeparture', 'departure', 'arrival'].includes(timeFilterParam)) {
+      setTimeFilter(timeFilterParam)
+    }
+
+    if (startTimeParam && /^\d{2}:\d{2}$/.test(startTimeParam)) {
+      setStartTime(startTimeParam)
+    }
+
+    if (endTimeParam && /^\d{2}:\d{2}$/.test(endTimeParam)) {
+      setEndTime(endTimeParam)
+    }
+  }, [searchParams])
 
   // クライアントサイドでのみ実行される初期化
   useEffect(() => {
     const currentDate = new Date()
-    setSelectedDate(currentDate)
+    // URLに日付パラメータがない場合のみ、現在の日付を設定
+    if (!searchParams.has('date')) {
+      setSelectedDate(currentDate)
+    }
     setNow(currentDate)
 
     // 1分ごとに現在時刻を更新
@@ -35,7 +112,13 @@ export default function TimetablePage() {
     }, 60000)
 
     return () => clearInterval(intervalId)
-  }, [])
+  }, [searchParams])
+
+  // 状態が変更されたらURLパラメータを更新
+  useEffect(() => {
+    if (!selectedDate) return // 初期化前は更新しない
+    updateUrlParams()
+  }, [selectedDeparture, selectedDestination, selectedDate, timeFilter, startTime, endTime, updateUrlParams])
 
   // APIから時刻表データを取得する関数
   const fetchTimetableData = useCallback(async () => {

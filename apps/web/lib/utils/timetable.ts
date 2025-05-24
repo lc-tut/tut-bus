@@ -123,12 +123,12 @@ export const filterTimetable = (
     // applyDepartureTimeFilter の中でソートされる
   } else if (timeFilter === 'arrival') {
     displayBuses = applyArrivalTimeFilter(displayBuses, endTime)
-    // 到着時間でフィルタリングした場合、到着時間でソートする
+    // 到着時間でフィルタリングした場合、到着時間で逆順にソートする（遅い順に表示）
     displayBuses.sort((a, b) => {
       const arrivalA = a.arrivalTime || a.departureTime // フォールバック
       const arrivalB = b.arrivalTime || b.departureTime // フォールバック
-      // return arrivalA.localeCompare(arrivalB); // 元のコード
-      return toMinutes(arrivalA) - toMinutes(arrivalB)
+      // 到着時間の降順でソート（遅い → 早い順）
+      return toMinutes(arrivalB) - toMinutes(arrivalA)
     })
   }
 
@@ -214,16 +214,9 @@ const applyArrivalTimeFilter = (buses: DisplayBusInfo[], endTime: string): Displ
     if (!arrivalTimeToCompare) return false // 到着時刻がない場合はフィルタリング対象外
     return isTimeBeforeOrEqual(arrivalTimeToCompare, endTime)
   })
-  // フィルタリング後、到着時間でソート
-  return filtered.sort((a, b) => {
-    const arrivalA =
-      a.segmentType === 'shuttle' && a.shuttleTimeRange ? a.shuttleTimeRange.endTime : a.arrivalTime
-    const arrivalB =
-      b.segmentType === 'shuttle' && b.shuttleTimeRange ? b.shuttleTimeRange.endTime : b.arrivalTime
-    if (!arrivalA || !arrivalB) return 0 // 念のため
-    // return arrivalA.localeCompare(arrivalB); // 元のコード
-    return toMinutes(arrivalA) - toMinutes(arrivalB)
-  })
+  
+  // filterTimetable関数内でソートするため、ここではソートせずにフィルタリングしたリストをそのまま返す
+  return filtered
 }
 
 /**
