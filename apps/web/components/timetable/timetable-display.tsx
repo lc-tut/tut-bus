@@ -108,7 +108,7 @@ export function TimetableDisplay({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs font-medium px-[32px]">目的地</TableHead>
+                  <TableHead className="text-xs font-medium pl-4 md:pl-6">目的地</TableHead>
                   <TableHead className="text-xs font-medium">出発時刻</TableHead>
                   <TableHead className="text-xs font-medium hidden md:table-cell">
                     到着時刻
