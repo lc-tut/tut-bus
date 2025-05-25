@@ -289,6 +289,13 @@ const getRegularBusStatus = (
   buses: DisplayBusInfo[],
   now: Date
 ): BusStatus => {
+  // バスの日付が今日でない場合は状態を表示しない
+  const today = format(now, 'yyyy-MM-dd')
+  const bus = buses[index]
+  if (bus.date !== today) {
+    return { status: 'scheduled', text: '' }
+  }
+
   // 現在時刻を文字列に変換（HH:mm形式）
   const nowStr = format(now, 'HH:mm')
 
@@ -325,6 +332,13 @@ const handleDepartedBusStatus = (
   buses: DisplayBusInfo[],
   nowTotalMinutes: number
 ): BusStatus => {
+  // バスの日付が今日でない場合は状態を表示しない
+  const bus = buses[index]
+  const today = format(new Date(), 'yyyy-MM-dd')
+  if (bus.date !== today) {
+    return { status: 'scheduled', text: '' }
+  }
+
   // 出発済みの場合、直近一本前かどうかを確認
   // 次のバスがある場合、そのバスが出発済みでないかチェック
   if (index + 1 < buses.length) {
