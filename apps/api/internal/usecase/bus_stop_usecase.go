@@ -241,17 +241,17 @@ func (u *busStopUseCase) createBusStopSegments(services []domain.ServiceData, bu
 }
 
 func convertToDateTime(date *oapi.ScalarsDateISO) (time.Time, error) {
-	if date == nil || date.Time.IsZero() {
+	if date == nil || date.IsZero() {
 		now := time.Now()
 		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()), nil
 	}
 
 	return time.Date(
-		date.Time.Year(),
-		date.Time.Month(),
-		date.Time.Day(),
+		date.Year(),
+		date.Month(),
+		date.Day(),
 		0, 0, 0, 0,
-		date.Time.Location(),
+		date.Location(),
 	), nil
 }
 
