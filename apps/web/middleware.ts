@@ -12,7 +12,6 @@ export function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// ミドルウェアを適用するパスを指定
 export const config = {
-  matcher: '/',
+  matcher: '/:path*',
 }
