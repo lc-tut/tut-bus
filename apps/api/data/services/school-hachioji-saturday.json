@@ -1,0 +1,47 @@
+{
+  "id": "school-to-hachioji-saturday",
+  "name": "大学（八王子駅方面） → 八王子駅 (土曜日)",
+  "from": {
+    "stopId": 3,
+    "displayName": "大学（八王子駅方面）"
+  },
+  "to": {
+    "stopId": 1,
+    "displayName": "八王子駅"
+  },
+  "direction": "outbound",
+  "validityPeriods": [{ "from": "2025-04-07", "to": "2025-08-10" }],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "dayType",
+        "value": "saturday"
+      },
+      "times": [
+        { "departure": "7:48", "arrival": "8:00" },
+        { "departure": "8:08", "arrival": "8:20" },
+        { "departure": "8:23", "arrival": "8:35" },
+        { "departure": "8:38", "arrival": "8:50" },
+        { "departure": "8:58", "arrival": "9:10" },
+        { "departure": "9:28", "arrival": "9:40" },
+        { "departure": "9:58", "arrival": "10:10" },
+        { "departure": "10:28", "arrival": "10:40" },
+        { "departure": "11:28", "arrival": "11:40" },
+        { "departure": "11:58", "arrival": "12:10" },
+        { "departure": "12:28", "arrival": "12:40" },
+        { "departure": "12:58", "arrival": "13:10" },
+        { "departure": "13:28", "arrival": "13:40" },
+        { "departure": "14:28", "arrival": "14:40" },
+        { "departure": "15:10", "arrival": "15:22" },
+        { "departure": "15:40", "arrival": "15:52" },
+        { "departure": "16:10", "arrival": "16:22" },
+        { "departure": "16:40", "arrival": "16:52" },
+        { "departure": "17:10", "arrival": "17:22" },
+        { "departure": "17:40", "arrival": "17:52" },
+        { "departure": "18:10", "arrival": "18:22" },
+        { "departure": "19:10", "arrival": "19:22" }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 # syntax=docker.io/docker/dockerfile:1
 
-FROM node:22-alpine
+FROM node:22-slim
 
-WORKDIR /app
+WORKDIR /works
 
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
@@ -27,8 +27,8 @@ COPY . .
 
 # Start Next.js in development mode based on the preferred package manager
 CMD  \
-  if [ -f yarn.lock ]; then yarn dev:web; \
-  elif [ -f package-lock.json ]; then npm run dev:web; \
-  elif [ -f pnpm-lock.yaml ]; then pnpm dev:web; \
-  else npm run dev:web; \
+  if [ -f yarn.lock ]; then yarn dev; \
+  elif [ -f package-lock.json ]; then npm run dev; \
+  elif [ -f pnpm-lock.yaml ]; then pnpm dev; \
+  else npm run dev; \
   fi

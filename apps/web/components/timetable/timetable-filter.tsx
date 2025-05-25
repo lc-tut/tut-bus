@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react' // useEffect を追加
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
@@ -23,13 +23,14 @@ import { ja } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { FaCalendarAlt, FaClock, FaExchangeAlt, FaMapMarkerAlt } from 'react-icons/fa'
 import { TimeFilterType } from '@/lib/types/timetable'
-import { getAvailableDepartures, getAvailableDestinations } from '@/lib/utils/timetable'
+import { components } from '@/generated/oas'
+import { client } from '@/lib/client'
 
 interface TimetableFilterProps {
-  selectedDeparture: string
-  setSelectedDeparture: (value: string) => void
-  selectedDestination: string
-  setSelectedDestination: (value: string) => void
+  selectedDeparture: number | null
+  setSelectedDeparture: (value: number | null) => void
+  selectedDestination: number | null
+  setSelectedDestination: (value: number | null) => void
   selectedDate: Date | null
   setSelectedDate: (date: Date | null) => void
   now: Date | null
@@ -62,6 +63,37 @@ export function TimetableFilter({
   setEndTime,
   swapStations,
 }: TimetableFilterProps) {
+  const [busStopGroups, setBusStopGroups] = useState<
+    components['schemas']['Models.BusStopGroup'][]
+  >([])
+  const [loadingDepartures, setLoadingDepartures] = useState<boolean>(true)
+
+  useEffect(() => {
+    const fetchBusStopGroups = async () => {
+      setLoadingDepartures(true)
+      try {
+        const { data, error } = await client.GET('/api/bus-stops/groups')
+
+        if (error) {
+          console.error('Error fetching bus stop groups:', error)
+          setBusStopGroups([])
+        } else if (data) {
+          // data.groups を data に変更
+          setBusStopGroups(data) // data.groups を data に変更
+        } else {
+          setBusStopGroups([])
+        }
+      } catch (err) {
+        console.error('Exception fetching bus stop groups:', err)
+        setBusStopGroups([])
+      } finally {
+        setLoadingDepartures(false)
+      }
+    }
+
+    fetchBusStopGroups()
+  }, [])
+
   // 日付タブの設定
   const dateTabs = useMemo(
     () => [
@@ -72,15 +104,19 @@ export function TimetableFilter({
     [now]
   )
 
-  // 出発地に基づく利用可能な目的地を取得
-  const availableDestinations = useMemo(() => {
-    return getAvailableDestinations(selectedDeparture)
-  }, [selectedDeparture])
-
-  // 目的地に基づく利用可能な出発地を取得
+  // 出発地リスト: APIデータがあればそれを使う
   const availableDepartures = useMemo(() => {
-    return getAvailableDepartures(selectedDestination)
-  }, [selectedDestination])
+    return busStopGroups.map((group) => ({ id: group.id, name: group.name }))
+  }, [busStopGroups])
+
+  // 目的地リスト: APIデータがあればそれを使う
+  const availableDestinations = useMemo(() => {
+    // APIから取得したバス停グループを目的地の候補として使用
+    // 選択された出発地と同じものは除外する
+    return busStopGroups
+      .map((group) => ({ id: group.id, name: group.name }))
+      .filter((group) => selectedDeparture === null || group.id !== selectedDeparture)
+  }, [busStopGroups, selectedDeparture])
 
   // カレンダーのオープン状態
   const [calendarOpen, setCalendarOpen] = useState<boolean>(false)
@@ -98,7 +134,7 @@ export function TimetableFilter({
           {/* 日付選択 */}{' '}
           <div>
             <div className="mb-2">
-              <label className="text-sm font-medium flex items-center">
+              <label className="text-sm font-medium flex items-center cursor-pointer">
                 <FaCalendarAlt className="mr-2 h-3 w-3" />
                 日付
               </label>
@@ -128,12 +164,12 @@ export function TimetableFilter({
                   }
                 }}
               >
-                <TabsList className="grid grid-cols-3 w-full bg-muted dark:bg-muted/80 p-1 h-auto border dark:border-slate-700 rounded-md">
+                <TabsList className="grid grid-cols-3 w-full bg-muted dark:bg-muted/80 p-1 h-auto border rounded-md">
                   {dateTabs.map((tab) => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="px-3 py-2 text-xs font-medium relative rounded-md data-[state=active]:bg-background dark:data-[state=active]:bg-background/90 dark:data-[state=active]:border dark:data-[state=active]:border-slate-700 dark:data-[state=active]:shadow-sm"
+                      className="px-3 py-2 text-xs font-medium relative rounded-md data-[state=active]:bg-background dark:data-[state=active]:shadow-sm"
                     >
                       {tab.value === 'today' && (
                         <span className="flex items-center gap-1.5 data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90">
@@ -193,7 +229,7 @@ export function TimetableFilter({
               {selectedDate && now && (
                 <div
                   className={cn(
-                    'px-4 py-3 text-sm font-medium rounded-md flex items-center justify-center',
+                    'px-4 py-3 text-sm font-medium rounded-md flex items-center justify-center cursor-pointer',
                     format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
                       ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
                       : format(selectedDate, 'yyyy-MM-dd') === format(addDays(now, 1), 'yyyy-MM-dd')
@@ -226,56 +262,55 @@ export function TimetableFilter({
           {/* 出発地と目的地 */}
           <div>
             <div className="mb-2">
-              <label className="text-sm font-medium flex items-center">
+              <label className="text-sm font-medium flex items-center cursor-pointer">
                 <FaMapMarkerAlt className="mr-2 h-3 w-3" />
                 出発地
               </label>
             </div>
             <Select
-              value={selectedDeparture}
+              value={selectedDeparture !== null ? String(selectedDeparture) : ''}
               onValueChange={(value) => {
-                setSelectedDeparture(value)
+                setSelectedDeparture(value === '' ? null : Number(value))
               }}
             >
               <SelectTrigger
                 className={cn(
-                  'rounded-md h-10 w-full',
+                  'rounded-md h-10 w-full cursor-pointer',
                   !selectedDeparture ? 'text-muted-foreground' : ''
                 )}
               >
                 <SelectValue
                   placeholder={
-                    selectedDestination && availableDepartures.length === 0
-                      ? '利用可能な出発地がありません'
-                      : '出発地を選択'
+                    loadingDepartures
+                      ? '出発地を読み込み中...'
+                      : availableDepartures.length === 0
+                        ? '利用可能な出発地がありません'
+                        : '出発地を選択'
                   }
                 />
               </SelectTrigger>
               <SelectContent>
-                {availableDepartures.length === 0 && selectedDestination ? (
+                {loadingDepartures ? (
                   <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                    選択した目的地への経路がありません
+                    読み込み中...
+                  </div>
+                ) : availableDepartures.length === 0 ? (
+                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
+                    利用可能な出発地がありません
                   </div>
                 ) : (
-                  <div>
-                    {availableDepartures.map((stop) => (
-                      <SelectItem key={stop.id} value={stop.id}>
-                        {stop.name}
-                      </SelectItem>
-                    ))}
-                    {availableDepartures.length === 0 && (
-                      <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                        利用可能な出発地がありません
-                      </div>
-                    )}
-                  </div>
+                  availableDepartures.map((stop) => (
+                    <SelectItem key={stop.id} value={String(stop.id)} className="cursor-pointer">
+                      {stop.name}
+                    </SelectItem>
+                  ))
                 )}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-medium flex items-center">
+            <div className="flex justify-between items-center mb-2 h-[28px]">
+              <label className="text-sm font-medium flex items-center cursor-pointer">
                 <FaMapMarkerAlt className="mr-2 h-3 w-3" />
                 目的地
               </label>
@@ -284,7 +319,7 @@ export function TimetableFilter({
                   variant="ghost"
                   size="sm"
                   onClick={swapStations}
-                  className="h-7 px-2 rounded text-xs font-medium flex items-center gap-1"
+                  className="h-7 px-2 rounded text-xs font-medium flex items-center gap-1 cursor-pointer"
                 >
                   <FaExchangeAlt className="h-3 w-3" />
                   <span>入れ替え</span>
@@ -292,48 +327,61 @@ export function TimetableFilter({
               )}
             </div>{' '}
             <Select
-              value={selectedDestination}
+              value={selectedDestination !== null ? String(selectedDestination) : ''}
               onValueChange={(value) => {
-                // 未選択が選ばれた場合は空文字列をセット
-                if (value === '__unselected__') {
-                  setSelectedDestination('')
+                if (value === '__UNSELECTED_DESTINATION__') {
+                  setSelectedDestination(null)
                 } else {
-                  setSelectedDestination(value)
+                  setSelectedDestination(value === '' ? null : Number(value)) // Keep original logic for empty string just in case, though Number('') is 0
                 }
               }}
             >
               <SelectTrigger
                 className={cn(
-                  'rounded-md h-10 w-full',
+                  'rounded-md h-10 w-full cursor-pointer',
                   !selectedDestination ? 'text-muted-foreground' : ''
                 )}
               >
                 <SelectValue
                   placeholder={
-                    !selectedDeparture
-                      ? '先に出発地を選択してください'
-                      : availableDestinations.length === 0
-                        ? '利用可能な目的地がありません'
-                        : '目的地を選択'
+                    loadingDepartures // 読み込み状態を最初にチェック
+                      ? '停留所を読み込み中...'
+                      : !selectedDeparture
+                        ? '先に出発地を選択してください'
+                        : availableDestinations.length === 0
+                          ? selectedDeparture !== null
+                            ? '選択した出発地からの目的地がありません'
+                            : '利用可能な目的地がありません'
+                          : '目的地を選択'
                   }
                 />
               </SelectTrigger>
               <SelectContent>
-                {!selectedDeparture ? (
+                {loadingDepartures ? (
+                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
+                    読み込み中...
+                  </div>
+                ) : !selectedDeparture ? (
                   <div className="py-2 px-2 text-xs text-muted-foreground text-center">
                     先に出発地を選択してください
                   </div>
                 ) : availableDestinations.length === 0 ? (
                   <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                    選択した出発地からの経路がありません
+                    {selectedDeparture !== null
+                      ? '選択した出発地からの有効な目的地がありません'
+                      : '利用可能な目的地がありません'}
                   </div>
                 ) : (
                   <div>
-                    <SelectItem key="__unselected__" value="__unselected__">
+                    <SelectItem
+                      key="__unselected__"
+                      value="__UNSELECTED_DESTINATION__"
+                      className="cursor-pointer"
+                    >
                       未選択
                     </SelectItem>
                     {availableDestinations.map((stop) => (
-                      <SelectItem key={stop.id} value={stop.id}>
+                      <SelectItem key={stop.id} value={String(stop.id)} className="cursor-pointer">
                         {stop.name}
                       </SelectItem>
                     ))}
@@ -347,7 +395,7 @@ export function TimetableFilter({
           {/* 時間帯設定（簡略化）*/}
           <div>
             <div className="mb-2">
-              <label className="text-sm font-medium flex items-center">
+              <label className="text-sm font-medium flex items-center cursor-pointer">
                 <FaClock className="mr-2 h-3 w-3" />
                 時間帯
               </label>
@@ -357,14 +405,22 @@ export function TimetableFilter({
               value={timeFilter}
               onValueChange={(value: TimeFilterType) => setTimeFilter(value)}
             >
-              <SelectTrigger className="rounded-md h-10 w-full mb-4">
+              <SelectTrigger className="rounded-md h-10 w-full mb-4 cursor-pointer">
                 <SelectValue placeholder="すべての時間" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">すべての時間</SelectItem>
-                <SelectItem value="preDeparture">出発前のみ</SelectItem>
-                <SelectItem value="departure">出発時間指定</SelectItem>
-                <SelectItem value="arrival">到着時間指定</SelectItem>
+                <SelectItem value="all" className="cursor-pointer">
+                  すべての時間
+                </SelectItem>
+                <SelectItem value="preDeparture" className="cursor-pointer">
+                  出発前のみ
+                </SelectItem>
+                <SelectItem value="departure" className="cursor-pointer">
+                  出発時間指定
+                </SelectItem>
+                <SelectItem value="arrival" className="cursor-pointer">
+                  到着時間指定
+                </SelectItem>
               </SelectContent>
             </Select>
 
@@ -373,7 +429,7 @@ export function TimetableFilter({
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="rounded-md h-10 w-full"
+                className="rounded-md h-10 w-full cursor-pointer"
                 placeholder="出発時間を入力"
               />
             )}
@@ -383,7 +439,7 @@ export function TimetableFilter({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="rounded-md h-10 w-full"
+                className="rounded-md h-10 w-full cursor-pointer"
                 placeholder="到着時間を入力"
               />
             )}

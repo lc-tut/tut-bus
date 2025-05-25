@@ -1,0 +1,33 @@
+# .air.toml
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ./cmd/server/main.go"
+  bin = "./tmp/main"
+  full_bin = "APP_ENV=dev APP_USER=air ./tmp/main"
+  delay = 1000 # ms
+  stop_on_error = true
+  kill_delay = 500 # ms
+  log = "air_errors.log"
+  send_interrupt = false
+  exclude_dir = ["assets", "tmp", "vendor", "frontend/node_modules"]
+  exclude_file = []
+  exclude_regex = ["_test.go"]
+  exclude_unchanged = true
+  follow_symlink = true
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  include_dir = []
+  run = ["./tmp/main"]
+
+[log]
+  time = false
+
+[color]
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+
+[misc]
+  clean_on_exit = true

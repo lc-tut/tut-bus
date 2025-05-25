@@ -2,17 +2,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { FaClock, FaMapMarkerAlt, FaArrowRight } from 'react-icons/fa'
-import { busStopsInfo } from '@/lib/data/timetable'
+import type { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { BusRow } from './bus-row'
 import { RouteInfoCard } from './route-info-card'
 import { getBusStatus } from '@/lib/utils/timetable'
 
-interface TimetableDisplayProps {
-  selectedDeparture: string
-  selectedDestination: string
+export interface TimetableDisplayProps {
+  selectedDeparture: number | null
+  selectedDestination: number | null
   filteredTimetable: DisplayBusInfo[]
   now: Date | null
+  timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
 }
 
 /**
@@ -24,6 +25,7 @@ export function TimetableDisplay({
   selectedDestination,
   filteredTimetable,
   now,
+  timetableData,
 }: TimetableDisplayProps) {
   return (
     <Card className="shadow-sm overflow-hidden pt-0 gap-2">
@@ -32,15 +34,19 @@ export function TimetableDisplay({
           <CardTitle className="flex flex-wrap justify-left items-center gap-0 text-base font-semibold">
             <FaClock className="mr-1 h-3.5 w-3.5" />
             <span className="ml-1">時刻表</span>
-            {selectedDeparture && (
+            {selectedDeparture != null && timetableData && (
               <div className="flex flex-wrap items-center">
                 <span className="font-normal text-sm mx-2">|</span>
-                <span>{busStopsInfo.find((stop) => stop.id === selectedDeparture)?.name}</span>
-                {selectedDestination && (
+                <span>{timetableData.name}</span>
+                {selectedDestination != null && timetableData.segments && (
                   <>
                     <FaArrowRight className="h-2.5 w-2.5 text-muted-foreground mx-2" />
                     <span>
-                      {busStopsInfo.find((stop) => stop.id === selectedDestination)?.name}
+                      {
+                        timetableData.segments.find(
+                          (seg) => seg.destination.stopId === selectedDestination
+                        )?.destination.stopName
+                      }
                     </span>
                   </>
                 )}
@@ -90,9 +96,10 @@ export function TimetableDisplay({
         ) : (
           <>
             {/* 経路情報があれば表示 */}
-            {selectedDeparture && selectedDestination && (
+            {selectedDeparture && selectedDestination && timetableData && (
               <div className="px-4 pt-3">
                 <RouteInfoCard
+                  timetableData={timetableData}
                   selectedDeparture={selectedDeparture}
                   selectedDestination={selectedDestination}
                 />
@@ -101,7 +108,7 @@ export function TimetableDisplay({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs font-medium px-[32px]">目的地</TableHead>
+                  <TableHead className="text-xs font-medium pl-4 md:pl-6">目的地</TableHead>
                   <TableHead className="text-xs font-medium">出発時刻</TableHead>
                   <TableHead className="text-xs font-medium hidden md:table-cell">
                     到着時刻

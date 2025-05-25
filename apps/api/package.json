@@ -1,0 +1,17 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "air -c .air.toml",
+    "prebuild": "go mod download",
+    "build": "go build -o api_server ./cmd/server/main.go",
+    "start": "./api_server",
+    "test": "go test ./...",
+    "lint": "golangci-lint run",
+    "fix": "golangci-lint run --fix",
+    "fmt": "go fmt ./...",
+    "vet": "go vet ./...",
+    "tidy": "go mod tidy"
+  }
+}

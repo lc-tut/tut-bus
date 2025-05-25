@@ -12,6 +12,6 @@ type UseCases struct {
 
 func NewUseCases(repos *repository.Repositories, logger *zap.Logger) *UseCases {
 	return &UseCases{
-		BusStop: NewBusStopUseCase(repos.BusStop, logger),
+		BusStop: NewBusStopUseCase(repos.BusStop, repos.Service, logger),
 	}
 }

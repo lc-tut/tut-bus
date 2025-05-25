@@ -30,12 +30,12 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
     >
       <TableCell
         className={cn(
-          'text-sm',
+          'text-xs md:text-sm',
           bus.segmentType === 'shuttle' &&
             'bg-purple-100/40 dark:bg-purple-900/40 border-l-2 border-purple-500 dark:border-purple-600'
         )}
       >
-        <div className="flex items-center gap-1.5 px-4">
+        <div className="flex items-center gap-1.5 pl-2 md:pl-4">
           <span
             className={
               bus.segmentType === 'shuttle'
@@ -49,10 +49,7 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
       </TableCell>
 
       <TableCell
-        className={cn(
-          'font-mono',
-          bus.segmentType === 'shuttle' && 'bg-purple-100/40 dark:bg-purple-900/40'
-        )}
+        className={cn(bus.segmentType === 'shuttle' && 'bg-purple-100/40 dark:bg-purple-900/40')}
       >
         {bus.segmentType === 'shuttle' && bus.shuttleTimeRange ? (
           <div className="flex items-start flex-col sm:flex-row">
@@ -69,7 +66,7 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
       </TableCell>
       <TableCell
         className={cn(
-          'font-mono hidden md:table-cell',
+          'hidden md:table-cell',
           bus.segmentType === 'shuttle' && 'bg-purple-100/40 dark:bg-purple-900/40'
         )}
       >
@@ -85,7 +82,7 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
             </span>
           )
         ) : (
-          <span className="font-mono">{bus.arrivalTime}</span>
+          <span>{bus.arrivalTime}</span>
         )}
       </TableCell>
       <TableCell
@@ -183,8 +180,8 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
                 </Badge>
               )}
 
-              <Badge variant="secondary" className="md:hidden">
-                {bus.arrivalTime}
+              <Badge variant="outline" className="text-sm md:hidden">
+                {bus.arrivalTime} 着
               </Badge>
             </div>
           )}

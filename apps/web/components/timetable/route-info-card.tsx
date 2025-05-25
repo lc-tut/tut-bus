@@ -1,21 +1,28 @@
 import { Badge } from '@/components/ui/badge'
 import { FaShuttleVan } from 'react-icons/fa'
 import { getShuttleSegments } from '@/lib/utils/timetable'
+import { DisplayBusInfo } from '@/lib/types/timetable'
+import type { components } from '@/generated/oas'
 
 interface RouteInfoCardProps {
-  selectedDeparture: string
-  selectedDestination: string
+  timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null
+  selectedDeparture: number | null
+  selectedDestination: number | null
 }
 
 /**
  * ルート情報カードコンポーネント
  * シャトル便の運行情報を表示します
  */
-export function RouteInfoCard({ selectedDeparture, selectedDestination }: RouteInfoCardProps) {
-  if (!selectedDeparture || !selectedDestination) return null
+export function RouteInfoCard({
+  timetableData,
+  selectedDeparture,
+  selectedDestination,
+}: RouteInfoCardProps) {
+  if (selectedDeparture == null || selectedDestination == null) return null
 
   // フィルタリングされた運行情報から各セグメントを抽出
-  const shuttleSegments = getShuttleSegments(selectedDeparture, selectedDestination)
+  const shuttleSegments = getShuttleSegments(timetableData, selectedDeparture, selectedDestination)
 
   return (
     <div className="space-y-3">
@@ -37,7 +44,7 @@ export function RouteInfoCard({ selectedDeparture, selectedDestination }: RouteI
           </div>
 
           <div className="space-y-4">
-            {shuttleSegments.map((segment, index) => {
+            {shuttleSegments.map((segment: DisplayBusInfo, index: number) => {
               // segmentTypeがshuttleの場合のみ処理を進める
               if (segment.segmentType !== 'shuttle') return null
 
@@ -66,14 +73,15 @@ export function RouteInfoCard({ selectedDeparture, selectedDestination }: RouteI
                     <div>
                       <p className="text-purple-500 dark:text-purple-400 mb-1">運行時間帯</p>
                       <div className="font-medium">
-                        {segment.startTime} 〜 {segment.endTime}
+                        {segment.shuttleTimeRange?.startTime} 〜 {segment.shuttleTimeRange?.endTime}
                       </div>
                     </div>
 
                     <div>
                       <p className="text-purple-500 dark:text-purple-400 mb-1">運行間隔</p>
                       <div className="font-medium">
-                        約{segment.intervalRange.min}〜{segment.intervalRange.max}分
+                        約{segment.shuttleTimeRange?.intervalRange.min}〜
+                        {segment.shuttleTimeRange?.intervalRange.max}分
                       </div>
                     </div>
                   </div>

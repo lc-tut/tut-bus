@@ -52,12 +52,15 @@ interface BusStopGroupsService {
       - 該当日の時刻表なし → `segments`に空配列返却
     """)
   @returnsDoc("指定した日付の時刻表を取得します。")
-  getBusStopGroupsTimetable(@path id: int32, @query date: BusAPI.Scalars.DateISO): {
+  getBusStopGroupsTimetable(
+    @path id: int32,
+    @query(#{ name: "date", explode: true }) date?: BusAPI.Scalars.DateISO,
+  ): {
     @statusCode statusCode: 200;
 
     @doc("OK - The request was successful.")
     @body
-    busStopTimetables: BusAPI.Models.BusStopGroupTimetable[];
+    busStopTimetables: BusAPI.Models.BusStopGroupTimetable;
   } | {
     @statusCode statusCode: 400;
 

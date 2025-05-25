@@ -1,250 +1,158 @@
 import { format } from 'date-fns'
-import { busStopsInfo, sampleSchedule } from '../data/timetable'
-import {
-  BusStatus,
-  DisplayBusInfo,
-  ScheduleForDate,
-  SegmentForDate,
-  StopInfo,
-} from '../types/timetable'
+import { BusStatus, DisplayBusInfo, StopInfo, TimeFilterType } from '../types/timetable'
+import type { components } from '@/generated/oas'
 
 /**
  * 時刻表データから表示用バスデータを生成します
  */
 export const generateDisplayBuses = (
-  selectedDeparture: string,
-  selectedDestination: string,
-  selectedDate: Date | null
+  timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null,
+  selectedDepartureGroupId: number,
+  selectedDestinationStopId: number | null // nullを許容するように変更
 ): DisplayBusInfo[] => {
   const displayBuses: DisplayBusInfo[] = []
-  const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''
+  if (!timetableData || !timetableData.segments) return displayBuses
 
-  // サンプルデータからDisplayBusInfoに変換
-  for (const schedule of sampleSchedule) {
-    // 日付フィルタリング
-    if (selectedDateStr && schedule.date !== selectedDateStr) continue
+  // APIのデータ構造に合わせて変換
+  for (const segment of timetableData.segments) {
+    // 目的地フィルタリング（null または空文字列の場合はすべての目的地を表示）
+    if (
+      selectedDestinationStopId !== null && // nullでない場合のみフィルタリング
+      segment.destination.stopId !== undefined &&
+      segment.destination.stopId !== null &&
+      segment.destination.stopId !== selectedDestinationStopId
+    ) {
+      continue
+    }
 
-    // 出発地フィルタリング（空文字列の場合はすべての出発地を表示）
-    if (selectedDeparture && schedule.departure.stopId !== selectedDeparture) continue
+    const departureInfo = {
+      stopId: timetableData.id.toString(),
+      stopName: timetableData.name,
+    }
 
-    for (const segment of schedule.segments) {
-      // 目的地フィルタリング（空文字列の場合はすべての目的地を表示）
-      if (selectedDestination && segment.destination.stopId !== selectedDestination) continue
+    const destinationInfo = {
+      stopId: segment.destination.stopId.toString(),
+      stopName: segment.destination.stopName,
+    }
 
-      if (segment.segmentType === 'fixed') {
-        // 固定時刻バス処理
-        addFixedSegmentBuses(segment, schedule, displayBuses)
-      } else if (segment.segmentType === 'frequency') {
-        // 頻度ベースバス処理
-        addFrequencySegmentBuses(segment, schedule, displayBuses)
-      } else if (segment.segmentType === 'shuttle') {
-        // シャトル便処理
-        addShuttleSegmentBus(segment, schedule, displayBuses)
-      }
+    if (segment.segmentType === 'fixed' && segment.times && segment.times.length > 0) {
+      segment.times.forEach((time) => {
+        displayBuses.push({
+          departureTime: time.departure,
+          arrivalTime: time.arrival,
+          departure: departureInfo,
+          destination: destinationInfo,
+          date: timetableData.date,
+          segmentType: 'fixed',
+          isFirstBus: false, // 後でソート後に設定するため初期値はfalse
+          isLastBus: false, // 後でソート後に設定するため初期値はfalse
+        })
+      })
+    } else if (
+      segment.segmentType === 'shuttle' &&
+      segment.startTime &&
+      segment.endTime &&
+      segment.intervalRange
+    ) {
+      displayBuses.push({
+        departureTime: segment.startTime, // シャトル便の開始時刻を出発時刻とする
+        arrivalTime: segment.endTime, // シャトル便の終了時刻を到着時刻とする（仮）
+        departure: departureInfo,
+        destination: destinationInfo,
+        date: timetableData.date,
+        segmentType: 'shuttle',
+        isFirstBus: false, // 後でソート後に設定するため初期値はfalse
+        isLastBus: false, // 後でソート後に設定するため初期値はfalse
+        shuttleTimeRange: {
+          startTime: segment.startTime,
+          endTime: segment.endTime,
+          intervalRange: {
+            min: segment.intervalRange.min,
+            max: segment.intervalRange.max,
+          },
+        },
+      })
     }
   }
 
-  // 時間でソート
-  displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime))
+  // displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime)) // 元のコード
+  displayBuses.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
 
-  // 始発・最終バスを設定
-  setFirstAndLastBuses(displayBuses)
+  // ソート後に目的地ごとにグループ化して、その日全体での最初と最後のバスを特定する
+  if (displayBuses.length > 0) {
+    // 目的地IDごとにバスをグループ化
+    const busesByDestination: { [key: string]: DisplayBusInfo[] } = {}
+
+    displayBuses.forEach((bus) => {
+      const destId = bus.destination.stopId.toString()
+      if (!busesByDestination[destId]) {
+        busesByDestination[destId] = []
+      }
+      busesByDestination[destId].push(bus)
+    })
+
+    // 各目的地グループ内で、最初と最後のバスを設定
+    Object.values(busesByDestination).forEach((destinationBuses) => {
+      if (destinationBuses.length > 0) {
+        // 各目的地ごとの最初と最後を設定
+        destinationBuses.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
+        destinationBuses.forEach((bus) => {
+          bus.isFirstBus = false
+          bus.isLastBus = false
+        })
+        destinationBuses[0].isFirstBus = true
+        destinationBuses[destinationBuses.length - 1].isLastBus = true
+      }
+    })
+  }
 
   return displayBuses
-}
-
-/**
- * 固定時刻バスをリストに追加
- */
-const addFixedSegmentBuses = (
-  segment: SegmentForDate,
-  schedule: ScheduleForDate,
-  displayBuses: DisplayBusInfo[]
-): void => {
-  if (segment.segmentType !== 'fixed') return
-
-  const times = segment.times
-
-  // 最初と最後のバスを識別
-  const isFirstBus = (idx: number) => idx === 0
-  const isLastBus = (idx: number) => idx === times.length - 1
-
-  for (let i = 0; i < times.length; i++) {
-    displayBuses.push({
-      departureTime: times[i].departure,
-      arrivalTime: times[i].arrival,
-      departure: schedule.departure,
-      destination: segment.destination,
-      date: schedule.date,
-      segmentType: 'fixed',
-      isFirstBus: isFirstBus(i),
-      isLastBus: isLastBus(i),
-    })
-  }
-}
-
-/**
- * 頻度ベースバスをリストに追加
- */
-const addFrequencySegmentBuses = (
-  segment: SegmentForDate,
-  schedule: ScheduleForDate,
-  displayBuses: DisplayBusInfo[]
-): void => {
-  if (segment.segmentType !== 'frequency') return
-
-  const startTimeMinutes =
-    parseInt(segment.startTime.split(':')[0]) * 60 + parseInt(segment.startTime.split(':')[1])
-  const endTimeMinutes =
-    parseInt(segment.endTime.split(':')[0]) * 60 + parseInt(segment.endTime.split(':')[1])
-
-  for (
-    let timeMinutes = startTimeMinutes;
-    timeMinutes <= endTimeMinutes;
-    timeMinutes += segment.intervalMins
-  ) {
-    const hours = Math.floor(timeMinutes / 60)
-    const minutes = timeMinutes % 60
-    const departureTime = `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}`
-
-    // 到着時間を計算（20分後と仮定）
-    const arrivalTimeMinutes = timeMinutes + 20
-    const arrivalHours = Math.floor(arrivalTimeMinutes / 60)
-    const arrivalMinutes = arrivalTimeMinutes % 60
-    const arrivalTime = `${arrivalHours.toString().padStart(2, '0')}:${arrivalMinutes
-      .toString()
-      .padStart(2, '0')}`
-
-    const isFirstFrequencyBus = timeMinutes === startTimeMinutes
-    const isLastFrequencyBus = timeMinutes + segment.intervalMins > endTimeMinutes
-
-    displayBuses.push({
-      departureTime,
-      arrivalTime,
-      departure: schedule.departure,
-      destination: segment.destination,
-      date: schedule.date,
-      segmentType: 'frequency',
-      isFirstBus: isFirstFrequencyBus,
-      isLastBus: isLastFrequencyBus,
-    })
-  }
-}
-
-/**
- * シャトル便をリストに追加
- */
-const addShuttleSegmentBus = (
-  segment: SegmentForDate,
-  schedule: ScheduleForDate,
-  displayBuses: DisplayBusInfo[]
-): void => {
-  if (segment.segmentType !== 'shuttle') return
-
-  const startTimeMinutes =
-    parseInt(segment.startTime.split(':')[0]) * 60 + parseInt(segment.startTime.split(':')[1])
-
-  // 到着時間を計算（平均移動時間を加算）
-  const travelTimeMinutes = 20 // 平均移動時間（分）
-  const arrivalTimeMinutes = startTimeMinutes + travelTimeMinutes
-  const arrivalHours = Math.floor(arrivalTimeMinutes / 60)
-  const arrivalMinutes = arrivalTimeMinutes % 60
-  const arrivalTime = `${arrivalHours.toString().padStart(2, '0')}:${arrivalMinutes
-    .toString()
-    .padStart(2, '0')}`
-
-  displayBuses.push({
-    departureTime: segment.startTime,
-    arrivalTime: arrivalTime, // 開始時刻直後に出発するバスの到着時間
-    departure: schedule.departure,
-    destination: segment.destination,
-    date: schedule.date,
-    segmentType: 'shuttle',
-    isFirstBus: false,
-    isLastBus: false,
-    shuttleTimeRange: {
-      startTime: segment.startTime,
-      endTime: segment.endTime,
-      intervalRange: segment.intervalRange,
-    },
-  })
-}
-
-/**
- * 始発・最終バスを設定
- */
-const setFirstAndLastBuses = (displayBuses: DisplayBusInfo[]): void => {
-  if (displayBuses.length === 0) return
-
-  // 一旦すべてのバスをfalseに設定
-  displayBuses.forEach((bus) => {
-    bus.isFirstBus = false
-    bus.isLastBus = false
-  })
-
-  // 出発地-目的地の組み合わせごとに始発と最終便を設定
-  const routeGroups = new Map<string, { first: DisplayBusInfo; last: DisplayBusInfo }>()
-
-  displayBuses.forEach((bus) => {
-    const routeKey = `${bus.departure.stopId}-${bus.destination.stopId}`
-    if (!routeGroups.has(routeKey)) {
-      routeGroups.set(routeKey, { first: bus, last: bus })
-    } else {
-      const current = routeGroups.get(routeKey)!
-      if (bus.departureTime < current.first.departureTime) {
-        current.first = bus
-      }
-      if (bus.departureTime > current.last.departureTime) {
-        current.last = bus
-      }
-    }
-  })
-
-  // 判定結果を反映
-  for (const { first, last } of routeGroups.values()) {
-    first.isFirstBus = true
-    last.isLastBus = true
-  }
 }
 
 /**
  * 日付と出発地、目的地などの条件に基づいてバスの時刻表をフィルタリングします
  */
 export const filterTimetable = (
-  selectedDeparture: string,
-  selectedDestination: string,
-  timeFilter: 'all' | 'preDeparture' | 'departure' | 'arrival',
+  selectedDepartureGroupId: number,
+  selectedDestinationStopId: number | null, // nullを許容するように変更
+  timeFilter: TimeFilterType,
   startTime: string,
   endTime: string,
   selectedDate: Date | null,
-  now: Date | null
+  now: Date | null,
+  timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null // APIからのデータを追加
 ): DisplayBusInfo[] => {
-  // 基本のバスデータを生成
-  let displayBuses = generateDisplayBuses(selectedDeparture, selectedDestination, selectedDate)
+  let displayBuses = generateDisplayBuses(
+    timetableData,
+    selectedDepartureGroupId,
+    selectedDestinationStopId
+  )
 
-  // 各種フィルターを適用
+  // フィルタリングの前に、まずソートを行う (generateDisplayBusesでソート済みのため、本来は不要だが念のため修正)
+  // displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime)) // 元のコード
+  displayBuses.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
+
   if (timeFilter === 'all') {
-    // フィルターなし - すべてのバスを表示
-    // 出発時間順にソート
-    displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime))
+    // 'all' の場合は既にソート済みなので何もしない
   } else if (timeFilter === 'preDeparture') {
-    // 出発前のバスをフィルター
     displayBuses = applyPreDepartureFilter(displayBuses, now)
-    // 出発時間順にソート
-    displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime))
+    // applyPreDepartureFilter の中でソートされる
   } else if (timeFilter === 'departure') {
-    // 指定出発時間以降のバスをフィルター
     displayBuses = applyDepartureTimeFilter(displayBuses, startTime)
-    // 出発時間順にソート
-    displayBuses.sort((a, b) => a.departureTime.localeCompare(b.departureTime))
+    // applyDepartureTimeFilter の中でソートされる
   } else if (timeFilter === 'arrival') {
-    // 指定到着時間までのバスをフィルター
     displayBuses = applyArrivalTimeFilter(displayBuses, endTime)
-    // この場合は特別なソート順を適用（関数内で実施済み）
-    return displayBuses // arrival フィルタの場合は早期リターン
+    // 到着時間でフィルタリングした場合、到着時間で逆順にソートする（遅い順に表示）
+    displayBuses.sort((a, b) => {
+      const arrivalA = a.arrivalTime || a.departureTime // フォールバック
+      const arrivalB = b.arrivalTime || b.departureTime // フォールバック
+      // 到着時間の降順でソート（遅い → 早い順）
+      return toMinutes(arrivalB) - toMinutes(arrivalA)
+    })
   }
+
+  // フィルタリング後も、元の isFirstBus と isLastBus の設定を維持する
+  // フィルタリングでは isFirstBus と isLastBus の状態を変更しない
 
   return displayBuses
 }
@@ -258,7 +166,7 @@ const applyPreDepartureFilter = (buses: DisplayBusInfo[], now: Date | null): Dis
   // 現在時刻以降のバスをフィルタリング
   const nowTimeStr = format(now, 'HH:mm')
 
-  return buses.filter((bus) => {
+  const filtered = buses.filter((bus) => {
     if (bus.segmentType === 'shuttle' && bus.shuttleTimeRange) {
       // シャトル便の場合、運行終了時刻が現在時刻以降であれば表示
       return isTimeAfterOrEqual(bus.shuttleTimeRange.endTime, nowTimeStr)
@@ -266,13 +174,16 @@ const applyPreDepartureFilter = (buses: DisplayBusInfo[], now: Date | null): Dis
     // 通常便の場合は出発時間で判断
     return isTimeAfterOrEqual(bus.departureTime, nowTimeStr)
   })
+  // フィルタリング後もソート順を維持、または再ソート
+  // return filtered.sort((a,b) => a.departureTime.localeCompare(b.departureTime)); // 元のコード
+  return filtered.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
 }
 
 /**
  * 指定出発時間以降のバスをフィルタリングする
  */
 const applyDepartureTimeFilter = (buses: DisplayBusInfo[], startTime: string): DisplayBusInfo[] => {
-  return buses.filter((bus) => {
+  const filtered = buses.filter((bus) => {
     if (bus.segmentType === 'shuttle' && bus.shuttleTimeRange) {
       // シャトル便の場合、指定された開始時間が運行時間内に含まれているか、
       // または運行開始時間が指定時間以降なら表示
@@ -284,49 +195,27 @@ const applyDepartureTimeFilter = (buses: DisplayBusInfo[], startTime: string): D
     }
     return isTimeAfterOrEqual(bus.departureTime, startTime)
   })
-}
-
-/** "HH:mm" → 分単位に変換 */
-const toMinutes = (t: string) => {
-  const [h, m] = t.split(':').map(Number)
-  return h * 60 + m
+  // フィルタリング後もソート順を維持、または再ソート
+  // return filtered.sort((a,b) => a.departureTime.localeCompare(b.departureTime)); // 元のコード
+  return filtered.sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
 }
 
 /**
- * 指定到着時間までのバスをフィルタリング＆ソート
- * （シャトル便は除外）
- */
-/**
- * 到着フィルタ＋シャトル含むソート
+ * 指定到着時間以前のバスをフィルタリングする
  */
 const applyArrivalTimeFilter = (buses: DisplayBusInfo[], endTime: string): DisplayBusInfo[] => {
-  const endM = toMinutes(endTime)
-
-  type Enriched = { bus: DisplayBusInfo; nextArrival: number }
-
-  // 1) 全便に nextArrival を付与
-  const enriched: Enriched[] = buses.map((bus) => {
-    let nextArrival = toMinutes(bus.arrivalTime)
-
-    if (bus.segmentType === 'shuttle' && bus.shuttleTimeRange) {
-      // travelTime を departure→arrival の差分で算出
-      const travel = toMinutes(bus.arrivalTime) - toMinutes(bus.departureTime)
-      const endRange = toMinutes(bus.shuttleTimeRange.endTime)
-      // シャトルは「最終出発時刻 + travelTime」で到着予想を計算
-      nextArrival = endRange + travel
-    }
-
-    return { bus, nextArrival }
+  const filtered = buses.filter((bus) => {
+    // シャトル便の場合、arrivalTime が存在しない可能性があるため、shuttleTimeRange.endTime を使用
+    const arrivalTimeToCompare =
+      bus.segmentType === 'shuttle' && bus.shuttleTimeRange
+        ? bus.shuttleTimeRange.endTime
+        : bus.arrivalTime
+    if (!arrivalTimeToCompare) return false // 到着時刻がない場合はフィルタリング対象外
+    return isTimeBeforeOrEqual(arrivalTimeToCompare, endTime)
   })
 
-  // 2) endTime 以内のものだけ残す
-  const filtered = enriched.filter((x) => x.nextArrival <= endM)
-
-  // 3) 降順ソート（大きい＝後に出発/到着する便ほど先頭に）
-  filtered.sort((a, b) => b.nextArrival - a.nextArrival)
-
-  // 4) DisplayBusInfo 配列に戻す
-  return filtered.map((x) => x.bus)
+  // filterTimetable関数内でソートするため、ここではソートせずにフィルタリングしたリストをそのまま返す
+  return filtered
 }
 
 /**
@@ -355,6 +244,12 @@ export const getBusStatus = (
  */
 const getShuttleBusStatus = (bus: DisplayBusInfo, now: Date): BusStatus => {
   if (!bus.shuttleTimeRange) {
+    return { status: 'scheduled', text: '' }
+  }
+
+  // バスの日付が今日でない場合は状態を表示しない
+  const today = format(now, 'yyyy-MM-dd')
+  if (bus.date !== today) {
     return { status: 'scheduled', text: '' }
   }
 
@@ -394,6 +289,13 @@ const getRegularBusStatus = (
   buses: DisplayBusInfo[],
   now: Date
 ): BusStatus => {
+  // バスの日付が今日でない場合は状態を表示しない
+  const today = format(now, 'yyyy-MM-dd')
+  const bus = buses[index]
+  if (bus.date !== today) {
+    return { status: 'scheduled', text: '' }
+  }
+
   // 現在時刻を文字列に変換（HH:mm形式）
   const nowStr = format(now, 'HH:mm')
 
@@ -430,6 +332,13 @@ const handleDepartedBusStatus = (
   buses: DisplayBusInfo[],
   nowTotalMinutes: number
 ): BusStatus => {
+  // バスの日付が今日でない場合は状態を表示しない
+  const bus = buses[index]
+  const today = format(new Date(), 'yyyy-MM-dd')
+  if (bus.date !== today) {
+    return { status: 'scheduled', text: '' }
+  }
+
   // 出発済みの場合、直近一本前かどうかを確認
   // 次のバスがある場合、そのバスが出発済みでないかチェック
   if (index + 1 < buses.length) {
@@ -457,117 +366,102 @@ const handleDepartedBusStatus = (
 /**
  * 出発地に基づいて利用可能な目的地のリストを返します
  */
-export const getAvailableDestinations = (selectedDeparture: string): StopInfo[] => {
+export const getAvailableDestinations = (
+  selectedDeparture: number,
+  timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null
+): StopInfo[] => {
+  if (!timetableData || !timetableData.segments) return []
   // 出発地を除外した目的地のリストを返す
-  if (!selectedDeparture) return busStopsInfo
+  if (!selectedDeparture) {
+    return timetableData.segments.map((segment) => ({
+      id: segment.destination.stopId,
+      name: segment.destination.stopName,
+      // available: true, // StopInfoに存在しないためコメントアウト
+    }))
+  }
   // 出発地として選択された停留所を除外
-  return busStopsInfo.filter((stop) => stop.id !== selectedDeparture)
+  return timetableData.segments
+    .filter((segment) => segment.destination.stopId !== selectedDeparture)
+    .map((segment) => ({
+      id: segment.destination.stopId,
+      name: segment.destination.stopName,
+      // available: true, // StopInfoに存在しないためコメントアウト
+    }))
 }
 
 /**
  * 目的地に基づいて利用可能な出発地のリストを返します
  */
-export const getAvailableDepartures = (selectedDestination: string): StopInfo[] => {
+export const getAvailableDepartures = (
+  selectedDestination: number,
+  timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null
+): StopInfo[] => {
+  if (!timetableData) return []
   // 目的地が選択されていない場合はすべての出発地を返す
   // 目的地と同じ出発地は選べないようにする
-  if (!selectedDestination) return busStopsInfo
-  return busStopsInfo.filter((stop) => stop.id !== selectedDestination)
-}
-
-/**
- * 出発地と目的地の組み合わせに基づいてシャトル便セグメントを取得します
- */
-export const getShuttleSegments = (
-  selectedDeparture: string,
-  selectedDestination: string
-): SegmentForDate[] => {
-  const shuttleSegments: SegmentForDate[] = []
-
-  for (const schedule of sampleSchedule) {
-    if (schedule.departure.stopId === selectedDeparture) {
-      for (const segment of schedule.segments) {
-        if (
-          segment.destination.stopId === selectedDestination &&
-          segment.segmentType === 'shuttle'
-        ) {
-          shuttleSegments.push(segment)
-        }
-      }
-    }
-  }
-
-  // 時間帯でソート
-  shuttleSegments.sort((a, b) => {
-    if (a.segmentType === 'shuttle' && b.segmentType === 'shuttle') {
-      return a.startTime.localeCompare(b.startTime)
-    }
-    return 0
-  })
-
-  return shuttleSegments
+  const departures: StopInfo[] = [
+    {
+      id: timetableData.id,
+      name: timetableData.name,
+      // available: true, // StopInfoに存在しないためコメントアウト
+    },
+  ]
+  if (!selectedDestination) return departures
+  return departures.filter((dep) => dep.id !== selectedDestination)
 }
 
 /**
  * 出発地と目的地を入れ替えるが、可能な場合にのみ入れ替える
  */
 export const canSwapStations = (
-  selectedDeparture: string,
-  selectedDestination: string
+  selectedDeparture: number,
+  selectedDestination: number,
+  timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null
 ): boolean => {
-  if (!selectedDeparture || !selectedDestination) return false
+  if (!selectedDeparture || !selectedDestination || !timetableData || !timetableData.segments)
+    return false
 
-  return sampleSchedule.some((schedule) => {
-    return (
-      schedule.departure.stopId === selectedDestination &&
-      schedule.segments.some((segment) => segment.destination.stopId === selectedDeparture)
-    )
-  })
+  const departureExistsAsDestination = timetableData.segments.some(
+    (segment) => segment.destination.stopId === selectedDeparture
+  )
+  // timetableData.id が selectedDestination と一致するかどうかで判定
+  const destinationExistsAsDeparture = timetableData.id === selectedDestination
+
+  return departureExistsAsDestination && destinationExistsAsDeparture
 }
 
 /**
- * 時間文字列（HH:mm）が他の時間文字列より後かどうかを判定します
+ * シャトル便のセグメントを取得
+ * timetableData, selectedDeparture, selectedDestination を元にシャトル便のみ抽出
  */
-export const isTimeAfterOrEqual = (time1: string, time2: string): boolean => {
-  const [hours1, minutes1] = time1.split(':').map(Number)
-  const [hours2, minutes2] = time2.split(':').map(Number)
-
-  const totalMinutes1 = hours1 * 60 + minutes1
-  const totalMinutes2 = hours2 * 60 + minutes2
-
-  return totalMinutes1 >= totalMinutes2
+export const getShuttleSegments = (
+  timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null,
+  selectedDeparture: number,
+  selectedDestination: number
+): DisplayBusInfo[] => {
+  return generateDisplayBuses(timetableData, selectedDeparture, selectedDestination).filter(
+    (bus) => bus.segmentType === 'shuttle'
+  )
 }
 
-/**
- * 時間文字列（HH:mm）が他の時間文字列より前かどうかを判定します
- */
-export const isTimeBeforeOrEqual = (time1: string, time2: string): boolean => {
-  const [hours1, minutes1] = time1.split(':').map(Number)
-  const [hours2, minutes2] = time2.split(':').map(Number)
-
-  const totalMinutes1 = hours1 * 60 + minutes1
-  const totalMinutes2 = hours2 * 60 + minutes2
-
-  return totalMinutes1 <= totalMinutes2
-}
-
-/**
- * 2つの時間文字列（HH:mm）の差分を分単位で返します
- */
-export const getTimeDifferenceInMinutes = (time1: string, time2: string): number => {
-  const [hours1, minutes1] = time1.split(':').map(Number)
-  const [hours2, minutes2] = time2.split(':').map(Number)
-
-  const totalMinutes1 = hours1 * 60 + minutes1
-  const totalMinutes2 = hours2 * 60 + minutes2
-
-  let diff = totalMinutes2 - totalMinutes1
-
-  // 日をまたぐ場合の調整
-  if (diff < -720) {
-    diff += 1440 // 24時間分を加算
-  } else if (diff > 720) {
-    diff -= 1440 // 24時間分を減算
+// "HH:mm" 形式の時刻文字列を分単位の数値に変換する関数
+const toMinutes = (timeStr: string): number => {
+  if (!timeStr || !timeStr.includes(':')) {
+    // timeStr が null や undefined、または予期せぬ形式の場合のフォールバック
+    return 0 // またはエラーをスローするか、適切なデフォルト値を返す
   }
+  const [hours, minutes] = timeStr.split(':').map(Number)
+  return hours * 60 + minutes
+}
 
-  return Math.abs(diff)
+const isTimeAfterOrEqual = (time1: string, time2: string): boolean => {
+  return toMinutes(time1) >= toMinutes(time2)
+}
+
+const isTimeBeforeOrEqual = (time1: string, time2: string): boolean => {
+  return toMinutes(time1) <= toMinutes(time2)
+}
+
+const getTimeDifferenceInMinutes = (time1: string, time2: string): number => {
+  return Math.abs(toMinutes(time1) - toMinutes(time2))
 }

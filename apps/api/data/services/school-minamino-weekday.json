@@ -1,0 +1,422 @@
+{
+  "id": "school-minamino-weekday",
+  "name": "大学（みなみ野駅方面）-> 八王子みなみ野駅 (平日)",
+  "from": {
+    "stopId": 5,
+    "displayName": "大学（みなみ野駅方面）"
+  },
+  "to": {
+    "stopId": 2,
+    "displayName": "八王子みなみ野駅"
+  },
+  "direction": "outbound",
+  "validityPeriods": [{ "from": "2025-04-07", "to": "2025-08-10" }],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "dayType",
+        "value": "weekday"
+      },
+      "times": [
+        {
+          "departure": "7:22",
+          "arrival": "7:29"
+        },
+        {
+          "departure": "7:31",
+          "arrival": "7:38"
+        },
+        {
+          "departure": "7:37",
+          "arrival": "7:44"
+        },
+        {
+          "departure": "7:45",
+          "arrival": "7:52"
+        },
+        {
+          "departure": "7:51",
+          "arrival": "7:58"
+        },
+        {
+          "departure": "7:59",
+          "arrival": "8:06"
+        },
+        {
+          "departure": "8:08",
+          "arrival": "8:15"
+        }
+      ]
+    },
+    {
+      "segmentType": "shuttle",
+      "condition": {
+        "type": "dayType",
+        "value": "weekday"
+      },
+      "startTime": "08:08",
+      "endTime": "09:15",
+      "intervalRange": {
+        "min": 3,
+        "max": 5
+      },
+      "note": "Runs every 3-5 minutes"
+    },
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "dayType",
+        "value": "weekday"
+      },
+      "times": [
+        {
+          "departure": "9:18",
+          "arrival": "9:25"
+        },
+        {
+          "departure": "9:27",
+          "arrival": "9:34"
+        },
+        {
+          "departure": "9:37",
+          "arrival": "9:44"
+        },
+        {
+          "departure": "9:48",
+          "arrival": "9:55"
+        },
+        {
+          "departure": "9:53",
+          "arrival": "10:00"
+        },
+        {
+          "departure": "10:03",
+          "arrival": "10:10"
+        },
+        {
+          "departure": "10:11",
+          "arrival": "10:18"
+        },
+        {
+          "departure": "10:17",
+          "arrival": "10:24"
+        },
+        {
+          "departure": "10:23",
+          "arrival": "10:30"
+        },
+        {
+          "departure": "10:33",
+          "arrival": "10:40"
+        },
+        {
+          "departure": "10:39",
+          "arrival": "10:46"
+        },
+        {
+          "departure": "10:49",
+          "arrival": "10:56"
+        },
+        {
+          "departure": "10:56",
+          "arrival": "11:03"
+        },
+        {
+          "departure": "11:09",
+          "arrival": "11:16"
+        },
+        {
+          "departure": "11:16",
+          "arrival": "11:23"
+        },
+        {
+          "departure": "11:29",
+          "arrival": "11:36"
+        },
+        {
+          "departure": "11:36",
+          "arrival": "11:43"
+        },
+        {
+          "departure": "11:49",
+          "arrival": "11:56"
+        },
+        {
+          "departure": "11:56",
+          "arrival": "12:03"
+        },
+        {
+          "departure": "12:02",
+          "arrival": "12:09"
+        },
+        {
+          "departure": "12:09",
+          "arrival": "12:16"
+        },
+        {
+          "departure": "12:16",
+          "arrival": "12:23"
+        },
+        {
+          "departure": "12:22",
+          "arrival": "12:29"
+        },
+        {
+          "departure": "12:29",
+          "arrival": "12:36"
+        },
+        {
+          "departure": "12:36",
+          "arrival": "12:43"
+        },
+        {
+          "departure": "12:42",
+          "arrival": "12:49"
+        },
+        {
+          "departure": "12:49",
+          "arrival": "12:56"
+        },
+        {
+          "departure": "12:56",
+          "arrival": "13:03"
+        },
+        {
+          "departure": "13:09",
+          "arrival": "13:16"
+        },
+        {
+          "departure": "13:16",
+          "arrival": "13:23"
+        },
+        {
+          "departure": "13:29",
+          "arrival": "13:36"
+        },
+        {
+          "departure": "13:36",
+          "arrival": "13:43"
+        },
+        {
+          "departure": "13:49",
+          "arrival": "13:56"
+        },
+        {
+          "departure": "13:56",
+          "arrival": "14:03"
+        },
+        {
+          "departure": "14:09",
+          "arrival": "14:16"
+        },
+        {
+          "departure": "14:16",
+          "arrival": "14:23"
+        },
+        {
+          "departure": "14:29",
+          "arrival": "14:36"
+        },
+        {
+          "departure": "14:36",
+          "arrival": "14:43"
+        },
+        {
+          "departure": "14:49",
+          "arrival": "14:56"
+        },
+        {
+          "departure": "14:56",
+          "arrival": "15:03"
+        },
+        {
+          "departure": "15:02",
+          "arrival": "15:09"
+        },
+        {
+          "departure": "15:13",
+          "arrival": "15:20"
+        },
+        {
+          "departure": "15:21",
+          "arrival": "15:28"
+        },
+        {
+          "departure": "15:33",
+          "arrival": "15:40"
+        },
+        {
+          "departure": "15:44",
+          "arrival": "15:51"
+        },
+        {
+          "departure": "15:56",
+          "arrival": "16:03"
+        },
+        {
+          "departure": "16:08",
+          "arrival": "16:15"
+        },
+        {
+          "departure": "16:19",
+          "arrival": "16:26"
+        },
+        {
+          "departure": "16:29",
+          "arrival": "16:36"
+        },
+        {
+          "departure": "16:39",
+          "arrival": "16:46"
+        }
+      ]
+    },
+    {
+      "segmentType": "shuttle",
+      "condition": {
+        "type": "dayType",
+        "value": "weekday"
+      },
+      "startTime": "16:39",
+      "endTime": "17:15",
+      "intervalRange": {
+        "min": 3,
+        "max": 10
+      },
+      "note": "Runs every 3-10 minutes"
+    },
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "dayType",
+        "value": "weekday"
+      },
+      "times": [
+        {
+          "departure": "17:18",
+          "arrival": "17:25"
+        },
+        {
+          "departure": "17:26",
+          "arrival": "17:33"
+        },
+        {
+          "departure": "17:36",
+          "arrival": "17:43"
+        },
+        {
+          "departure": "17:44",
+          "arrival": "17:51"
+        },
+        {
+          "departure": "17:53",
+          "arrival": "18:00"
+        },
+        {
+          "departure": "18:01",
+          "arrival": "18:08"
+        },
+        {
+          "departure": "18:09",
+          "arrival": "18:16"
+        },
+        {
+          "departure": "18:20",
+          "arrival": "18:27"
+        },
+        {
+          "departure": "18:30",
+          "arrival": "18:37"
+        },
+        {
+          "departure": "18:42",
+          "arrival": "18:49"
+        },
+        {
+          "departure": "18:52",
+          "arrival": "18:59"
+        }
+      ]
+    },
+    {
+      "segmentType": "shuttle",
+      "condition": {
+        "type": "dayType",
+        "value": "weekday"
+      },
+      "startTime": "18:52",
+      "endTime": "18:59",
+      "intervalRange": {
+        "min": 5,
+        "max": 10
+      },
+      "note": "Runs every 5-10 minutes"
+    },
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "dayType",
+        "value": "weekday"
+      },
+      "times": [
+        {
+          "departure": "19:04",
+          "arrival": "19:11"
+        },
+        {
+          "departure": "19:14",
+          "arrival": "19:21"
+        },
+        {
+          "departure": "19:25",
+          "arrival": "19:32"
+        },
+        {
+          "departure": "19:36",
+          "arrival": "19:43"
+        },
+        {
+          "departure": "19:47",
+          "arrival": "19:54"
+        },
+        {
+          "departure": "19:58",
+          "arrival": "20:05"
+        },
+        {
+          "departure": "20:08",
+          "arrival": "20:15"
+        },
+        {
+          "departure": "20:18",
+          "arrival": "20:25"
+        },
+        {
+          "departure": "20:29",
+          "arrival": "20:36"
+        },
+        {
+          "departure": "20:38",
+          "arrival": "20:45"
+        },
+        {
+          "departure": "20:49",
+          "arrival": "20:56"
+        },
+        {
+          "departure": "21:00",
+          "arrival": "21:07"
+        },
+        {
+          "departure": "21:11",
+          "arrival": "21:18"
+        },
+        {
+          "departure": "21:20",
+          "arrival": "21:27"
+        }
+      ]
+    }
+  ]
+}
