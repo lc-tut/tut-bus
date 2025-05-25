@@ -8,7 +8,7 @@
       "dependsOn": ["^fix"]
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["//#prebuild"],
       "outputs": ["dist/**", "out/**", ".next/**", "!.next/cache/**"]
     },
     "typecheck": {
