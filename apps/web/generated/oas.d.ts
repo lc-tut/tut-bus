@@ -4,468 +4,459 @@
  */
 
 export interface paths {
-  '/api/bus-stops': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description 全バス停の一覧を取得します。オプションで group_id を指定するとグループで絞り込み可能です。 */
-    get: operations['BusStopService_getAllBusStops']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/bus-stops/groups': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description 全バス停グループの一覧を取得します。 */
-    get: operations['BusStopGroupsService_getAllBusStopGroups']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/bus-stops/groups/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description バス停グループの詳細について取得します。 */
-    get: operations['BusStopGroupsService_getBusStopGroupDetails']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/bus-stops/groups/{id}/timetable': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description グループ内全停留所の時刻表をまとめて取得します。 */
-    get: operations['BusStopGroupsService_getBusStopGroupsTimetable']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/bus-stops/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description バス停の詳細について取得します。 */
-    get: operations['BusStopService_getBusStopDetails']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/bus-stops/{id}/timetable': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** @description バス停の時刻表を取得します。複数件返却します。 */
-    get: operations['BusStopService_getBusStopTimetable']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
+    "/api/bus-stops": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description 全バス停の一覧を取得します。オプションで group_id を指定するとグループで絞り込み可能です。 */
+        get: operations["BusStopService_getAllBusStops"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bus-stops/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description 全バス停グループの一覧を取得します。 */
+        get: operations["BusStopGroupsService_getAllBusStopGroups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bus-stops/groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description バス停グループの詳細について取得します。 */
+        get: operations["BusStopGroupsService_getBusStopGroupDetails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bus-stops/groups/{id}/timetable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description グループ内全停留所の時刻表をまとめて取得します。 */
+        get: operations["BusStopGroupsService_getBusStopGroupsTimetable"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bus-stops/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description バス停の詳細について取得します。 */
+        get: operations["BusStopService_getBusStopDetails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bus-stops/{id}/timetable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description バス停の時刻表を取得します。複数件返却します。 */
+        get: operations["BusStopService_getBusStopTimetable"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
-export type webhooks = Record<string, never>
+export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /** @description HTTP 409 Conflict - The request conflicts with the current state of the server. */
-    'Errors.Conflict': {
-      /** @enum {string} */
-      code: 'Conflict'
-      message: string
-    }
-    /** @description Validation error for a single field. */
-    'Errors.FieldError': {
-      field: string
-      message: string
-    }
-    /** @description HTTP 403 Forbidden - You do not have permission to access this resource. */
-    'Errors.Forbidden': {
-      /** @enum {string} */
-      code: 'Forbidden'
-      message: string
-    }
-    /** @description HTTP 500 Internal Server Error - Unexpected condition on the server. */
-    'Errors.InternalServerError': {
-      /** @enum {string} */
-      code: 'InternalServerError'
-      message: string
-      details?: string
-    }
-    'Errors.ServiceError':
-      | {
-          /** @enum {string} */
-          code: 'BadRequest'
-          message: string
-          detail: string
-        }
-      | components['schemas']['Errors.Unauthorized']
-      | components['schemas']['Errors.Forbidden']
-      | {
-          /** @enum {string} */
-          code: 'NotFound'
-          message: string
-          details?: string
-        }
-      | components['schemas']['Errors.Conflict']
-      | components['schemas']['Errors.ValidationError']
-      | components['schemas']['Errors.InternalServerError']
-    /** @description HTTP 401 Unauthorized - Authentication is required or has failed. */
-    'Errors.Unauthorized': {
-      /** @enum {string} */
-      code: 'Unauthorized'
-      message: string
-    }
-    /** @description HTTP 422 Unprocessable Entity - Validation failed on submitted data. */
-    'Errors.ValidationError': {
-      /** @enum {string} */
-      code: 'ValidationError'
-      message: string
-      fieldErrors?: components['schemas']['Errors.FieldError'][]
-    }
-    'Models.BusStop': {
-      /** Format: int32 */
-      id: number
-      name: string
-      lat?: components['schemas']['Scalars.Latitude']
-      lng?: components['schemas']['Scalars.Longitude']
-    }
-    'Models.BusStopGroup': {
-      /** Format: int32 */
-      id: number
-      name: string
-      busStops: components['schemas']['Models.BusStop'][]
-    }
-    'Models.BusStopGroupTimetable': {
-      /** Format: int32 */
-      id: number
-      name: string
-      date: components['schemas']['Scalars.DateISO']
-      segments: components['schemas']['Models.BusStopSegment'][]
-    }
-    'Models.BusStopSegment':
-      | components['schemas']['Models.FixedSegment']
-      | components['schemas']['Models.ShuttleSegment']
-    'Models.BusStopTimetable': {
-      /** Format: int32 */
-      id: number
-      name: string
-      lat: components['schemas']['Scalars.Latitude']
-      lon: components['schemas']['Scalars.Longitude']
-      date: components['schemas']['Scalars.DateISO']
-      segments: components['schemas']['Models.BusStopSegment'][]
-    }
-    'Models.FixedSegment': {
-      /** @enum {string} */
-      segmentType: 'fixed'
-      destination: components['schemas']['Models.StopRef']
-      times: components['schemas']['Models.TimePair'][]
-    }
-    'Models.ShuttleSegment': {
-      /** @enum {string} */
-      segmentType: 'shuttle'
-      destination: components['schemas']['Models.StopRef']
-      startTime: components['schemas']['Scalars.TimeISO']
-      endTime: components['schemas']['Scalars.TimeISO']
-      intervalRange: {
-        /** Format: int32 */
-        min: number
-        /** Format: int32 */
-        max: number
-      }
-    }
-    'Models.StopRef': {
-      /** Format: int32 */
-      stopId: number
-      stopName: string
-      lat?: components['schemas']['Scalars.Latitude']
-      lng?: components['schemas']['Scalars.Longitude']
-    }
-    'Models.TimePair': {
-      departure: components['schemas']['Scalars.TimeISO']
-      arrival: components['schemas']['Scalars.TimeISO']
-    }
-    /** @description HTTP 400 Bad Request - The request cannot be processed due to client error. */
-    'Routes.TimetableBadRequest': {
-      /** @enum {string} */
-      code: 'BadRequest'
-      /** @enum {string} */
-      message: 'InvalidDate'
-      /** @enum {string} */
-      detail: "The 'date' query must be in YYYY-MM-DD format."
-    }
-    /** Format: date */
-    'Scalars.DateISO': string
-    /** Format: double */
-    'Scalars.Latitude': number
-    /** Format: double */
-    'Scalars.Longitude': number
-    'Scalars.TimeISO': string
-  }
-  responses: never
-  parameters: never
-  requestBodies: never
-  headers: never
-  pathItems: never
+    schemas: {
+        /** @description HTTP 409 Conflict - The request conflicts with the current state of the server. */
+        "Errors.Conflict": {
+            /** @enum {string} */
+            code: "Conflict";
+            message: string;
+        };
+        /** @description Validation error for a single field. */
+        "Errors.FieldError": {
+            field: string;
+            message: string;
+        };
+        /** @description HTTP 403 Forbidden - You do not have permission to access this resource. */
+        "Errors.Forbidden": {
+            /** @enum {string} */
+            code: "Forbidden";
+            message: string;
+        };
+        /** @description HTTP 500 Internal Server Error - Unexpected condition on the server. */
+        "Errors.InternalServerError": {
+            /** @enum {string} */
+            code: "InternalServerError";
+            message: string;
+            details?: string;
+        };
+        "Errors.ServiceError": {
+            /** @enum {string} */
+            code: "BadRequest";
+            message: string;
+            detail: string;
+        } | components["schemas"]["Errors.Unauthorized"] | components["schemas"]["Errors.Forbidden"] | {
+            /** @enum {string} */
+            code: "NotFound";
+            message: string;
+            details?: string;
+        } | components["schemas"]["Errors.Conflict"] | components["schemas"]["Errors.ValidationError"] | components["schemas"]["Errors.InternalServerError"];
+        /** @description HTTP 401 Unauthorized - Authentication is required or has failed. */
+        "Errors.Unauthorized": {
+            /** @enum {string} */
+            code: "Unauthorized";
+            message: string;
+        };
+        /** @description HTTP 422 Unprocessable Entity - Validation failed on submitted data. */
+        "Errors.ValidationError": {
+            /** @enum {string} */
+            code: "ValidationError";
+            message: string;
+            fieldErrors?: components["schemas"]["Errors.FieldError"][];
+        };
+        "Models.BusStop": {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            lat?: components["schemas"]["Scalars.Latitude"];
+            lng?: components["schemas"]["Scalars.Longitude"];
+        };
+        "Models.BusStopGroup": {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            busStops: components["schemas"]["Models.BusStop"][];
+        };
+        "Models.BusStopGroupTimetable": {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            date: components["schemas"]["Scalars.DateISO"];
+            segments: components["schemas"]["Models.BusStopSegment"][];
+        };
+        "Models.BusStopSegment": components["schemas"]["Models.FixedSegment"] | components["schemas"]["Models.ShuttleSegment"];
+        "Models.BusStopTimetable": {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            lat: components["schemas"]["Scalars.Latitude"];
+            lon: components["schemas"]["Scalars.Longitude"];
+            date: components["schemas"]["Scalars.DateISO"];
+            segments: components["schemas"]["Models.BusStopSegment"][];
+        };
+        "Models.FixedSegment": {
+            /** @enum {string} */
+            segmentType: "fixed";
+            destination: components["schemas"]["Models.StopRef"];
+            times: components["schemas"]["Models.TimePair"][];
+        };
+        "Models.ShuttleSegment": {
+            /** @enum {string} */
+            segmentType: "shuttle";
+            destination: components["schemas"]["Models.StopRef"];
+            startTime: components["schemas"]["Scalars.TimeISO"];
+            endTime: components["schemas"]["Scalars.TimeISO"];
+            intervalRange: {
+                /** Format: int32 */
+                min: number;
+                /** Format: int32 */
+                max: number;
+            };
+        };
+        "Models.StopRef": {
+            /** Format: int32 */
+            stopId: number;
+            stopName: string;
+            lat?: components["schemas"]["Scalars.Latitude"];
+            lng?: components["schemas"]["Scalars.Longitude"];
+        };
+        "Models.TimePair": {
+            departure: components["schemas"]["Scalars.TimeISO"];
+            arrival: components["schemas"]["Scalars.TimeISO"];
+        };
+        /** @description HTTP 400 Bad Request - The request cannot be processed due to client error. */
+        "Routes.TimetableBadRequest": {
+            /** @enum {string} */
+            code: "BadRequest";
+            /** @enum {string} */
+            message: "InvalidDate";
+            /** @enum {string} */
+            detail: "The 'date' query must be in YYYY-MM-DD format.";
+        };
+        /** Format: date */
+        "Scalars.DateISO": string;
+        /** Format: double */
+        "Scalars.Latitude": number;
+        /** Format: double */
+        "Scalars.Longitude": number;
+        "Scalars.TimeISO": string;
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
-export type $defs = Record<string, never>
+export type $defs = Record<string, never>;
 export interface operations {
-  BusStopService_getAllBusStops: {
-    parameters: {
-      query?: {
-        group_id?: number
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The request has succeeded. */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Models.BusStop'][]
-        }
-      }
-    }
-  }
-  BusStopGroupsService_getAllBusStopGroups: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The request has succeeded. */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Models.BusStopGroup'][]
-        }
-      }
-    }
-  }
-  BusStopGroupsService_getBusStopGroupDetails: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: number
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The request has succeeded. */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Models.BusStopGroup']
-        }
-      }
-      /** @description The server cannot find the requested resource. */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @enum {string} */
-            code: 'NotFound'
-            /** @enum {string} */
-            message: 'BusStopGroupNotFound'
-            /** @enum {string} */
-            details?: 'The requested bus stop group does not exist.'
-          }
-        }
-      }
-    }
-  }
-  BusStopGroupsService_getBusStopGroupsTimetable: {
-    parameters: {
-      query?: {
-        date?: components['schemas']['Scalars.DateISO']
-      }
-      header?: never
-      path: {
-        id: number
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description 指定した日付の時刻表を取得します。 */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Models.BusStopGroupTimetable']
-        }
-      }
-      /** @description 指定した日付の時刻表を取得します。 */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Routes.TimetableBadRequest']
-        }
-      }
-      /** @description 指定した日付の時刻表を取得します。 */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @enum {string} */
-            code: 'NotFound'
-            /** @enum {string} */
-            message: 'BusStopGroupNotFound'
-            /** @enum {string} */
-            details?: 'The requested bus stop group does not exist.'
-          }
-        }
-      }
-    }
-  }
-  BusStopService_getBusStopDetails: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: number
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description バス停の詳細情報を取得します。 */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Models.BusStop']
-        }
-      }
-      /** @description バス停の詳細情報を取得します。 */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @enum {string} */
-            code: 'NotFound'
-            /** @enum {string} */
-            message: 'BusStopNotFound'
-            /** @enum {string} */
-            details?: 'The requested bus stop does not exist.'
-          }
-        }
-      }
-    }
-  }
-  BusStopService_getBusStopTimetable: {
-    parameters: {
-      query?: {
-        date?: components['schemas']['Scalars.DateISO']
-      }
-      header?: never
-      path: {
-        id: number
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description 指定日の時刻表リストを返します。 */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Models.BusStopTimetable']
-        }
-      }
-      /** @description 指定日の時刻表リストを返します。 */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['Routes.TimetableBadRequest']
-        }
-      }
-      /** @description 指定日の時刻表リストを返します。 */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @enum {string} */
-            code: 'NotFound'
-            /** @enum {string} */
-            message: 'BusStopNotFound'
-            /** @enum {string} */
-            details?: 'The requested bus stop does not exist.'
-          }
-        }
-      }
-    }
-  }
+    BusStopService_getAllBusStops: {
+        parameters: {
+            query?: {
+                group_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request has succeeded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStop"][];
+                };
+            };
+        };
+    };
+    BusStopGroupsService_getAllBusStopGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request has succeeded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStopGroup"][];
+                };
+            };
+        };
+    };
+    BusStopGroupsService_getBusStopGroupDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request has succeeded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStopGroup"];
+                };
+            };
+            /** @description The server cannot find the requested resource. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "NotFound";
+                        /** @enum {string} */
+                        message: "BusStopGroupNotFound";
+                        /** @enum {string} */
+                        details?: "The requested bus stop group does not exist.";
+                    };
+                };
+            };
+        };
+    };
+    BusStopGroupsService_getBusStopGroupsTimetable: {
+        parameters: {
+            query?: {
+                date?: components["schemas"]["Scalars.DateISO"];
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 指定した日付の時刻表を取得します。 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStopGroupTimetable"];
+                };
+            };
+            /** @description 指定した日付の時刻表を取得します。 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Routes.TimetableBadRequest"];
+                };
+            };
+            /** @description 指定した日付の時刻表を取得します。 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "NotFound";
+                        /** @enum {string} */
+                        message: "BusStopGroupNotFound";
+                        /** @enum {string} */
+                        details?: "The requested bus stop group does not exist.";
+                    };
+                };
+            };
+        };
+    };
+    BusStopService_getBusStopDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description バス停の詳細情報を取得します。 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStop"];
+                };
+            };
+            /** @description バス停の詳細情報を取得します。 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "NotFound";
+                        /** @enum {string} */
+                        message: "BusStopNotFound";
+                        /** @enum {string} */
+                        details?: "The requested bus stop does not exist.";
+                    };
+                };
+            };
+        };
+    };
+    BusStopService_getBusStopTimetable: {
+        parameters: {
+            query?: {
+                date?: components["schemas"]["Scalars.DateISO"];
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 指定日の時刻表リストを返します。 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Models.BusStopTimetable"];
+                };
+            };
+            /** @description 指定日の時刻表リストを返します。 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Routes.TimetableBadRequest"];
+                };
+            };
+            /** @description 指定日の時刻表リストを返します。 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        code: "NotFound";
+                        /** @enum {string} */
+                        message: "BusStopNotFound";
+                        /** @enum {string} */
+                        details?: "The requested bus stop does not exist.";
+                    };
+                };
+            };
+        };
+    };
 }
