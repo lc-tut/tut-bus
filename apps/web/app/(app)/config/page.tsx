@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
@@ -13,19 +14,44 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ExternalLink } from 'lucide-react'
+// import { Contrail_One } from 'next/font/google'
+import { useAtom } from 'jotai'
+import { dataAtom } from '../../../store'
+import { Saved } from '../../../domain/seve_data'
 
 export default function ConfigPage() {
   const [username, setUsername] = useState('')
   const [notifications, setNotifications] = useState(true)
   const [department, setDepartment] = useState('')
 
+  const [, setSaved] = useAtom(dataAtom)
+  useEffect(() => {
+    const saved = localStorage.getItem('config')
+    if (saved) {
+      const { username, department, notifications } = JSON.parse(saved)
+      setUsername(username || '')
+      setDepartment(department || '')
+      setNotifications(notifications ?? true)
+    }
+  }, [])
+
   const handleSave = () => {
     // 設定保存処理（例: API呼び出し）
+    const savedData = new Saved(username, department)
+    localStorage.setItem(
+      'config',
+      JSON.stringify({
+        username,
+        department,
+      })
+    )
+    console.log(savedData)
+    setSaved([savedData])
     alert('設定を保存しました')
   }
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto">
+    <div className="container px-4 py-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">設定</h1>
       <div className="space-y-8">
         <Card>
