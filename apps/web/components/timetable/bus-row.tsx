@@ -49,9 +49,7 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
       </TableCell>
 
       <TableCell
-        className={cn(
-          bus.segmentType === 'shuttle' && 'bg-purple-100/40 dark:bg-purple-900/40'
-        )}
+        className={cn(bus.segmentType === 'shuttle' && 'bg-purple-100/40 dark:bg-purple-900/40')}
       >
         {bus.segmentType === 'shuttle' && bus.shuttleTimeRange ? (
           <div className="flex items-start flex-col sm:flex-row">

@@ -373,7 +373,11 @@ export function TimetableFilter({
                   </div>
                 ) : (
                   <div>
-                    <SelectItem key="__unselected__" value="__UNSELECTED_DESTINATION__" className="cursor-pointer">
+                    <SelectItem
+                      key="__unselected__"
+                      value="__UNSELECTED_DESTINATION__"
+                      className="cursor-pointer"
+                    >
                       未選択
                     </SelectItem>
                     {availableDestinations.map((stop) => (
@@ -405,10 +409,18 @@ export function TimetableFilter({
                 <SelectValue placeholder="すべての時間" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all" className="cursor-pointer">すべての時間</SelectItem>
-                <SelectItem value="preDeparture" className="cursor-pointer">出発前のみ</SelectItem>
-                <SelectItem value="departure" className="cursor-pointer">出発時間指定</SelectItem>
-                <SelectItem value="arrival" className="cursor-pointer">到着時間指定</SelectItem>
+                <SelectItem value="all" className="cursor-pointer">
+                  すべての時間
+                </SelectItem>
+                <SelectItem value="preDeparture" className="cursor-pointer">
+                  出発前のみ
+                </SelectItem>
+                <SelectItem value="departure" className="cursor-pointer">
+                  出発時間指定
+                </SelectItem>
+                <SelectItem value="arrival" className="cursor-pointer">
+                  到着時間指定
+                </SelectItem>
               </SelectContent>
             </Select>
 
