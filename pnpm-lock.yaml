@@ -18,6 +18,8 @@ importers:
         specifier: ^2.5.3
         version: 2.5.3
 
+  apps/api: {}
+
   apps/spec:
     devDependencies:
       '@typespec/compiler':
