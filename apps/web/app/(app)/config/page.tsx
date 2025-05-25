@@ -51,7 +51,7 @@ export default function ConfigPage() {
   }
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto">
+    <div className="container px-4 py-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">設定</h1>
       <div className="space-y-8">
         <Card>
