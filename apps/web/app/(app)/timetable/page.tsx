@@ -30,7 +30,7 @@ function TimetableContent() {
   const [timeFilter, setTimeFilter] = useState<TimeFilterType>('all')
   const [startTime, setStartTime] = useState<string>('10:00')
   const [endTime, setEndTime] = useState<string>('10:00')
-  const [isLoadingTimetable, setIsLoadingTimetable] = useState(false)
+  const [isLoadingTimetable, setIsLoadingTimetable] = useState(true)
   // APIからの時刻表データを保持するstate (型を修正)
   const [timetableData, setTimetableData] = useState<
     components['schemas']['Models.BusStopGroupTimetable'] | null
@@ -268,6 +268,7 @@ function TimetableContent() {
           filteredTimetable={filteredTimetable}
           now={now}
           timetableData={timetableData}
+          busStopGroups={busStopGroups}
           isLoading={isLoadingTimetable}
         />
       </div>

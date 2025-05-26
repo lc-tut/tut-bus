@@ -315,13 +315,20 @@ export function TimetableFilter({
                     読み込み中...
                   </SelectItem>
                 ) : (
-                  busStopGroups
-                    .filter((group) => selectedDeparture === null || group.id !== selectedDeparture)
-                    .map((group) => (
-                      <SelectItem key={group.id} value={String(group.id)}>
-                        {group.name}
+                  <>
+                    {selectedDeparture && (
+                      <SelectItem value="__UNSELECTED_DESTINATION__">
+                        未選択
                       </SelectItem>
-                    ))
+                    )}
+                    {busStopGroups
+                      .filter((group) => selectedDeparture === null || group.id !== selectedDeparture)
+                      .map((group) => (
+                        <SelectItem key={group.id} value={String(group.id)}>
+                          {group.name}
+                        </SelectItem>
+                      ))}
+                  </>
                 )}
               </SelectContent>
             </Select>
