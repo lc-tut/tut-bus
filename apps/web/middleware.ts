@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const userAgent = request.headers.get('user-agent') || ''
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
+  const ua = request.headers.get('user-agent') || ''
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)
+  const { pathname } = request.nextUrl
 
-  // ルートパスへのアクセスで、モバイルデバイスでない場合は/timetableにリダイレクト
-  if (request.nextUrl.pathname === '/' && !isMobile) {
+  if (!isMobile && pathname !== '/timetable') {
     return NextResponse.redirect(new URL('/timetable', request.url))
   }
 
@@ -13,5 +13,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // 全パスを対象に
   matcher: '/:path*',
 }
