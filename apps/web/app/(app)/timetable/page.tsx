@@ -213,6 +213,7 @@ function TimetableContent() {
       }
     }
     fetchBusStopGroups()
+    setIsLoadingTimetable(false)
   }, [])
 
   // フィルタリングされた時刻表データ
