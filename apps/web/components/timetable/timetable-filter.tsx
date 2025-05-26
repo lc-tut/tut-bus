@@ -317,12 +317,12 @@ export function TimetableFilter({
                 ) : (
                   <>
                     {selectedDeparture && (
-                      <SelectItem value="__UNSELECTED_DESTINATION__">
-                        未選択
-                      </SelectItem>
+                      <SelectItem value="__UNSELECTED_DESTINATION__">未選択</SelectItem>
                     )}
                     {busStopGroups
-                      .filter((group) => selectedDeparture === null || group.id !== selectedDeparture)
+                      .filter(
+                        (group) => selectedDeparture === null || group.id !== selectedDeparture
+                      )
                       .map((group) => (
                         <SelectItem key={group.id} value={String(group.id)}>
                           {group.name}
