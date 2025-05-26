@@ -218,7 +218,7 @@ export function TimetableFilter({
           <div className="border-t my-4"></div>
           {/* 出発地と目的地 */}
           <div>
-            <div className="flex justify-between items-center mb-2 h-[28px]">
+            <div className="flex justify-between items-center mb-2 h-7">
               <label className="text-sm font-medium flex items-center cursor-pointer">
                 <FaMapMarkerAlt className="mr-2 h-3 w-3" />
                 出発地
