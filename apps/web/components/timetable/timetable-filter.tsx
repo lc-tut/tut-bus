@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils'
 import { addDays, format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { useMemo, useState } from 'react'
-import { FaCalendarAlt, FaClock, FaExchangeAlt, FaMapMarkerAlt } from 'react-icons/fa'
+import { FaCalendarAlt, FaClock, FaExchangeAlt, FaMapMarkerAlt, FaTimes } from 'react-icons/fa'
 
 interface TimetableFilterProps {
   selectedDeparture: number | null
@@ -218,11 +218,25 @@ export function TimetableFilter({
           <div className="border-t my-4"></div>
           {/* 出発地と目的地 */}
           <div>
-            <div className="mb-2">
+            <div className="flex justify-between items-center mb-2 h-7">
               <label className="text-sm font-medium flex items-center cursor-pointer">
                 <FaMapMarkerAlt className="mr-2 h-3 w-3" />
                 出発地
               </label>
+              {(selectedDeparture !== null || selectedDestination !== null) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedDeparture(null);
+                    setSelectedDestination(null);
+                  }}
+                  className="h-7 px-2 rounded text-xs font-medium flex items-center gap-1 cursor-pointer"
+                >
+                  <FaTimes className="h-2 w-3" />
+                  <span>選択を解除</span>
+                </Button>
+              )}
             </div>
             <Select
               value={selectedDeparture !== null ? String(selectedDeparture) : ''}
