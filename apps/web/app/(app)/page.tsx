@@ -1,15 +1,14 @@
 'use client'
 
-import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
-import { TimetableDisplay } from '@/components/home/timetable-display'
-import { format } from 'date-fns'
-import { client } from '@/lib/client'
 import { components, operations } from '@/generated/oas'
+import { client } from '@/lib/client'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { generateDisplayBuses } from '@/lib/utils/timetable'
+import { format } from 'date-fns'
+import { useEffect, useState } from 'react'
 
 function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] {
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
@@ -20,14 +19,16 @@ function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusI
   }
 
   return buses
-    .filter(bus => toMinutes(bus.departureTime) >= currentMinutes)
+    .filter((bus) => toMinutes(bus.departureTime) >= currentMinutes)
     .sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
     .slice(0, 5)
 }
 
 export default function Home() {
   const [now, setNow] = useState<Date | null>(null)
-  const [busStopGroups, setBusStopGroups] = useState<components['schemas']['Models.BusStopGroup'][]>([])
+  const [busStopGroups, setBusStopGroups] = useState<
+    components['schemas']['Models.BusStopGroup'][]
+  >([])
   const [isLoadingDepartures, setLoadingDepartures] = useState<boolean>(false)
   const [groupTimetables, setGroupTimetables] = useState<{
     [groupId: number]: {
@@ -72,12 +73,15 @@ export default function Home() {
 
       await Promise.all(
         busStopGroups.map(async (group) => {
-          const params: operations['BusStopGroupsService_getBusStopGroupsTimetable']['parameters'] = {
-            path: { id: group.id },
-            query: { date: format(now, 'yyyy-MM-dd') },
-          }
+          const params: operations['BusStopGroupsService_getBusStopGroupsTimetable']['parameters'] =
+            {
+              path: { id: group.id },
+              query: { date: format(now, 'yyyy-MM-dd') },
+            }
 
-          const { data, error } = await client.GET('/api/bus-stops/groups/{id}/timetable', { params })
+          const { data, error } = await client.GET('/api/bus-stops/groups/{id}/timetable', {
+            params,
+          })
 
           if (data && !error) {
             const displayBuses = generateDisplayBuses(data, group.id, null)
@@ -96,8 +100,8 @@ export default function Home() {
   }, [busStopGroups, now])
 
   useEffect(() => {
-    const currentDate = new Date();
-    console.log(currentDate.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }));
+    const currentDate = new Date()
+    console.log(currentDate.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }))
     setNow(currentDate)
 
     const intervalId = setInterval(() => {
@@ -116,13 +120,10 @@ export default function Home() {
           <CarouselContent className="mx-[5vw]">
             {busStopGroups.map((group, index) => (
               <CarouselItem key={index} className="basis-[90vw] px-2 flex justify-center max-w-lg">
-                <Card className="w-full aspect-[6/7] flex flex-col justify-start items-senter">
+                <Card className="w-full aspect-[6/7] flex flex-col justify-start items-center">
                   <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-center">
-                      {group.name}
-                    </CardTitle>
+                    <CardTitle className="text-2xl font-bold text-center">{group.name}</CardTitle>
                   </CardHeader>
-
 
                   <TimetableDisplay
                     selectedDeparture={group.id}

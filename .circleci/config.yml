@@ -27,12 +27,12 @@ jobs:
       - run:
           name: Lint
           working_directory: spec
-          command: pnpm lint
+          command: pnpm lint --filter ./spec
 
       - run:
           name: Build
           working_directory: spec
-          command: pnpm build
+          command: pnpm build --filter ./spec
 
       - save_cache:
           name: Save spec cache
@@ -66,18 +66,18 @@ jobs:
       - run:
           name: Lint
           working_directory: web
-          command: pnpm lint
+          command: pnpm lint --filter ./web
 
       - run:
           name: Build
           working_directory: web
-          command: pnpm build
+          command: pnpm build --filter ./web
 
       - run:
           name: Start in background
           working_directory: web
           background: true
-          command: pnpm start
+          command: pnpm start --filter ./web
 
       - save_cache:
           name: Save web cache

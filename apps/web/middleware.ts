@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const userAgent = request.headers.get('user-agent') || ''
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
+  const ua = request.headers.get('user-agent') || ''
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)
+  const { pathname } = request.nextUrl
 
-  // ルートパスへのアクセスで、モバイルデバイスでない場合は/timetableにリダイレクト
-  if (request.nextUrl.pathname === '/' && !isMobile) {
+  // PCかつ /timetable でも /api や内部リソースでもない場合にリダイレクト
+  if (
+    !isMobile &&
+    !pathname.startsWith('/timetable') &&
+    !pathname.startsWith('/api') &&
+    !pathname.startsWith('/_next') &&
+    pathname !== '/favicon.ico'
+  ) {
     return NextResponse.redirect(new URL('/timetable', request.url))
   }
 
@@ -13,5 +20,12 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/:path*',
+  // API・_next・favicon を除いたすべてのパスをキャッチ
+  matcher: [
+    /*
+      /(?!api|_next|favicon\.ico).*
+      → 先頭が api, _next, favicon.ico ではない任意のパス
+    */
+    '/((?!api|_next|favicon\\.ico).*)',
+  ],
 }

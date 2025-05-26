@@ -70,7 +70,9 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
           bus.segmentType === 'shuttle' && 'bg-purple-100/40 dark:bg-purple-900/40'
         )}
       >
-        {bus.segmentType === 'shuttle' && bus.shuttleTimeRange ? <></> : (
+        {bus.segmentType === 'shuttle' && bus.shuttleTimeRange ? (
+          <></>
+        ) : (
           <span>{bus.arrivalTime}</span>
         )}
       </TableCell>
