@@ -247,7 +247,9 @@ export function TimetableFilter({
               </SelectTrigger>
               <SelectContent>
                 {isLoadingBusStopGroups ? (
-                  <SelectItem value="_loading" disabled>読み込み中...</SelectItem>
+                  <SelectItem value="_loading" disabled>
+                    読み込み中...
+                  </SelectItem>
                 ) : (
                   busStopGroups.map((group) => (
                     <SelectItem key={group.id} value={String(group.id)}>
@@ -296,14 +298,22 @@ export function TimetableFilter({
               >
                 <div className="flex items-center w-full">
                   <SelectValue
-                    placeholder={isLoadingBusStopGroups ? '読み込み中...' : (!selectedDeparture ? '先に出発地を選択してください' : '目的地を選択')}
+                    placeholder={
+                      isLoadingBusStopGroups
+                        ? '読み込み中...'
+                        : !selectedDeparture
+                          ? '先に出発地を選択してください'
+                          : '目的地を選択'
+                    }
                     className="flex-1 text-left"
                   />
                 </div>
               </SelectTrigger>
               <SelectContent>
                 {isLoadingBusStopGroups ? (
-                  <SelectItem value="_loading" disabled>読み込み中...</SelectItem>
+                  <SelectItem value="_loading" disabled>
+                    読み込み中...
+                  </SelectItem>
                 ) : (
                   busStopGroups
                     .filter((group) => selectedDeparture === null || group.id !== selectedDeparture)

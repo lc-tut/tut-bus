@@ -93,17 +93,27 @@ export function TimetableDisplay({
                 <TableRow>
                   <TableHead className="text-xs font-medium pl-4 md:pl-6">目的地</TableHead>
                   <TableHead className="text-xs font-medium">出発時刻</TableHead>
-                  <TableHead className="text-xs font-medium hidden md:table-cell">到着時刻</TableHead>
+                  <TableHead className="text-xs font-medium hidden md:table-cell">
+                    到着時刻
+                  </TableHead>
                   <TableHead className="text-right text-xs font-medium"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {[...Array(5)].map((_, i) => (
                   <TableRow key={i}>
-                    <td className="pl-4 md:pl-6 py-2"><Skeleton className="h-6 w-24 rounded" /></td>
-                    <td className="py-2"><Skeleton className="h-6 w-20 rounded" /></td>
-                    <td className="py-2 hidden md:table-cell"><Skeleton className="h-6 w-20 rounded" /></td>
-                    <td className="py-2 text-right"><Skeleton className="h-6 w-8 rounded ml-auto" /></td>
+                    <td className="pl-4 md:pl-6 py-2">
+                      <Skeleton className="h-6 w-24 rounded" />
+                    </td>
+                    <td className="py-2">
+                      <Skeleton className="h-6 w-20 rounded" />
+                    </td>
+                    <td className="py-2 hidden md:table-cell">
+                      <Skeleton className="h-6 w-20 rounded" />
+                    </td>
+                    <td className="py-2 text-right">
+                      <Skeleton className="h-6 w-8 rounded ml-auto" />
+                    </td>
                   </TableRow>
                 ))}
               </TableBody>

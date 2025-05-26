@@ -17,12 +17,9 @@ export const generateDisplayBuses = (
   for (const segment of timetableData.segments) {
     // destination.stopIdからグループIDを特定
     const stopIdNum = Number(segment.destination.stopId)
-    const group = busStopGroups.find(g => g.busStops.some(s => s.id === stopIdNum))
+    const group = busStopGroups.find((g) => g.busStops.some((s) => s.id === stopIdNum))
     const destinationGroupId = group ? group.id : stopIdNum // fallback: stopId自身
-    if (
-      selectedDestinationGroupId !== null &&
-      destinationGroupId !== selectedDestinationGroupId
-    ) {
+    if (selectedDestinationGroupId !== null && destinationGroupId !== selectedDestinationGroupId) {
       continue
     }
 
@@ -123,11 +120,7 @@ export const filterTimetable = (
   now: Date | null,
   timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null
 ): DisplayBusInfo[] => {
-  let displayBuses = generateDisplayBuses(
-    busStopGroups,
-    timetableData,
-    selectedDestinationGroupId
-  )
+  let displayBuses = generateDisplayBuses(busStopGroups, timetableData, selectedDestinationGroupId)
 
   displayBuses = displayBuses.filter(
     (bus) => Number(bus.departure.stopId) === selectedDepartureGroupId

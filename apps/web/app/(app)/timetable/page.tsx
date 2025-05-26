@@ -1,14 +1,14 @@
 'use client'
 
-import { TimetableDisplay } from '@/components/timetable/timetable-display';
-import { TimetableFilter } from '@/components/timetable/timetable-filter';
-import type { components, operations } from '@/generated/oas';
-import { client } from '@/lib/client';
-import { TimeFilterType } from '@/lib/types/timetable';
-import { canSwapStations, filterTimetable } from '@/lib/utils/timetable';
-import { format, parseISO } from 'date-fns';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { TimetableDisplay } from '@/components/timetable/timetable-display'
+import { TimetableFilter } from '@/components/timetable/timetable-filter'
+import type { components, operations } from '@/generated/oas'
+import { client } from '@/lib/client'
+import { TimeFilterType } from '@/lib/types/timetable'
+import { canSwapStations, filterTimetable } from '@/lib/utils/timetable'
+import { format, parseISO } from 'date-fns'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 
 export default function TimetablePage() {
   return (
@@ -64,7 +64,15 @@ function TimetableContent() {
 
     // URLを更新（履歴を残さない）
     router.replace(`/timetable?${params.toString()}`, { scroll: false })
-  }, [selectedDepartureGroupId, selectedDestinationGroupId, selectedDate, timeFilter, startTime, endTime, router]) // URLパラメータから状態を読み込む
+  }, [
+    selectedDepartureGroupId,
+    selectedDestinationGroupId,
+    selectedDate,
+    timeFilter,
+    startTime,
+    endTime,
+    router,
+  ]) // URLパラメータから状態を読み込む
   useEffect(() => {
     // 両方の形式のパラメータ名に対応
     const departureParam = searchParams.get('departure') || searchParams.get('from')
@@ -186,7 +194,9 @@ function TimetableContent() {
   }, [selectedDepartureGroupId, selectedDestinationGroupId])
 
   // バス停グループ一覧の状態を追加
-  const [busStopGroups, setBusStopGroups] = useState<components['schemas']['Models.BusStopGroup'][]>([])
+  const [busStopGroups, setBusStopGroups] = useState<
+    components['schemas']['Models.BusStopGroup'][]
+  >([])
 
   // バス停グループ一覧を取得
   useEffect(() => {

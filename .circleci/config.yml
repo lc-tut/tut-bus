@@ -25,12 +25,12 @@ jobs:
           command: pnpm install
 
       - run:
-          name: Lint
+          name: Lint (spec only)
           working_directory: spec
-          command: pnpm lint --filter ./spec
+          command: pnpm run lint:ci --filter ./spec
 
       - run:
-          name: Build
+          name: Build (spec only)
           working_directory: spec
           command: pnpm build --filter ./spec
 
@@ -64,12 +64,12 @@ jobs:
           command: pnpm install
 
       - run:
-          name: Lint
+          name: Lint (web only)
           working_directory: web
-          command: pnpm lint --filter ./web
+          command: pnpm run lint:ci --filter ./web
 
       - run:
-          name: Build
+          name: Build (web only)
           working_directory: web
           command: pnpm build --filter ./web
 

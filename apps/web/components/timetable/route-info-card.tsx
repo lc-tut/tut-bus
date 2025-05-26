@@ -21,7 +21,10 @@ export function RouteInfoCard({
   selectedDestination,
   busStopGroups,
   isLoading = false,
-}: RouteInfoCardProps & { busStopGroups: components['schemas']['Models.BusStopGroup'][]; isLoading?: boolean }) {
+}: RouteInfoCardProps & {
+  busStopGroups: components['schemas']['Models.BusStopGroup'][]
+  isLoading?: boolean
+}) {
   if (isLoading) {
     return (
       <div className="space-y-3 px-2 pt-2">
@@ -34,9 +37,10 @@ export function RouteInfoCard({
       </div>
     )
   }
-  const shuttleSegments = (selectedDeparture != null && selectedDestination != null)
-    ? getShuttleSegments(busStopGroups, timetableData, selectedDeparture, selectedDestination)
-    : []
+  const shuttleSegments =
+    selectedDeparture != null && selectedDestination != null
+      ? getShuttleSegments(busStopGroups, timetableData, selectedDeparture, selectedDestination)
+      : []
 
   if (selectedDeparture == null || selectedDestination == null) return null
 
