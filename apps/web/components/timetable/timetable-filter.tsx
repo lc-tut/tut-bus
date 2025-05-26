@@ -1,15 +1,6 @@
-import { useMemo, useState, useEffect } from 'react' // useEffect を追加
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Calendar } from '@/components/ui/calendar'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -17,14 +8,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Calendar } from '@/components/ui/calendar'
-import { format, addDays } from 'date-fns'
-import { ja } from 'date-fns/locale'
-import { cn } from '@/lib/utils'
-import { FaCalendarAlt, FaClock, FaExchangeAlt, FaMapMarkerAlt } from 'react-icons/fa'
-import { TimeFilterType } from '@/lib/types/timetable'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { components } from '@/generated/oas'
-import { client } from '@/lib/client'
+import { TimeFilterType } from '@/lib/types/timetable'
+import { cn } from '@/lib/utils'
+import { addDays, format } from 'date-fns'
+import { ja } from 'date-fns/locale'
+import { useMemo, useState } from 'react'
+import { FaCalendarAlt, FaClock, FaExchangeAlt, FaMapMarkerAlt } from 'react-icons/fa'
 
 interface TimetableFilterProps {
   selectedDeparture: number | null
@@ -41,6 +40,7 @@ interface TimetableFilterProps {
   endTime: string
   setEndTime: (value: string) => void
   swapStations: () => void
+  busStopGroups: components['schemas']['Models.BusStopGroup'][] // 追加
 }
 
 /**
@@ -62,38 +62,8 @@ export function TimetableFilter({
   endTime,
   setEndTime,
   swapStations,
+  busStopGroups, // 追加
 }: TimetableFilterProps) {
-  const [busStopGroups, setBusStopGroups] = useState<
-    components['schemas']['Models.BusStopGroup'][]
-  >([])
-  const [loadingDepartures, setLoadingDepartures] = useState<boolean>(true)
-
-  useEffect(() => {
-    const fetchBusStopGroups = async () => {
-      setLoadingDepartures(true)
-      try {
-        const { data, error } = await client.GET('/api/bus-stops/groups')
-
-        if (error) {
-          console.error('Error fetching bus stop groups:', error)
-          setBusStopGroups([])
-        } else if (data) {
-          // data.groups を data に変更
-          setBusStopGroups(data) // data.groups を data に変更
-        } else {
-          setBusStopGroups([])
-        }
-      } catch (err) {
-        console.error('Exception fetching bus stop groups:', err)
-        setBusStopGroups([])
-      } finally {
-        setLoadingDepartures(false)
-      }
-    }
-
-    fetchBusStopGroups()
-  }, [])
-
   // 日付タブの設定
   const dateTabs = useMemo(
     () => [
@@ -104,22 +74,9 @@ export function TimetableFilter({
     [now]
   )
 
-  // 出発地リスト: APIデータがあればそれを使う
-  const availableDepartures = useMemo(() => {
-    return busStopGroups.map((group) => ({ id: group.id, name: group.name }))
-  }, [busStopGroups])
-
-  // 目的地リスト: APIデータがあればそれを使う
-  const availableDestinations = useMemo(() => {
-    // APIから取得したバス停グループを目的地の候補として使用
-    // 選択された出発地と同じものは除外する
-    return busStopGroups
-      .map((group) => ({ id: group.id, name: group.name }))
-      .filter((group) => selectedDeparture === null || group.id !== selectedDeparture)
-  }, [busStopGroups, selectedDeparture])
-
   // カレンダーのオープン状態
   const [calendarOpen, setCalendarOpen] = useState<boolean>(false)
+  const isLoadingBusStopGroups = busStopGroups.length === 0
 
   return (
     <Card className="shadow-sm overflow-hidden pt-0 gap-2">
@@ -269,39 +226,34 @@ export function TimetableFilter({
             </div>
             <Select
               value={selectedDeparture !== null ? String(selectedDeparture) : ''}
-              onValueChange={(value) => {
+              onValueChange={(value: string) => {
                 setSelectedDeparture(value === '' ? null : Number(value))
               }}
+              disabled={isLoadingBusStopGroups}
             >
               <SelectTrigger
                 className={cn(
                   'rounded-md h-10 w-full cursor-pointer',
                   !selectedDeparture ? 'text-muted-foreground' : ''
                 )}
+                disabled={isLoadingBusStopGroups}
               >
-                <SelectValue
-                  placeholder={
-                    loadingDepartures
-                      ? '出発地を読み込み中...'
-                      : availableDepartures.length === 0
-                        ? '利用可能な出発地がありません'
-                        : '出発地を選択'
-                  }
-                />
+                <div className="flex items-center w-full">
+                  <SelectValue
+                    placeholder={isLoadingBusStopGroups ? '読み込み中...' : '出発地を選択'}
+                    className="flex-1 text-left"
+                  />
+                </div>
               </SelectTrigger>
               <SelectContent>
-                {loadingDepartures ? (
-                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
+                {isLoadingBusStopGroups ? (
+                  <SelectItem value="_loading" disabled>
                     読み込み中...
-                  </div>
-                ) : availableDepartures.length === 0 ? (
-                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                    利用可能な出発地がありません
-                  </div>
+                  </SelectItem>
                 ) : (
-                  availableDepartures.map((stop) => (
-                    <SelectItem key={stop.id} value={String(stop.id)} className="cursor-pointer">
-                      {stop.name}
+                  busStopGroups.map((group) => (
+                    <SelectItem key={group.id} value={String(group.id)}>
+                      {group.name}
                     </SelectItem>
                   ))
                 )}
@@ -328,64 +280,55 @@ export function TimetableFilter({
             </div>{' '}
             <Select
               value={selectedDestination !== null ? String(selectedDestination) : ''}
-              onValueChange={(value) => {
+              onValueChange={(value: string) => {
                 if (value === '__UNSELECTED_DESTINATION__') {
                   setSelectedDestination(null)
                 } else {
-                  setSelectedDestination(value === '' ? null : Number(value)) // Keep original logic for empty string just in case, though Number('') is 0
+                  setSelectedDestination(Number(value))
                 }
               }}
+              disabled={isLoadingBusStopGroups}
             >
               <SelectTrigger
                 className={cn(
                   'rounded-md h-10 w-full cursor-pointer',
                   !selectedDestination ? 'text-muted-foreground' : ''
                 )}
+                disabled={isLoadingBusStopGroups}
               >
-                <SelectValue
-                  placeholder={
-                    loadingDepartures // 読み込み状態を最初にチェック
-                      ? '停留所を読み込み中...'
-                      : !selectedDeparture
-                        ? '先に出発地を選択してください'
-                        : availableDestinations.length === 0
-                          ? selectedDeparture !== null
-                            ? '選択した出発地からの目的地がありません'
-                            : '利用可能な目的地がありません'
+                <div className="flex items-center w-full">
+                  <SelectValue
+                    placeholder={
+                      isLoadingBusStopGroups
+                        ? '読み込み中...'
+                        : !selectedDeparture
+                          ? '先に出発地を選択してください'
                           : '目的地を選択'
-                  }
-                />
+                    }
+                    className="flex-1 text-left"
+                  />
+                </div>
               </SelectTrigger>
               <SelectContent>
-                {loadingDepartures ? (
-                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
+                {isLoadingBusStopGroups ? (
+                  <SelectItem value="_loading" disabled>
                     読み込み中...
-                  </div>
-                ) : !selectedDeparture ? (
-                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                    先に出発地を選択してください
-                  </div>
-                ) : availableDestinations.length === 0 ? (
-                  <div className="py-2 px-2 text-xs text-muted-foreground text-center">
-                    {selectedDeparture !== null
-                      ? '選択した出発地からの有効な目的地がありません'
-                      : '利用可能な目的地がありません'}
-                  </div>
+                  </SelectItem>
                 ) : (
-                  <div>
-                    <SelectItem
-                      key="__unselected__"
-                      value="__UNSELECTED_DESTINATION__"
-                      className="cursor-pointer"
-                    >
-                      未選択
-                    </SelectItem>
-                    {availableDestinations.map((stop) => (
-                      <SelectItem key={stop.id} value={String(stop.id)} className="cursor-pointer">
-                        {stop.name}
-                      </SelectItem>
-                    ))}
-                  </div>
+                  <>
+                    {selectedDeparture && (
+                      <SelectItem value="__UNSELECTED_DESTINATION__">未選択</SelectItem>
+                    )}
+                    {busStopGroups
+                      .filter(
+                        (group) => selectedDeparture === null || group.id !== selectedDeparture
+                      )
+                      .map((group) => (
+                        <SelectItem key={group.id} value={String(group.id)}>
+                          {group.name}
+                        </SelectItem>
+                      ))}
+                  </>
                 )}
               </SelectContent>
             </Select>

@@ -84,7 +84,7 @@ export default function Home() {
           })
 
           if (data && !error) {
-            const displayBuses = generateDisplayBuses(data, group.id, null)
+            const displayBuses = generateDisplayBuses(busStopGroups, data, null)
             results[group.id] = {
               raw: data,
               filtered: filterBusesByDeparture(displayBuses, now),
@@ -120,7 +120,7 @@ export default function Home() {
           <CarouselContent className="mx-[5vw]">
             {busStopGroups.map((group, index) => (
               <CarouselItem key={index} className="basis-[90vw] px-2 flex justify-center max-w-lg">
-                <Card className="w-full aspect-[6/7] flex flex-col justify-start items-center">
+                <Card className="w-full aspect-[6/7] flex flex-col justify-start">
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">{group.name}</CardTitle>
                   </CardHeader>
@@ -131,6 +131,7 @@ export default function Home() {
                     filteredTimetable={groupTimetables[group.id]?.filtered || []}
                     now={now}
                     timetableData={groupTimetables[group.id]?.raw || null}
+                    busStopGroups={busStopGroups}
                   />
                 </Card>
               </CarouselItem>

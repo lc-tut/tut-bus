@@ -1,8 +1,9 @@
 import { Badge } from '@/components/ui/badge'
-import { FaShuttleVan } from 'react-icons/fa'
-import { getShuttleSegments } from '@/lib/utils/timetable'
-import { DisplayBusInfo } from '@/lib/types/timetable'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { components } from '@/generated/oas'
+import { DisplayBusInfo } from '@/lib/types/timetable'
+import { getShuttleSegments } from '@/lib/utils/timetable'
+import { FaShuttleVan } from 'react-icons/fa'
 
 interface RouteInfoCardProps {
   timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null
@@ -18,11 +19,32 @@ export function RouteInfoCard({
   timetableData,
   selectedDeparture,
   selectedDestination,
-}: RouteInfoCardProps) {
+  busStopGroups,
+  isLoading = false,
+}: RouteInfoCardProps & {
+  busStopGroups: components['schemas']['Models.BusStopGroup'][]
+  isLoading?: boolean
+}) {
+  if (isLoading) {
+    return (
+      <div className="space-y-3 px-2 pt-2">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-20 rounded" />
+          <Skeleton className="h-4 w-16 rounded" />
+        </div>
+        <Skeleton className="h-6 w-full rounded" />
+        <Skeleton className="h-4 w-2/3 rounded" />
+      </div>
+    )
+  }
+  const shuttleSegments =
+    selectedDeparture != null && selectedDestination != null
+      ? getShuttleSegments(busStopGroups, timetableData, selectedDeparture, selectedDestination)
+      : []
+
   if (selectedDeparture == null || selectedDestination == null) return null
 
   // フィルタリングされた運行情報から各セグメントを抽出
-  const shuttleSegments = getShuttleSegments(timetableData, selectedDeparture, selectedDestination)
 
   return (
     <div className="space-y-3">

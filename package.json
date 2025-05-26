@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "lint": "prettier --check . && turbo run lint",
+    "lint:ci": "turbo run lint",
     "fix": "prettier --check --write . && turbo run fix",
     "typecheck": "turbo run typecheck",
     "build": "turbo run build",

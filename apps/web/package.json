@@ -9,7 +9,7 @@
     "fix": "run-s fix:prettier fix:eslint",
     "fix:eslint": "pnpm lint:eslint --fix --quiet",
     "fix:prettier": "pnpm lint:prettier --write",
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"

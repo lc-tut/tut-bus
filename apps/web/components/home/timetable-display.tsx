@@ -1,10 +1,10 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import type { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getBusStatus } from '@/lib/utils/timetable'
-import { RouteInfoCard } from '../timetable/route-info-card'
+import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import { BusRow } from '../home/bus-row'
+import { RouteInfoCard } from '../timetable/route-info-card'
 
 export interface TimetableDisplayProps {
   selectedDeparture: number | null
@@ -12,6 +12,8 @@ export interface TimetableDisplayProps {
   filteredTimetable: DisplayBusInfo[]
   now: Date | null
   timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
+  busStopGroups: components['schemas']['Models.BusStopGroup'][]
+  isLoading?: boolean
 }
 
 export function TimetableDisplay({
@@ -20,6 +22,8 @@ export function TimetableDisplay({
   filteredTimetable,
   now,
   timetableData,
+  busStopGroups,
+  isLoading = false,
 }: TimetableDisplayProps) {
   return (
     <>
@@ -49,6 +53,8 @@ export function TimetableDisplay({
                 timetableData={timetableData}
                 selectedDeparture={selectedDeparture}
                 selectedDestination={selectedDestination}
+                busStopGroups={busStopGroups}
+                isLoading={isLoading}
               />
             </div>
           )}

@@ -1,12 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { FaClock, FaMapMarkerAlt, FaArrowRight } from 'react-icons/fa'
 import type { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
+import { getBusStatus } from '@/lib/utils/timetable'
+import { FaArrowRight, FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import { BusRow } from './bus-row'
 import { RouteInfoCard } from './route-info-card'
-import { getBusStatus } from '@/lib/utils/timetable'
 
 export interface TimetableDisplayProps {
   selectedDeparture: number | null
@@ -14,6 +15,8 @@ export interface TimetableDisplayProps {
   filteredTimetable: DisplayBusInfo[]
   now: Date | null
   timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
+  isLoading?: boolean // 追加
+  busStopGroups: components['schemas']['Models.BusStopGroup'][]
 }
 
 /**
@@ -26,9 +29,11 @@ export function TimetableDisplay({
   filteredTimetable,
   now,
   timetableData,
+  isLoading = false,
+  busStopGroups,
 }: TimetableDisplayProps) {
   return (
-    <Card className="shadow-sm overflow-hidden pt-0 gap-2">
+    <Card className="shadow-sm overflow-hidden pt-0 gap-0">
       <CardHeader className="pb-2 pt-4 px-5 bg-muted">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex flex-wrap justify-left items-center gap-0 text-base font-semibold">
@@ -42,11 +47,11 @@ export function TimetableDisplay({
                   <>
                     <FaArrowRight className="h-2.5 w-2.5 text-muted-foreground mx-2" />
                     <span>
-                      {
+                      {busStopGroups.find((group) => group.id === selectedDestination)?.name ||
                         timetableData.segments.find(
-                          (seg) => seg.destination.stopId === selectedDestination
-                        )?.destination.stopName
-                      }
+                          (seg) => String(seg.destination.stopId) === String(selectedDestination)
+                        )?.destination.stopName ||
+                        '目的地'}
                     </span>
                   </>
                 )}
@@ -73,7 +78,40 @@ export function TimetableDisplay({
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {!selectedDeparture ? (
+        {isLoading ? (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs font-medium pl-4 md:pl-6">目的地</TableHead>
+                  <TableHead className="text-xs font-medium">出発時刻</TableHead>
+                  <TableHead className="text-xs font-medium hidden md:table-cell">
+                    到着時刻
+                  </TableHead>
+                  <TableHead className="text-right text-xs font-medium"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(10)].map((_, i) => (
+                  <TableRow key={i}>
+                    <td className="pl-4 md:pl-6 py-2">
+                      <Skeleton className="h-5 w-28 rounded" />
+                    </td>
+                    <td className="py-2">
+                      <Skeleton className="h-5 w-16 rounded" />
+                    </td>
+                    <td className="py-2 hidden md:table-cell">
+                      <Skeleton className="h-5 w-16 rounded" />
+                    </td>
+                    <td className="p-2 text-right">
+                      <Skeleton className="h-5 w-8 rounded ml-auto" />
+                    </td>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        ) : !selectedDeparture ? (
           <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
             <div className="rounded-full bg-muted p-4 mb-4">
               <FaMapMarkerAlt className="h-8 w-8 text-blue-400" />
@@ -102,6 +140,8 @@ export function TimetableDisplay({
                   timetableData={timetableData}
                   selectedDeparture={selectedDeparture}
                   selectedDestination={selectedDestination}
+                  busStopGroups={busStopGroups}
+                  isLoading={isLoading}
                 />
               </div>
             )}

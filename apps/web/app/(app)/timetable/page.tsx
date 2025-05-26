@@ -2,13 +2,13 @@
 
 import { TimetableDisplay } from '@/components/timetable/timetable-display'
 import { TimetableFilter } from '@/components/timetable/timetable-filter'
-import { client } from '@/lib/client' // clientをインポート
+import type { components, operations } from '@/generated/oas'
+import { client } from '@/lib/client'
 import { TimeFilterType } from '@/lib/types/timetable'
 import { canSwapStations, filterTimetable } from '@/lib/utils/timetable'
-import { useCallback, useEffect, useMemo, useState, Suspense } from 'react'
-import type { operations, components } from '@/generated/oas' // operations をインポートリストに追加 (既に存在する場合あり)
-import { format, parseISO } from 'date-fns' // date-fns から format, parseISO をインポート
-import { useRouter, useSearchParams } from 'next/navigation' // URLパラメータ処理用
+import { format, parseISO } from 'date-fns'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 
 export default function TimetablePage() {
   return (
@@ -23,13 +23,14 @@ function TimetableContent() {
   const searchParams = useSearchParams()
 
   // 状態管理
-  const [selectedDeparture, setSelectedDeparture] = useState<number | null>(null)
-  const [selectedDestination, setSelectedDestination] = useState<number | null>(null)
+  const [selectedDepartureGroupId, setSelectedDepartureGroupId] = useState<number | null>(null)
+  const [selectedDestinationGroupId, setSelectedDestinationGroupId] = useState<number | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [now, setNow] = useState<Date | null>(null)
   const [timeFilter, setTimeFilter] = useState<TimeFilterType>('all')
   const [startTime, setStartTime] = useState<string>('10:00')
   const [endTime, setEndTime] = useState<string>('10:00')
+  const [isLoadingTimetable, setIsLoadingTimetable] = useState(true)
   // APIからの時刻表データを保持するstate (型を修正)
   const [timetableData, setTimetableData] = useState<
     components['schemas']['Models.BusStopGroupTimetable'] | null
@@ -37,12 +38,12 @@ function TimetableContent() {
   const updateUrlParams = useCallback(() => {
     const params = new URLSearchParams()
 
-    if (selectedDeparture !== null) {
-      params.set('from', selectedDeparture.toString())
+    if (selectedDepartureGroupId !== null) {
+      params.set('from', selectedDepartureGroupId.toString())
     }
 
-    if (selectedDestination !== null) {
-      params.set('to', selectedDestination.toString())
+    if (selectedDestinationGroupId !== null) {
+      params.set('to', selectedDestinationGroupId.toString())
     }
 
     if (selectedDate !== null) {
@@ -63,7 +64,15 @@ function TimetableContent() {
 
     // URLを更新（履歴を残さない）
     router.replace(`/timetable?${params.toString()}`, { scroll: false })
-  }, [selectedDeparture, selectedDestination, selectedDate, timeFilter, startTime, endTime, router]) // URLパラメータから状態を読み込む
+  }, [
+    selectedDepartureGroupId,
+    selectedDestinationGroupId,
+    selectedDate,
+    timeFilter,
+    startTime,
+    endTime,
+    router,
+  ]) // URLパラメータから状態を読み込む
   useEffect(() => {
     // 両方の形式のパラメータ名に対応
     const departureParam = searchParams.get('departure') || searchParams.get('from')
@@ -74,17 +83,15 @@ function TimetableContent() {
     const startTimeParam = searchParams.get('startTime')
     const endTimeParam = searchParams.get('endTime')
 
-    // パラメータがある場合のみ状態を更新
     if (departureParam) {
-      setSelectedDeparture(Number(departureParam))
+      setSelectedDepartureGroupId(Number(departureParam))
     }
 
     if (destinationParam) {
-      setSelectedDestination(Number(destinationParam))
+      setSelectedDestinationGroupId(Number(destinationParam))
     }
 
     if (dateParam) {
-      // 日付パラメータがあれば、その日付を設定
       try {
         const parsedDate = parseISO(dateParam)
         setSelectedDate(parsedDate)
@@ -131,8 +138,8 @@ function TimetableContent() {
     if (!selectedDate) return // 初期化前は更新しない
     updateUrlParams()
   }, [
-    selectedDeparture,
-    selectedDestination,
+    selectedDepartureGroupId,
+    selectedDestinationGroupId,
     selectedDate,
     timeFilter,
     startTime,
@@ -142,72 +149,89 @@ function TimetableContent() {
 
   // APIから時刻表データを取得する関数
   const fetchTimetableData = useCallback(async () => {
-    if (selectedDeparture == null || !selectedDate) return
-
+    if (selectedDepartureGroupId == null || !selectedDate) return
+    setIsLoadingTimetable(true)
     // client.GET の期待する型に合わせて修正
     const paramsForGet: operations['BusStopGroupsService_getBusStopGroupsTimetable']['parameters'] =
       {
         path: {
-          id: selectedDeparture,
+          id: selectedDepartureGroupId,
         },
       }
-
     if (selectedDate) {
       paramsForGet.query = { date: format(selectedDate, 'yyyy-MM-dd') }
     }
-
     // client.GET の呼び出しでは、{ params: ... } の形にする
     const { data, error } = await client.GET('/api/bus-stops/groups/{id}/timetable', {
       params: paramsForGet,
     })
-
+    setIsLoadingTimetable(false)
     if (error) {
       console.error('Failed to fetch timetable data:', error)
       setTimetableData(null)
       return
     }
     setTimetableData(data)
-  }, [selectedDeparture, selectedDate])
+  }, [selectedDepartureGroupId, selectedDate])
 
   // 出発地、日付が変更されたらAPIからデータを再取得
   useEffect(() => {
-    if (selectedDeparture != null && selectedDate) {
+    if (selectedDepartureGroupId != null && selectedDate) {
       fetchTimetableData()
     }
-  }, [selectedDeparture, selectedDate, fetchTimetableData])
+  }, [selectedDepartureGroupId, selectedDate, fetchTimetableData])
 
   // 出発地と目的地を入れ替える
   const swapStations = useCallback(() => {
-    if (!selectedDeparture || !selectedDestination) return
+    if (!selectedDepartureGroupId || !selectedDestinationGroupId) return
     if (
-      selectedDeparture === selectedDestination ||
-      !canSwapStations(selectedDestination, selectedDeparture, timetableData) // timetableData を追加
+      selectedDepartureGroupId === selectedDestinationGroupId ||
+      !canSwapStations(selectedDepartureGroupId, selectedDestinationGroupId)
     )
       return
-    setSelectedDeparture(selectedDestination)
-    setSelectedDestination(selectedDeparture)
-  }, [selectedDeparture, selectedDestination, timetableData])
+    setSelectedDepartureGroupId(selectedDestinationGroupId)
+    setSelectedDestinationGroupId(selectedDepartureGroupId)
+  }, [selectedDepartureGroupId, selectedDestinationGroupId])
+
+  // バス停グループ一覧の状態を追加
+  const [busStopGroups, setBusStopGroups] = useState<
+    components['schemas']['Models.BusStopGroup'][]
+  >([])
+
+  // バス停グループ一覧を取得
+  useEffect(() => {
+    const fetchBusStopGroups = async () => {
+      try {
+        const { data, error } = await client.GET('/api/bus-stops/groups')
+        if (error) {
+          setBusStopGroups([])
+        } else if (data) {
+          setBusStopGroups(data)
+        }
+      } catch {
+        setBusStopGroups([])
+      }
+    }
+    fetchBusStopGroups()
+  }, [])
 
   // フィルタリングされた時刻表データ
   const filteredTimetable = useMemo(() => {
-    if (!timetableData || !selectedDate || !now || selectedDeparture == null) return []
-
-    // selectedDestination が null の場合、filterTimetable には undefined を渡すか、
-    // もしくは filterTimetable 側で null を許容するように修正する必要がある。
-    // ここでは、一旦そのまま null を渡すが、filterTimetable の修正が必要になる可能性を示唆。
+    if (!timetableData || !selectedDate || !now || selectedDepartureGroupId == null) return []
     return filterTimetable(
-      selectedDeparture!,
-      selectedDestination, // null の可能性がある
+      busStopGroups,
+      selectedDepartureGroupId, // グループID
+      selectedDestinationGroupId, // バス停ID（null許容）
       timeFilter,
       startTime,
       endTime,
-      selectedDate,
       now,
-      timetableData // APIから取得した時刻表データ
+      timetableData
     )
   }, [
-    selectedDeparture,
-    selectedDestination, // 依存配列には残す
+    busStopGroups,
+    selectedDepartureGroupId,
+    selectedDestinationGroupId,
     timeFilter,
     startTime,
     endTime,
@@ -221,10 +245,10 @@ function TimetableContent() {
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
         <div>
           <TimetableFilter
-            selectedDeparture={selectedDeparture}
-            setSelectedDeparture={setSelectedDeparture}
-            selectedDestination={selectedDestination}
-            setSelectedDestination={setSelectedDestination}
+            selectedDeparture={selectedDepartureGroupId}
+            setSelectedDeparture={setSelectedDepartureGroupId}
+            selectedDestination={selectedDestinationGroupId}
+            setSelectedDestination={setSelectedDestinationGroupId}
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             now={now}
@@ -235,15 +259,17 @@ function TimetableContent() {
             endTime={endTime}
             setEndTime={setEndTime}
             swapStations={swapStations}
+            busStopGroups={busStopGroups}
           />
         </div>
-
         <TimetableDisplay
-          selectedDeparture={selectedDeparture}
-          selectedDestination={selectedDestination}
+          selectedDeparture={selectedDepartureGroupId}
+          selectedDestination={selectedDestinationGroupId}
           filteredTimetable={filteredTimetable}
           now={now}
           timetableData={timetableData}
+          busStopGroups={busStopGroups}
+          isLoading={isLoadingTimetable}
         />
       </div>
     </div>
