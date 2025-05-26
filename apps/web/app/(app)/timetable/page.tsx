@@ -210,10 +210,11 @@ function TimetableContent() {
         }
       } catch {
         setBusStopGroups([])
+      } finally {
+        setIsLoadingTimetable(false)
       }
     }
     fetchBusStopGroups()
-    setIsLoadingTimetable(false)
   }, [])
 
   // フィルタリングされた時刻表データ
