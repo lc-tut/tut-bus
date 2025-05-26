@@ -1,12 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { FaClock, FaMapMarkerAlt, FaArrowRight } from 'react-icons/fa'
 import type { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
+import { getBusStatus } from '@/lib/utils/timetable'
+import { FaArrowRight, FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import { BusRow } from './bus-row'
 import { RouteInfoCard } from './route-info-card'
-import { getBusStatus } from '@/lib/utils/timetable'
 
 export interface TimetableDisplayProps {
   selectedDeparture: number | null
@@ -14,6 +15,7 @@ export interface TimetableDisplayProps {
   filteredTimetable: DisplayBusInfo[]
   now: Date | null
   timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
+  isLoading?: boolean // 追加
 }
 
 /**
@@ -26,6 +28,7 @@ export function TimetableDisplay({
   filteredTimetable,
   now,
   timetableData,
+  isLoading = false, // デフォルトfalse
 }: TimetableDisplayProps) {
   return (
     <Card className="shadow-sm overflow-hidden pt-0 gap-2">
@@ -83,6 +86,29 @@ export function TimetableDisplay({
               出発地を選択すると、利用可能な時刻表が表示されます。
             </p>
           </div>
+        ) : isLoading ? (
+          <div className="py-10 px-5">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs font-medium pl-4 md:pl-6">目的地</TableHead>
+                  <TableHead className="text-xs font-medium">出発時刻</TableHead>
+                  <TableHead className="text-xs font-medium hidden md:table-cell">到着時刻</TableHead>
+                  <TableHead className="text-right text-xs font-medium"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                    <td className="pl-4 md:pl-6 py-2"><Skeleton className="h-6 w-24 rounded" /></td>
+                    <td className="py-2"><Skeleton className="h-6 w-20 rounded" /></td>
+                    <td className="py-2 hidden md:table-cell"><Skeleton className="h-6 w-20 rounded" /></td>
+                    <td className="py-2 text-right"><Skeleton className="h-6 w-8 rounded ml-auto" /></td>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         ) : filteredTimetable.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
             <div className="rounded-full bg-muted p-4 mb-4">
@@ -102,6 +128,8 @@ export function TimetableDisplay({
                   timetableData={timetableData}
                   selectedDeparture={selectedDeparture}
                   selectedDestination={selectedDestination}
+                  busStopGroups={[]}
+                  isLoading={isLoading}
                 />
               </div>
             )}

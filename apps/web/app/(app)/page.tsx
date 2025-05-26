@@ -84,7 +84,7 @@ export default function Home() {
           })
 
           if (data && !error) {
-            const displayBuses = generateDisplayBuses(data, group.id, null)
+            const displayBuses = generateDisplayBuses(busStopGroups, data, null)
             results[group.id] = {
               raw: data,
               filtered: filterBusesByDeparture(displayBuses, now),
