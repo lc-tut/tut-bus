@@ -156,21 +156,24 @@ func (u *busStopUseCase) createBusStopSegments(services []domain.ServiceData, bu
 					continue
 				}
 
-				startTime, err := time.Parse("15:04", s.StartTime)
+				startT, err := time.Parse("15:04", s.StartTime)
 				if err != nil {
 					u.log.Error("failed to parse start time",
 						zap.Error(err),
-						zap.String("startTime", s.StartTime))
+						zap.String("raw", s.StartTime))
 					continue
 				}
 
-				endTime, err := time.Parse("15:04", s.EndTime)
+				endT, err := time.Parse("15:04", s.EndTime)
 				if err != nil {
 					u.log.Error("failed to parse end time",
 						zap.Error(err),
-						zap.String("endTime", s.EndTime))
+						zap.String("raw", s.EndTime))
 					continue
 				}
+
+				fmtStart := startT.Format("9:04") // => "09:39"→"9:39"
+				fmtEnd := endT.Format("9:04")     // => "09:39"→"9:39"
 
 				shuttleSegment := oapi.ModelsShuttleSegment{
 					SegmentType: oapi.Shuttle,
@@ -180,8 +183,8 @@ func (u *busStopUseCase) createBusStopSegments(services []domain.ServiceData, bu
 						Lat:      destination.Lat,
 						Lng:      destination.Lng,
 					},
-					StartTime: startTime.Format("15:04"),
-					EndTime:   endTime.Format("15:04"),
+					StartTime: fmtStart,
+					EndTime:   fmtEnd,
 					IntervalRange: struct {
 						Max int32 `json:"max"`
 						Min int32 `json:"min"`
