@@ -5,7 +5,14 @@ export function middleware(request: NextRequest) {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)
   const { pathname } = request.nextUrl
 
-  if (!isMobile && pathname !== '/timetable') {
+  // PCかつ /timetable でも /api や内部リソースでもない場合にリダイレクト
+  if (
+    !isMobile &&
+    !pathname.startsWith('/timetable') &&
+    !pathname.startsWith('/api') &&
+    !pathname.startsWith('/_next') &&
+    pathname !== '/favicon.ico'
+  ) {
     return NextResponse.redirect(new URL('/timetable', request.url))
   }
 
@@ -13,6 +20,12 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 全パスを対象に
-  matcher: '/:path*',
+  // API・_next・favicon を除いたすべてのパスをキャッチ
+  matcher: [
+    /*
+      /(?!api|_next|favicon\.ico).*
+      → 先頭が api, _next, favicon.ico ではない任意のパス
+    */
+    '/((?!api|_next|favicon\\.ico).*)',
+  ],
 }

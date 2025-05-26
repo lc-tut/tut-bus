@@ -1,15 +1,14 @@
 'use client'
 
-import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
-import { TimetableDisplay } from '@/components/home/timetable-display'
-import { format } from 'date-fns'
-import { client } from '@/lib/client'
 import { components, operations } from '@/generated/oas'
+import { client } from '@/lib/client'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { generateDisplayBuses } from '@/lib/utils/timetable'
+import { format } from 'date-fns'
+import { useEffect, useState } from 'react'
 
 function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] {
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
@@ -121,7 +120,7 @@ export default function Home() {
           <CarouselContent className="mx-[5vw]">
             {busStopGroups.map((group, index) => (
               <CarouselItem key={index} className="basis-[90vw] px-2 flex justify-center max-w-lg">
-                <Card className="w-full aspect-[6/7] flex flex-col justify-start items-senter">
+                <Card className="w-full aspect-[6/7] flex flex-col justify-start items-center">
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">{group.name}</CardTitle>
                   </CardHeader>
