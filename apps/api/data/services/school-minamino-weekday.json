@@ -55,8 +55,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "08:08",
-      "endTime": "09:15",
+      "startTime": "8:08",
+      "endTime": "9:15",
       "intervalRange": {
         "min": 3,
         "max": 5

@@ -28,8 +28,8 @@
     {
       "segmentType": "shuttle",
       "condition": { "type": "dayType", "value": "weekday" },
-      "startTime": "08:15",
-      "endTime": "09:22",
+      "startTime": "8:15",
+      "endTime": "9:22",
       "intervalRange": { "min": 3, "max": 5 },
       "note": "Runs every 3-5 minutes"
     },
