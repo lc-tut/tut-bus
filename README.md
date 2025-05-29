@@ -38,11 +38,12 @@
 ## 開発内容・開発技術
 
 ### 使用言語
-TypeScript, Go, Typespec, Tailwind
+TypeScript, Go, Typespec
 
 ### フレームワーク・ライブラリ・モジュール
 * Next.js
-* React
+* Tailwind
+* Echo
 
 
 ### デバイス
