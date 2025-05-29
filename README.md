@@ -1,14 +1,20 @@
 # 時刻表Webアプリ - バスNavi
-<img width="143" alt="ホーム画面" src="https://github.com/user-attachments/assets/bfd1d0e2-6fac-4252-8b4a-3d73e542e501" />
+![表紙](https://github.com/user-attachments/assets/e4583b4d-9576-4ba9-964b-ea984356c804)
 
 ## 製品概要
 バスNaviは運行時間を出発地ごとに現在時刻から近いバスの時刻を一覧表示する
 
 ### 背景(製品開発のきっかけ、課題など)
 弊学のHPにて掲載されている時刻表が読みづらいことやスクールバスの待機列が利用者から不明確なために<br>待機時間が長くなり、講義に間に合いにくいなど不満が多いのがきっかけとなった。
+![行列の画像](https://github.com/user-attachments/assets/fe85ea52-8262-4af8-9733-a1b1a64c61e7)
+
 
 ### 製品説明(具体的な製品の説明)
-ホーム画面、時刻表の検索画面、設定の入力画面の3画面がある。<br>ホーム画面には大学と各目的地(八王子駅・八王子みなみ野駅・学生会館)それぞれを起点とする現在時刻から近いバスの出発時刻が<br>一覧表示されている。<br>時刻表の検索画面では利用者が求めているバスの時刻を絞り込み表示できる。<br>設定の入力画面には表示テーマの設定やプロフィール設定などが行える。
+ホーム画面、時刻表の検索画面、設定の入力画面の3画面がある。<br>ホーム画面には大学と各目的地(八王子駅・八王子みなみ野駅・学生会館)それぞれを起点とする現在時刻から近いバスの出発時刻が<br>一覧表示されている。<br>時刻表の検索画面では利用者が求めているバスの時刻を絞り込み表示できる。<br>設定の入力画面には表示テーマの設定やプロフィール設定などが行える。<br>
+<img width="143" alt="ホーム画面" src="https://github.com/user-attachments/assets/bfd1d0e2-6fac-4252-8b4a-3d73e542e501" />
+![検索画面](https://github.com/user-attachments/assets/f5704ae2-4942-4382-a42c-49c8c7250854)
+<img width="147" alt="設定画面" src="https://github.com/user-attachments/assets/96f15005-61a1-4d37-8da3-c425ee46cf76" />
+
 
 ### 特長
 #### 1. 特長1 現在時刻から次来るバスの時刻を複数本一覧表示
@@ -32,7 +38,7 @@
 ## 開発内容・開発技術
 
 ### 使用言語
-TypeScript, Go, Typespec, CSS
+TypeScript, Go, Typespec, Tailwind
 
 ### フレームワーク・ライブラリ・モジュール
 * Next.js
