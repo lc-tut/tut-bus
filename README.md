@@ -48,6 +48,7 @@ TypeScript, Go, Typespec, Tailwind
 ### デバイス
 * Android
 * iPhone
+* Web Browser
 
 #### ハッカソンで開発した独自機能・技術
 * ホーム画面のUI
