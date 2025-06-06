@@ -4,10 +4,25 @@ import (
 	"api/internal/domain"
 	"api/internal/domain/repository"
 	"api/pkg/oapi"
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
 )
+
+func normalizeTimeStr(t string) (string, error) {
+	parts := strings.Split(t, ":")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid time format: %s", t)
+	}
+	hour, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d:%s", hour, parts[1]), nil
+}
 
 type BusStopUseCase interface {
 	GetBusStops(groupID *int32) ([]domain.BusStop, error)
@@ -156,24 +171,20 @@ func (u *busStopUseCase) createBusStopSegments(services []domain.ServiceData, bu
 					continue
 				}
 
-				startT, err := time.Parse("15:04", s.StartTime)
+				fmtStart, err := normalizeTimeStr(s.StartTime)
 				if err != nil {
-					u.log.Error("failed to parse start time",
+					u.log.Error("failed to normalize start time",
 						zap.Error(err),
 						zap.String("raw", s.StartTime))
 					continue
 				}
-
-				endT, err := time.Parse("15:04", s.EndTime)
+				fmtEnd, err := normalizeTimeStr(s.EndTime)
 				if err != nil {
-					u.log.Error("failed to parse end time",
+					u.log.Error("failed to normalize end time",
 						zap.Error(err),
 						zap.String("raw", s.EndTime))
 					continue
 				}
-
-				fmtStart := startT.Format("9:04") // => "09:39"→"9:39"
-				fmtEnd := endT.Format("9:04")     // => "09:39"→"9:39"
 
 				shuttleSegment := oapi.ModelsShuttleSegment{
 					SegmentType: oapi.Shuttle,
