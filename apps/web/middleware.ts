@@ -25,7 +25,13 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // /api, /_next/static, /_next/image, favicon.ico を除外し、残り全パスをキャッチ
-    '/((?!api|_next/static|_next/image|favicon\\.ico).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|icon.ico|images|auth).*)',
   ],
 };
