@@ -9,6 +9,7 @@ const Header: React.FC = () => {
           alt="Logo"
           width={60}
           height={60}
+          priority={true}
           className="md:w-10 md:h-10 w-15 h-15"
         />
         <h1 className="text-2xl font-bold">スクールバス</h1>
