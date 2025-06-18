@@ -228,8 +228,8 @@ export function TimetableFilter({
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setSelectedDeparture(null);
-                    setSelectedDestination(null);
+                    setSelectedDeparture(null)
+                    setSelectedDestination(null)
                   }}
                   className="h-7 px-2 rounded text-xs font-medium flex items-center gap-1 cursor-pointer"
                 >
