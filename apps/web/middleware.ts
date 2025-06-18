@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const ua = request.headers.get('user-agent') || ''
@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
     pathname === '/favicon.ico' ||
     pathname.startsWith('/api/')
   ) {
-    return NextResponse.next();
+    return NextResponse.next()
   }
 
   // PC向けで /timetable 以外、かつ 拡張子なし の場合はリダイレクト
@@ -31,7 +31,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/:path*',
-  ],
-};
+  matcher: ['/:path*'],
+}

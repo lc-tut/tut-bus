@@ -20,7 +20,9 @@ export default function AppLayout({
   return (
     <div>
       {!isPWA && <Header />}
-      <div className={cn("p-1 min-h-screen mx-auto max-w-6xl", isPWA ? "my-12" : "my-20")}>{children}</div>
+      <div className={cn('p-1 min-h-screen mx-auto max-w-6xl', isPWA ? 'my-12' : 'my-20')}>
+        {children}
+      </div>
       <NavBar />
     </div>
   )
