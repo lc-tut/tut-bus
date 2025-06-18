@@ -5,17 +5,24 @@ export function middleware(request: NextRequest) {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)
   const { pathname } = request.nextUrl
 
-  if (pathname.startsWith('/_next/') || pathname === '/favicon.ico' || pathname.startsWith('/api/')) {
+  // 静的ファイルやAPIはスキップ
+  if (
+    pathname.startsWith('/_next/') ||
+    pathname === '/favicon.ico' ||
+    pathname.startsWith('/api/')
+  ) {
     return NextResponse.next();
   }
 
-  // PCかつ /timetable でも /api や内部リソースでもない場合にリダイレクト
+  // PC向けで /timetable 以外、かつ 拡張子なし の場合はリダイレクト
+  const isStaticFile = pathname.includes('.')
   if (
     !isMobile &&
     !pathname.startsWith('/timetable') &&
     !pathname.startsWith('/api') &&
     !pathname.startsWith('/_next') &&
-    pathname !== '/favicon.ico'
+    pathname !== '/favicon.ico' &&
+    !isStaticFile // ← これ追加
   ) {
     return NextResponse.redirect(new URL('/timetable', request.url))
   }
@@ -25,13 +32,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|icon.ico|images|auth).*)',
+    '/:path*',
   ],
 };
