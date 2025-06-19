@@ -358,7 +358,7 @@ const handleDepartedBusStatus = (
       return { status: 'departed', text: '出発済み' }
     } else {
       // 次のバスも出発済みの場合は何も表示しない
-      return { status: 'departed', text: '' }
+      return { status: 'departed', text: '出発済み' }
     }
   } else {
     // 最後のバスが出発済みならば表示する
