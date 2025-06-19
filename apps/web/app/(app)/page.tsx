@@ -32,7 +32,7 @@ function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusI
 
   // 一本前のバスと次の5本のバスを合わせる
   const previousBus = pastBuses.length > 0 ? [pastBuses[0]] : []
-  const nextBuses = upcomingBuses.slice(0, 3)
+  const nextBuses = upcomingBuses.slice(0, 4)
 
   // 一本前のバスを先頭に、その後に次の5本のバスを配置
   return [...previousBus, ...nextBuses]
