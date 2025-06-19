@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/sonner'
 import type { Metadata } from 'next'
 import { Noto_Sans_JP } from 'next/font/google'
 import FaviconSwitcher from './favicon-switcher'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import './globals.css'
 
 const notoSansJp = Noto_Sans_JP({
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
   description: '東京工科大学のバスの時刻表や運行情報を提供するアプリです。',
 }
 
+const isProd = process.env.NODE_ENV === 'production'
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID!
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,6 +32,7 @@ export default function RootLayout({
     <html lang="ja" suppressHydrationWarning>
       <head />
       <body className={`${notoSansJp.variable} antialiased`}>
+        {isProd && <GoogleAnalytics gaId={GA_ID} />}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
