@@ -141,7 +141,6 @@ export default function Home() {
                 })
               })
 
-  
               const firstDestination = Array.from(uniqueDestinations.values())[0]
               if (firstDestination) {
                 setSelectedDestinations((prev) => ({
@@ -191,7 +190,10 @@ export default function Home() {
                 <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border-1 border-gray">
                   <div className="bg-blue-100/60 dark:bg-blue-950/20 px-4 py-3 min-h-[64px] flex items-center">
                     <div className="flex items-center w-full">
-                      <Badge variant="outline" className="mr-6 bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-300 text-xs whitespace-nowrap flex items-center">
+                      <Badge
+                        variant="outline"
+                        className="mr-6 bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-300 text-xs whitespace-nowrap flex items-center"
+                      >
                         <FaMapMarkerAlt className="mr-1 size-3" />
                         出発
                       </Badge>
@@ -204,66 +206,84 @@ export default function Home() {
                     const uniqueDestinations = new Map<
                       number,
                       { stopId: number; stopName: string }
-                    >();
+                    >()
 
                     groupTimetables[group.id]?.raw?.segments.forEach((segment) => {
-                      const stopId = segment.destination.stopId;
+                      const stopId = segment.destination.stopId
                       uniqueDestinations.set(stopId, {
                         stopId: stopId,
                         stopName: segment.destination.stopName,
-                      });
-                    });
+                      })
+                    })
 
-                    const destinations = Array.from(uniqueDestinations.values());
+                    const destinations = Array.from(uniqueDestinations.values())
 
                     // 行先が1つだけの場合は自動的に選択
-                    if (destinations.length === 1 && selectedDestinations[group.id] !== destinations[0].stopId) {
-                      setSelectedDestinations(prev => ({
+                    if (
+                      destinations.length === 1 &&
+                      selectedDestinations[group.id] !== destinations[0].stopId
+                    ) {
+                      setSelectedDestinations((prev) => ({
                         ...prev,
-                        [group.id]: destinations[0].stopId
-                      }));
+                        [group.id]: destinations[0].stopId,
+                      }))
                     }
-                    
+
                     return (
                       <div className="px-4 py-3 bg-green-100/80 dark:bg-green-950/20 min-h-[64px] flex items-center">
                         <div className="flex items-center w-full">
-                          <Badge variant="outline" className="mr-6 bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-800 dark:text-green-300 text-xs whitespace-nowrap flex items-center">
+                          <Badge
+                            variant="outline"
+                            className="mr-6 bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-800 dark:text-green-300 text-xs whitespace-nowrap flex items-center"
+                          >
                             <FaArrowRight className="mr-1 size-3" />
                             行先
                           </Badge>
-                          
+
                           {destinations.length === 1 ? (
                             <div className="min-h-[36px] h-9 flex items-center py-1">
-                              <h2 className="text-lg font-semibold truncate">{destinations[0].stopName}</h2>
+                              <h2 className="text-lg font-semibold truncate">
+                                {destinations[0].stopName}
+                              </h2>
                             </div>
                           ) : (
                             <Select
                               value={selectedDestinations[group.id]?.toString() || undefined}
                               onValueChange={(value) => {
-                                const stopId = parseInt(value, 10);
-                                setSelectedDestinations({ ...selectedDestinations, [group.id]: stopId });
+                                const stopId = parseInt(value, 10)
+                                setSelectedDestinations({
+                                  ...selectedDestinations,
+                                  [group.id]: stopId,
+                                })
 
                                 if (groupTimetables[group.id]) {
-                                  const currentTimetable = { ...groupTimetables };
+                                  const currentTimetable = { ...groupTimetables }
                                   const destinationFiltered = filterBusesByDestination(
                                     currentTimetable[group.id].allBuses,
                                     stopId
-                                  );
-                                  const timeFiltered = filterBusesByDeparture(destinationFiltered, now!);
+                                  )
+                                  const timeFiltered = filterBusesByDeparture(
+                                    destinationFiltered,
+                                    now!
+                                  )
 
                                   currentTimetable[group.id] = {
                                     ...currentTimetable[group.id],
                                     filtered: timeFiltered,
-                                  };
+                                  }
 
-                                  setGroupTimetables(currentTimetable);
+                                  setGroupTimetables(currentTimetable)
                                 }
                               }}
                             >
                               <SelectTrigger className="w-full text-lg  h-9 py-1 min-h-[36px] bg-background">
                                 {selectedDestinations[group.id] ? (
                                   <span className="truncate font-bold">
-                                    {destinations.find(d => d.stopId === selectedDestinations[group.id])?.stopName}
+                                    {
+                                      destinations.find(
+                                        (d) => d.stopId === selectedDestinations[group.id]
+                                      )?.stopName
+                                    }
                                   </span>
                                 ) : (
                                   <span className="text-muted-foreground">
@@ -276,7 +296,11 @@ export default function Home() {
                                   行先を選択してください（{destinations.length}件）
                                 </div>
                                 {destinations.map((dest, idx) => (
-                                  <SelectItem key={idx} value={String(dest.stopId)} className="text-sm py-2 cursor-pointer">
+                                  <SelectItem
+                                    key={idx}
+                                    value={String(dest.stopId)}
+                                    className="text-sm py-2 cursor-pointer"
+                                  >
                                     <div className="flex items-center w-full">
                                       <span className="truncate">{dest.stopName}</span>
                                     </div>
@@ -287,7 +311,7 @@ export default function Home() {
                           )}
                         </div>
                       </div>
-                    );
+                    )
                   })()}
 
                   <TimetableDisplay

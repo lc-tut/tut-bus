@@ -30,7 +30,7 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
       <TableCell
         className={cn(
           bus.segmentType === 'shuttle' &&
-          'bg-purple-100/40 dark:bg-purple-900/40 border-l-2 border-purple-500 dark:border-purple-600',
+            'bg-purple-100/40 dark:bg-purple-900/40 border-l-2 border-purple-500 dark:border-purple-600',
           busStatus.status === 'departed' && 'line-through'
         )}
       >
