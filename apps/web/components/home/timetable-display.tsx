@@ -1,34 +1,24 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import type { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getBusStatus } from '@/lib/utils/timetable'
 import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import { BusRow } from '../home/bus-row'
-import { RouteInfoCard } from '../timetable/route-info-card'
 
 export interface TimetableDisplayProps {
   selectedDeparture: number | null
-  selectedDestination: number | null
   filteredTimetable: DisplayBusInfo[]
   now: Date | null
-  timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
-  busStopGroups: components['schemas']['Models.BusStopGroup'][]
-  isLoading?: boolean
 }
 
 export function TimetableDisplay({
   selectedDeparture,
-  selectedDestination,
   filteredTimetable,
   now,
-  timetableData,
-  busStopGroups,
-  isLoading = false,
 }: TimetableDisplayProps) {
   return (
-    <>
+    <div className="flex-1 flex flex-col">
       {!selectedDeparture ? (
-        <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+        <div className="flex flex-col items-center justify-center py-14 px-5 text-center flex-1">
           <div className="rounded-full bg-muted p-4 mb-4">
             <FaMapMarkerAlt className="h-8 w-8 text-blue-400" />
           </div>
@@ -38,7 +28,7 @@ export function TimetableDisplay({
           </p>
         </div>
       ) : filteredTimetable.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+        <div className="flex flex-col items-center justify-center py-14 px-5 text-center flex-1">
           <div className="rounded-full bg-muted p-4 mb-4">
             <FaClock className="size-16 text-muted-foreground" />
           </div>
@@ -46,18 +36,6 @@ export function TimetableDisplay({
         </div>
       ) : (
         <>
-          {/* 経路情報があれば表示 */}
-          {selectedDeparture && selectedDestination && timetableData && (
-            <div className="px-4 pt-3">
-              <RouteInfoCard
-                timetableData={timetableData}
-                selectedDeparture={selectedDeparture}
-                selectedDestination={selectedDestination}
-                busStopGroups={busStopGroups}
-                isLoading={isLoading}
-              />
-            </div>
-          )}
           <Table>
             <TableHeader>
               <TableRow>
@@ -75,6 +53,6 @@ export function TimetableDisplay({
           </Table>
         </>
       )}
-    </>
+    </div>
   )
 }
