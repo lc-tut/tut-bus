@@ -14,8 +14,127 @@ import { format } from 'date-fns'
 import { useAtom } from 'jotai'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
-import { FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa'
+import { FaArrowRight, FaBan, FaExclamationTriangle, FaMapMarkerAlt } from 'react-icons/fa'
 
+// エラー情報の型定義
+interface AppError {
+  type: 'network' | 'api' | 'unknown'
+  message: string
+  details?: string
+}
+
+// エラーメッセージコンポーネント
+function ErrorMessage({ error, onRetry }: { error: AppError; onRetry?: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+      <div className="rounded-full bg-muted p-4 mb-4">
+        <FaExclamationTriangle className="h-8 w-8 text-red-500" />
+      </div>
+      <h3 className="mt-2 text-base font-medium text-red-700 dark:text-red-300">
+        {error.type === 'network' ? 'ネットワークエラー' : 'データの取得に失敗しました'}
+      </h3>
+      <p className="mt-2 text-xs text-muted-foreground max-w-xs">{error.message}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="mt-4 px-4 py-2 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors"
+        >
+          再試行
+        </button>
+      )}
+    </div>
+  )
+}
+
+// エラーハンドリング用のカスタムフック
+function useErrorHandler() {
+  const [error, setError] = useState<AppError | null>(null)
+
+  const handleError = useCallback((err: unknown, context: string) => {
+    if (err instanceof Error) {
+      if (err.message.includes('fetch') || err.message.includes('network')) {
+        setError({
+          type: 'network',
+          message: 'インターネット接続を確認してください',
+          details: err.message,
+        })
+      } else {
+        setError({
+          type: 'api',
+          message: 'データの取得中にエラーが発生しました',
+          details: err.message,
+        })
+      }
+    } else {
+      setError({
+        type: 'unknown',
+        message: '予期しないエラーが発生しました',
+        details: String(err),
+      })
+    }
+
+    // 開発環境でのみ詳細ログを出力
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`Error in ${context}:`, err)
+    }
+  }, [])
+
+  const clearError = useCallback(() => setError(null), [])
+
+  return { error, handleError, clearError }
+}
+
+function extractDestinations(
+  groupTimetable:
+    | {
+        filtered: DisplayBusInfo[]
+        raw: components['schemas']['Models.BusStopGroupTimetable']
+        allBuses: DisplayBusInfo[]
+      }
+    | undefined
+): { stopId: number; stopName: string }[] {
+  const uniqueDestinations = new Map<number, { stopId: number; stopName: string }>()
+
+  // allBusesから行き先を取得
+  groupTimetable?.allBuses?.forEach((bus) => {
+    if (bus?.destination?.stopId && bus?.destination?.stopName) {
+      const stopId = parseInt(bus.destination.stopId, 10)
+      uniqueDestinations.set(stopId, {
+        stopId: stopId,
+        stopName: bus.destination.stopName,
+      })
+    }
+  })
+
+  if (uniqueDestinations.size === 0) {
+    groupTimetable?.raw?.segments?.forEach((segment) => {
+      if (segment?.destination?.stopId && segment?.destination?.stopName) {
+        const stopId = segment.destination.stopId
+        uniqueDestinations.set(stopId, {
+          stopId: stopId,
+          stopName: segment.destination.stopName,
+        })
+      }
+    })
+  }
+
+  return Array.from(uniqueDestinations.values())
+}
+
+// データ読み込み中メッセージコンポーネント
+function LoadingMessage() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+      <div className="rounded-full bg-muted p-4 mb-4">
+        <FaMapMarkerAlt className="h-8 w-8 text-blue-400" />
+      </div>
+      <h3 className="mt-2 text-base font-medium">時刻表を読み込み中...</h3>
+      <p className="mt-2 text-xs text-muted-foreground max-w-xs">しばらくお待ちください</p>
+    </div>
+  )
+}
+
+// API呼び出し用ヘルパー関数
 function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] {
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
 
@@ -73,13 +192,14 @@ function HomeContent() {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
   const [isInitialized, setIsInitialized] = useState(false)
 
+  // エラーハンドリング
+  const { error, handleError, clearError } = useErrorHandler()
+
   const updateUrlParams = useCallback(
     (slideIndex: number) => {
-      console.log('updateUrlParams called with:', slideIndex)
       const params = new URLSearchParams(searchParams.toString())
       params.set('s', slideIndex.toString())
       const newUrl = params.toString() ? `?${params.toString()}` : ''
-      console.log('Updating URL to:', newUrl)
       router.replace(newUrl, { scroll: false })
       setLastSlide(slideIndex)
     },
@@ -110,7 +230,6 @@ function HomeContent() {
 
     const onSelect = () => {
       const selectedIndex = carouselApi.selectedScrollSnap()
-      console.log('Carousel slide changed to:', selectedIndex)
       updateUrlParams(selectedIndex)
     }
 
@@ -124,17 +243,19 @@ function HomeContent() {
   useEffect(() => {
     const fetchBusStopGroups = async () => {
       setLoadingDepartures(true)
+      clearError() // エラーをクリア
+
       try {
         const { data, error } = await client.GET('/api/bus-stops/groups')
 
         if (error || !data) {
-          console.error('Error fetching bus stop groups:', error)
+          handleError(new Error(`API Error: ${error || 'No data received'}`), 'fetchBusStopGroups')
           setBusStopGroups([])
         } else {
           setBusStopGroups(data)
         }
       } catch (err) {
-        console.error('Exception fetching bus stop groups:', err)
+        handleError(err, 'fetchBusStopGroups')
         setBusStopGroups([])
       } finally {
         setLoadingDepartures(false)
@@ -142,81 +263,124 @@ function HomeContent() {
     }
 
     fetchBusStopGroups()
-  }, [])
+  }, [handleError, clearError])
 
-  useEffect(() => {
-    const fetchAllTimetables = async () => {
-      if (!now || busStopGroups.length === 0) return
-
-      const results: {
-        [groupId: number]: {
-          filtered: DisplayBusInfo[]
-          raw: components['schemas']['Models.BusStopGroupTimetable']
-          allBuses: DisplayBusInfo[]
+  // 個別グループの時刻表取得（エラーハンドリング付き）
+  const fetchGroupTimetable = useCallback(
+    async (group: components['schemas']['Models.BusStopGroup'], currentNow: Date) => {
+      try {
+        const params: operations['BusStopGroupsService_getBusStopGroupsTimetable']['parameters'] = {
+          path: { id: group.id },
+          query: { date: format(currentNow, 'yyyy-MM-dd') },
         }
-      } = {}
 
-      await Promise.all(
-        busStopGroups.map(async (group) => {
-          const params: operations['BusStopGroupsService_getBusStopGroupsTimetable']['parameters'] =
-            {
-              path: { id: group.id },
-              query: { date: format(now, 'yyyy-MM-dd') },
-            }
+        const { data, error } = await client.GET('/api/bus-stops/groups/{id}/timetable', { params })
 
-          const { data, error } = await client.GET('/api/bus-stops/groups/{id}/timetable', {
-            params,
-          })
+        if (data && !error) {
+          const displayBuses = generateDisplayBuses(busStopGroups, data, null)
+          const timesFilteredBuses = filterBusesByDeparture(displayBuses, currentNow)
 
-          if (data && !error) {
-            const displayBuses = generateDisplayBuses(busStopGroups, data, null)
-            const timesFilteredBuses = filterBusesByDeparture(displayBuses, now)
+          const result = {
+            raw: data,
+            filtered: timesFilteredBuses,
+            allBuses: displayBuses,
+          }
 
-            results[group.id] = {
-              raw: data,
-              filtered: timesFilteredBuses,
-              allBuses: displayBuses,
-            }
+          // セグメントがある場合は最初の目的地を自動選択
+          if (data.segments && data.segments.length > 0) {
+            const uniqueDestinations = new Map<number, { stopId: number; stopName: string }>()
 
-            if (data.segments && data.segments.length > 0) {
-              const uniqueDestinations = new Map<number, { stopId: number; stopName: string }>()
-
-              data.segments.forEach((segment) => {
+            data.segments.forEach((segment) => {
+              if (segment?.destination?.stopId && segment?.destination?.stopName) {
                 const stopId = segment.destination.stopId
                 uniqueDestinations.set(stopId, {
                   stopId: stopId,
                   stopName: segment.destination.stopName,
                 })
-              })
-
-              const firstDestination = Array.from(uniqueDestinations.values())[0]
-              if (firstDestination) {
-                setSelectedDestinations((prev) => ({
-                  ...prev,
-                  [group.id]: firstDestination.stopId,
-                }))
-
-                const destinationFiltered = filterBusesByDestination(
-                  displayBuses,
-                  firstDestination.stopId
-                )
-
-                results[group.id].filtered = filterBusesByDeparture(destinationFiltered, now)
               }
+            })
+
+            const firstDestination = Array.from(uniqueDestinations.values())[0]
+            if (firstDestination) {
+              setSelectedDestinations((prev) => ({
+                ...prev,
+                [group.id]: firstDestination.stopId,
+              }))
+
+              const destinationFiltered = filterBusesByDestination(
+                displayBuses,
+                firstDestination.stopId
+              )
+              result.filtered = filterBusesByDeparture(destinationFiltered, currentNow)
             }
           }
-        })
-      )
 
-      setGroupTimetables(results)
+          return result
+        } else {
+          // APIエラーの場合も適切なデフォルト値を返す
+          return {
+            raw: {
+              id: group.id,
+              name: group.name,
+              date: format(currentNow, 'yyyy-MM-dd'),
+              segments: [],
+            },
+            filtered: [],
+            allBuses: [],
+          }
+        }
+      } catch (err) {
+        // 個別グループのエラーは表示しない（サイレント処理）
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Failed to fetch timetable for group ${group.name}:`, err)
+        }
+
+        return {
+          raw: {
+            id: group.id,
+            name: group.name,
+            date: format(currentNow, 'yyyy-MM-dd'),
+            segments: [],
+          },
+          filtered: [],
+          allBuses: [],
+        }
+      }
+    },
+    [busStopGroups]
+  )
+
+  useEffect(() => {
+    const fetchAllTimetables = async () => {
+      if (!now || busStopGroups.length === 0) return
+
+      try {
+        const results: {
+          [groupId: number]: {
+            filtered: DisplayBusInfo[]
+            raw: components['schemas']['Models.BusStopGroupTimetable']
+            allBuses: DisplayBusInfo[]
+          }
+        } = {}
+
+        // 並列実行でエラーが発生しても他のグループは継続処理
+        const timetablePromises = busStopGroups.map(async (group) => {
+          const result = await fetchGroupTimetable(group, now)
+          results[group.id] = result
+        })
+
+        await Promise.allSettled(timetablePromises)
+        setGroupTimetables(results)
+      } catch (err) {
+        handleError(err, 'fetchAllTimetables')
+      }
     }
 
     fetchAllTimetables()
-  }, [busStopGroups, now])
+  }, [busStopGroups, now, fetchGroupTimetable, handleError])
 
   useEffect(() => {
     const currentDate = new Date()
-    console.log(currentDate.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }))
     setNow(currentDate)
 
     const intervalId = setInterval(() => {
@@ -228,7 +392,16 @@ function HomeContent() {
 
   return (
     <div className="my-5">
-      {isLoadingDepartures ? (
+      {error ? (
+        <ErrorMessage
+          error={error}
+          onRetry={() => {
+            clearError()
+            // バス停グループの再取得をトリガー
+            window.location.reload()
+          }}
+        />
+      ) : isLoadingDepartures ? (
         <div className="text-center text-lg py-10">読み込み中...</div>
       ) : (
         <Carousel className="w-full" setApi={setCarouselApi}>
@@ -250,21 +423,7 @@ function HomeContent() {
                   </div>
 
                   {(() => {
-                    // 重複を排除するためにMapを使用
-                    const uniqueDestinations = new Map<
-                      number,
-                      { stopId: number; stopName: string }
-                    >()
-
-                    groupTimetables[group.id]?.raw?.segments.forEach((segment) => {
-                      const stopId = segment.destination.stopId
-                      uniqueDestinations.set(stopId, {
-                        stopId: stopId,
-                        stopName: segment.destination.stopName,
-                      })
-                    })
-
-                    const destinations = Array.from(uniqueDestinations.values())
+                    const destinations = extractDestinations(groupTimetables[group.id])
 
                     // 行先が1つだけの場合は自動的に選択
                     if (
@@ -275,6 +434,11 @@ function HomeContent() {
                         ...prev,
                         [group.id]: destinations[0].stopId,
                       }))
+                    }
+
+                    // 行き先がない場合は選択UIを表示しない（下のメッセージで処理）
+                    if (destinations.length === 0) {
+                      return null
                     }
 
                     return (
@@ -296,7 +460,7 @@ function HomeContent() {
                             </div>
                           ) : (
                             <Select
-                              value={selectedDestinations[group.id]?.toString() || undefined}
+                              value={selectedDestinations[group.id]?.toString() || ''}
                               onValueChange={(value) => {
                                 const stopId = parseInt(value, 10)
                                 setSelectedDestinations({
@@ -325,7 +489,8 @@ function HomeContent() {
                               }}
                             >
                               <SelectTrigger className="w-full text-lg  h-9 py-1 min-h-[36px] bg-background">
-                                {selectedDestinations[group.id] ? (
+                                {selectedDestinations[group.id] &&
+                                (selectedDestinations[group.id] ?? 0) > 0 ? (
                                   <span className="truncate font-bold">
                                     {
                                       destinations.find(
@@ -362,13 +527,72 @@ function HomeContent() {
                     )
                   })()}
 
-                  <TimetableDisplay
-                    selectedDeparture={group.id}
-                    selectedDestination={selectedDestinations[group.id] || null}
-                    filteredTimetable={groupTimetables[group.id]?.filtered || []}
-                    now={now}
-                    busStopGroups={busStopGroups}
-                  />
+                  {(() => {
+                    const uniqueDestinations = new Map<
+                      number,
+                      { stopId: number; stopName: string }
+                    >()
+                    groupTimetables[group.id]?.allBuses?.forEach((bus) => {
+                      if (bus?.destination?.stopId && bus?.destination?.stopName) {
+                        const stopId = parseInt(bus.destination.stopId, 10)
+                        uniqueDestinations.set(stopId, {
+                          stopId: stopId,
+                          stopName: bus.destination.stopName,
+                        })
+                      }
+                    })
+
+                    if (uniqueDestinations.size === 0) {
+                      groupTimetables[group.id]?.raw?.segments?.forEach((segment) => {
+                        if (segment?.destination?.stopId && segment?.destination?.stopName) {
+                          const stopId = segment.destination.stopId
+                          uniqueDestinations.set(stopId, {
+                            stopId: stopId,
+                            stopName: segment.destination.stopName,
+                          })
+                        }
+                      })
+                    }
+
+                    const hasDestinations = uniqueDestinations.size > 0
+                    const hasFilteredBuses = groupTimetables[group.id]?.filtered?.length > 0
+                    const hasAllBuses = groupTimetables[group.id]?.allBuses?.length > 0
+                    const hasData = groupTimetables[group.id]
+
+                    const shouldShowNoService = hasData && (!hasDestinations || !hasFilteredBuses)
+
+                    return shouldShowNoService ? (
+                      <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+                        <div className="rounded-full bg-muted p-4 mb-4">
+                          <FaBan className="h-8 w-8 text-orange-500" />
+                        </div>
+                        <h3 className="mt-2 text-base font-medium">
+                          {!hasDestinations || !hasAllBuses
+                            ? '本日の運行予定はありません'
+                            : '選択された時刻・行き先のバスはありません'}
+                        </h3>
+                        <p className="mt-2 text-xs text-muted-foreground max-w-xs">
+                          {!hasDestinations || !hasAllBuses
+                            ? '必ずしも正しいとは限らないため、公式サイトの運行スケジュールをご確認ください'
+                            : '別の行き先を選択するか、しばらく時間をおいてからご確認ください'}
+                        </p>
+                      </div>
+                    ) : null
+                  })()}
+
+                  {/* 時刻表表示 */}
+                  {groupTimetables[group.id]?.filtered?.length > 0 && (
+                    <TimetableDisplay
+                      selectedDeparture={group.id}
+                      selectedDestination={selectedDestinations[group.id] || null}
+                      filteredTimetable={groupTimetables[group.id]?.filtered || []}
+                      now={now}
+                      busStopGroups={busStopGroups}
+                    />
+                  )}
+
+                  {/* データがまだ読み込まれていない場合 */}
+                  {!groupTimetables[group.id]?.allBuses && <LoadingMessage />}
                 </Card>
               </CarouselItem>
             ))}

@@ -290,7 +290,7 @@ func (u *busStopUseCase) GetBusStopTimetable(busStopID int32, date *oapi.Scalars
 
 	// データがないときは null ではなく空の配列を返す
 	if segments == nil {
-		segments = []oapi.ModelsBusStopSegment{}
+		segments = make([]oapi.ModelsBusStopSegment, 0)
 	}
 
 	var lat oapi.ScalarsLatitude
@@ -329,10 +329,16 @@ func (u *busStopUseCase) GetBusStopGroupTimetable(groupID int32, date *oapi.Scal
 		return nil, err
 	}
 
-	var segments []oapi.ModelsBusStopSegment
+	// 空の配列で初期化
+	segments := make([]oapi.ModelsBusStopSegment, 0)
 	for _, busStop := range group.BusStops {
 		busStopSegments := u.createBusStopSegments(services, busStop.ID, dateTime)
 		segments = append(segments, busStopSegments...)
+	}
+
+	// データがないときでも空の配列を確実に返す
+	if segments == nil {
+		segments = []oapi.ModelsBusStopSegment{}
 	}
 
 	return &oapi.ModelsBusStopGroupTimetable{
