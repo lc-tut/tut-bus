@@ -52,7 +52,9 @@ func LoadConfig() (*Config, error) {
 		log.Println("✅ .env file loaded successfully")
 	}
 
-	env := getEnv("API_ENV", "prod")
+	// ENVIRONMENT is used in docker-compose for the API container.
+	// Fallback to API_ENV for backward compatibility.
+	env := getEnv("ENVIRONMENT", getEnv("API_ENV", "prod"))
 	allowedOrigins := []string{}
 	if env == "dev" || env == "development" {
 		allowedOrigins = []string{

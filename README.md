@@ -62,3 +62,9 @@ TypeScript, Go, Typespec
 #### ハッカソンで開発した独自機能・技術
 
 - ホーム画面のUI
+
+### Development
+
+The API reads the `ENVIRONMENT` variable to switch between development and
+production modes. `docker-compose.yml` sets `ENVIRONMENT=development` for local
+use. `API_ENV` is still accepted for backward compatibility.
