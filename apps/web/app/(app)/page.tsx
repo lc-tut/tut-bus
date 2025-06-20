@@ -32,7 +32,7 @@ function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusI
 
   // 一本前のバスと次の5本のバスを合わせる
   const previousBus = pastBuses.length > 0 ? [pastBuses[0]] : []
-  const nextBuses = upcomingBuses.slice(0, 4)
+  const nextBuses = upcomingBuses.slice(0, 3)
 
   // 一本前のバスを先頭に、その後に次の5本のバスを配置
   return [...previousBus, ...nextBuses]
@@ -308,8 +308,10 @@ export default function Home() {
 
                   <TimetableDisplay
                     selectedDeparture={group.id}
+                    selectedDestination={selectedDestinations[group.id] || null}
                     filteredTimetable={groupTimetables[group.id]?.filtered || []}
                     now={now}
+                    busStopGroups={busStopGroups}
                   />
                 </Card>
               </CarouselItem>

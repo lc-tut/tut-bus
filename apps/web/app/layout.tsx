@@ -1,9 +1,9 @@
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata } from 'next'
 import { Noto_Sans_JP } from 'next/font/google'
 import FaviconSwitcher from './favicon-switcher'
-import { GoogleAnalytics } from '@next/third-parties/google'
 import './globals.css'
 
 const notoSansJp = Noto_Sans_JP({
