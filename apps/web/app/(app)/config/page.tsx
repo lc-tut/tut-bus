@@ -11,41 +11,31 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { userConfigAtom } from '@/store'
+import { useAtom } from 'jotai'
 import { ExternalLink } from 'lucide-react'
 import { useEffect, useState } from 'react'
-// import { Contrail_One } from 'next/font/google'
-import { useAtom } from 'jotai'
-import { Saved } from '../../../domain/userConfig'
-import { dataAtom } from '../../../store'
 
 export default function ConfigPage() {
+  const [userConfig, setUserConfig] = useAtom(userConfigAtom)
   const [username, setUsername] = useState('')
   const [notifications, setNotifications] = useState(true)
   const [department, setDepartment] = useState('')
 
-  const [, setSaved] = useAtom(dataAtom)
   useEffect(() => {
-    const saved = localStorage.getItem('config')
-    if (saved) {
-      const { username, department, notifications } = JSON.parse(saved)
-      setUsername(username || '')
-      setDepartment(department || '')
-      setNotifications(notifications ?? true)
-    }
-  }, [])
+    // Jotaiのatomから初期値を設定
+    setUsername(userConfig.username)
+    setDepartment(userConfig.department)
+    setNotifications(userConfig.notifications)
+  }, [userConfig])
 
   const handleSave = () => {
-    // 設定保存処理（例: API呼び出し）
-    const savedData = new Saved(username, department)
-    localStorage.setItem(
-      'config',
-      JSON.stringify({
-        username,
-        department,
-      })
-    )
-    console.log(savedData)
-    setSaved([savedData])
+    // Jotaiのatomを更新（自動的にlocalStorageに保存される）
+    setUserConfig({
+      username,
+      department,
+      notifications,
+    })
     alert('設定を保存しました')
   }
 

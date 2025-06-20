@@ -35,7 +35,7 @@ function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusI
 
   // 一本前のバスと次の5本のバスを合わせる
   const previousBus = pastBuses.length > 0 ? [pastBuses[0]] : []
-  const nextBuses = upcomingBuses.slice(0, 3)
+  const nextBuses = upcomingBuses.slice(0, 2)
 
   // 一本前のバスを先頭に、その後に次の5本のバスを配置
   return [...previousBus, ...nextBuses]
@@ -49,19 +49,6 @@ function filterBusesByDestination(
   if (!destinationId) return buses
 
   return buses.filter((bus) => parseInt(bus.destination.stopId, 10) === destinationId)
-}
-
-// バス停グループ名に基づいて適切なラベルを返す関数
-function getDepartureLabel(groupName: string): string {
-  if (groupName.includes('駅')) {
-    return '駅'
-  } else if (groupName.includes('大学')) {
-    return 'キャンパス'
-  } else if (groupName.includes('学生会館')) {
-    return '施設'
-  } else {
-    return '出発地'
-  }
 }
 
 export default function Home() {
@@ -256,7 +243,7 @@ export default function Home() {
                         className="mr-6 bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-300 text-xs whitespace-nowrap flex items-center"
                       >
                         <FaMapMarkerAlt className="mr-1 size-3" />
-                        {getDepartureLabel(group.name)}
+                        出発地
                       </Badge>
                       <h2 className="text-lg font-bold truncate">{group.name}</h2>
                     </div>

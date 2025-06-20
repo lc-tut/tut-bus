@@ -6,3 +6,14 @@ export const dataAtom = atom<UserConfig[]>([])
 
 // 最後に選択したスライドのインデックスをlocalStorageに保存
 export const lastSlideAtom = atomWithStorage<number>('lastSlide', 0)
+
+// ユーザー設定をlocalStorageに保存
+export const userConfigAtom = atomWithStorage<{
+  username: string
+  department: string
+  notifications: boolean
+}>('userConfig', {
+  username: '',
+  department: '',
+  notifications: true,
+})
