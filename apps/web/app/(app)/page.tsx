@@ -165,7 +165,7 @@ export default function Home() {
 
     const intervalId = setInterval(() => {
       setNow(new Date())
-    }, 30000)
+    }, 15000)
 
     return () => clearInterval(intervalId)
   }, [])
