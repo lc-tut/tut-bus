@@ -1,11 +1,8 @@
 'use client'
-import React, { useState } from 'react'
-import { useEffect } from 'react'
-import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ModeToggle } from '@/components/mode-toggle'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -13,11 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { ExternalLink } from 'lucide-react'
+import { useEffect, useState } from 'react'
 // import { Contrail_One } from 'next/font/google'
 import { useAtom } from 'jotai'
+import { Saved } from '../../../domain/userConfig'
 import { dataAtom } from '../../../store'
-import { Saved } from '../../../domain/seve_data'
 
 export default function ConfigPage() {
   const [username, setUsername] = useState('')

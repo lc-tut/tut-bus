@@ -3,14 +3,17 @@
 import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
+import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { components, operations } from '@/generated/oas'
 import { client } from '@/lib/client'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { generateDisplayBuses } from '@/lib/utils/timetable'
+import { lastSlideAtom } from '@/store'
 import { format } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { useAtom } from 'jotai'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 import { FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa'
 
 function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] {
@@ -48,7 +51,23 @@ function filterBusesByDestination(
   return buses.filter((bus) => parseInt(bus.destination.stopId, 10) === destinationId)
 }
 
+// バス停グループ名に基づいて適切なラベルを返す関数
+function getDepartureLabel(groupName: string): string {
+  if (groupName.includes('駅')) {
+    return '駅'
+  } else if (groupName.includes('大学')) {
+    return 'キャンパス'
+  } else if (groupName.includes('学生会館')) {
+    return '施設'
+  } else {
+    return '出発地'
+  }
+}
+
 export default function Home() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [lastSlide, setLastSlide] = useAtom(lastSlideAtom)
   const [now, setNow] = useState<Date | null>(null)
   const [busStopGroups, setBusStopGroups] = useState<
     components['schemas']['Models.BusStopGroup'][]
@@ -64,6 +83,56 @@ export default function Home() {
       allBuses: DisplayBusInfo[]
     }
   }>({})
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  const updateUrlParams = useCallback(
+    (slideIndex: number) => {
+      console.log('updateUrlParams called with:', slideIndex)
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('s', slideIndex.toString())
+      const newUrl = params.toString() ? `?${params.toString()}` : ''
+      console.log('Updating URL to:', newUrl)
+      router.replace(newUrl, { scroll: false })
+      setLastSlide(slideIndex)
+    },
+    [router, searchParams, setLastSlide]
+  )
+
+  useEffect(() => {
+    if (!carouselApi || busStopGroups.length === 0 || isInitialized) return
+
+    const slideParam = searchParams.get('s')
+    // 優先度: 1. URL → 2. localStorage → 3. その他（デフォルト0）
+    const initialSlide = slideParam ? parseInt(slideParam, 10) : lastSlide
+    if (initialSlide >= 0 && initialSlide < busStopGroups.length) {
+      carouselApi.scrollTo(initialSlide)
+      setIsInitialized(true)
+
+      if (!slideParam && initialSlide !== 0) {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set('s', initialSlide.toString())
+        const newUrl = params.toString() ? `?${params.toString()}` : ''
+        router.replace(newUrl, { scroll: false })
+      }
+    }
+  }, [carouselApi, busStopGroups.length, isInitialized, searchParams, lastSlide, router])
+
+  useEffect(() => {
+    if (!carouselApi) return
+
+    const onSelect = () => {
+      const selectedIndex = carouselApi.selectedScrollSnap()
+      console.log('Carousel slide changed to:', selectedIndex)
+      updateUrlParams(selectedIndex)
+    }
+
+    carouselApi.on('select', onSelect)
+
+    return () => {
+      carouselApi.off('select', onSelect)
+    }
+  }, [carouselApi, updateUrlParams])
 
   useEffect(() => {
     const fetchBusStopGroups = async () => {
@@ -175,7 +244,7 @@ export default function Home() {
       {isLoadingDepartures ? (
         <div className="text-center text-lg py-10">読み込み中...</div>
       ) : (
-        <Carousel className="w-full">
+        <Carousel className="w-full" setApi={setCarouselApi}>
           <CarouselContent className="mx-[5vw]">
             {busStopGroups.map((group, index) => (
               <CarouselItem key={index} className="basis-[90vw] px-2 flex justify-center max-w-lg">
@@ -187,7 +256,7 @@ export default function Home() {
                         className="mr-6 bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-300 text-xs whitespace-nowrap flex items-center"
                       >
                         <FaMapMarkerAlt className="mr-1 size-3" />
-                        出発
+                        {getDepartureLabel(group.name)}
                       </Badge>
                       <h2 className="text-lg font-bold truncate">{group.name}</h2>
                     </div>
