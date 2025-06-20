@@ -1,4 +1,3 @@
-// filepath: /home/hekuta/works/tut-bus/apps/web/components/timetable/bus-row.tsx
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { TableCell, TableRow } from '@/components/ui/table'
