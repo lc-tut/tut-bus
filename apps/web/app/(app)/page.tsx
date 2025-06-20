@@ -171,7 +171,7 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="my-10">
+    <div className="my-5">
       {isLoadingDepartures ? (
         <div className="text-center text-lg py-10">読み込み中...</div>
       ) : (
