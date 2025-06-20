@@ -13,7 +13,7 @@ import { lastSlideAtom } from '@/store'
 import { format } from 'date-fns'
 import { useAtom } from 'jotai'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa'
 
 function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] {
@@ -51,7 +51,7 @@ function filterBusesByDestination(
   return buses.filter((bus) => parseInt(bus.destination.stopId, 10) === destinationId)
 }
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [lastSlide, setLastSlide] = useAtom(lastSlideAtom)
@@ -376,5 +376,13 @@ export default function Home() {
         </Carousel>
       )}
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="text-center text-lg py-10">読み込み中...</div>}>
+      <HomeContent />
+    </Suspense>
   )
 }
