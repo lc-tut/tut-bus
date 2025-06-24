@@ -64,7 +64,7 @@ export function TimetableDisplay({
     router.push(`/timetable?${params.toString()}`)
   }
   return (
-    <div className="flex-1 flex flex-col min-h-[230px] justify-between">
+    <div className="flex-1 flex flex-col min-h-[210px] justify-between">
       {!selectedDeparture ? (
         <div className="flex flex-col items-center justify-center py-14 px-5 text-center flex-1">
           <div className="rounded-full bg-muted p-4 mb-4">
@@ -110,8 +110,8 @@ export function TimetableDisplay({
             </TableBody>
           </Table>
           <Button
-            className="m-4"
-            variant={'outline'}
+            className="mt-2 mx-4"
+            variant={'default'}
             onClick={handleViewFullTimetable}
             disabled={!selectedDeparture || !effectiveDestination}
           >
