@@ -4,6 +4,13 @@ import type { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getShuttleSegments } from '@/lib/utils/timetable'
 import { FaShuttleVan } from 'react-icons/fa'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import React from 'react'
 
 interface RouteInfoCardProps {
   timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null
@@ -65,58 +72,46 @@ export function RouteInfoCard({
             )}
           </div>
 
-          <div className="space-y-4">
-            {shuttleSegments.map((segment: DisplayBusInfo, index: number) => {
-              // segmentTypeがshuttleの場合のみ処理を進める
-              if (segment.segmentType !== 'shuttle') return null
-
-              return (
-                <div
-                  key={`shuttle-${index}`}
-                  className="text-xs text-purple-800 dark:text-purple-300"
-                >
-                  {shuttleSegments.length > 1 && (
-                    <div className="flex items-center mb-2">
-                      <Badge
-                        variant="default"
-                        className="bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 text-[10px] py-0 px-2 h-5 font-medium border-0"
-                      >
-                        時間帯 {index + 1}
-                      </Badge>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <p className="text-purple-500 dark:text-purple-400 mb-1">行き先</p>
-                      <div className="font-medium">{segment.destination.stopName}</div>
-                    </div>
-
-                    <div>
-                      <p className="text-purple-500 dark:text-purple-400 mb-1">運行時間帯</p>
-                      <div className="font-medium">
-                        {segment.shuttleTimeRange?.startTime} 〜 {segment.shuttleTimeRange?.endTime}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-purple-500 dark:text-purple-400 mb-1">運行間隔</p>
-                      <div className="font-medium">
-                        約{segment.shuttleTimeRange?.intervalRange.min}〜
-                        {segment.shuttleTimeRange?.intervalRange.max}分
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-
+          <div>
             <div className="bg-purple-100/50 dark:bg-purple-900/30 rounded-md p-2.5 mt-2">
               <p className="font-medium mb-1.5">シャトル便について</p>
               <p className="text-[11px] leading-tight">
                 シャトル便は乗客数や交通状況により運行間隔が変動します。この時間帯は頻繁にバスが運行するため、時刻表に個別の発車時刻は記載されていません。
               </p>
             </div>
+            <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
+              <AccordionItem value="item-1">
+                <AccordionTrigger className="py-3 text-xs">シャトルの詳細表示</AccordionTrigger>
+                <AccordionContent className="pb-0 text-xs flex flex-col gap-1 text-balance">
+                  <div className="grid grid-cols-3 gap-1 text-purple-500 dark:text-purple-400 ">
+                    <p className="mb-1">行き先</p>
+
+                    <p className="mb-1">運行時間帯</p>
+
+                    <p className="mb-1">運行間隔</p>
+
+                    {shuttleSegments
+                      .filter((s) => s.segmentType === 'shuttle')
+                      .map((segment, index) => (
+                        // key だけ別 div に付ける
+                        <React.Fragment key={`shuttle-${index}`}>
+                          <div className="text-purple-800 dark:text-purple-300">
+                            {segment.destination.stopName}
+                          </div>
+                          <div className="text-purple-800 dark:text-purple-300">
+                            {segment.shuttleTimeRange?.startTime} 〜{' '}
+                            {segment.shuttleTimeRange?.endTime}
+                          </div>
+                          <div className="text-purple-800 dark:text-purple-300">
+                            約{segment.shuttleTimeRange?.intervalRange.min}〜
+                            {segment.shuttleTimeRange?.intervalRange.max}分
+                          </div>
+                        </React.Fragment>
+                      ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
       )}
