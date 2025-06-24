@@ -409,7 +409,7 @@ function HomeContent() {
             {busStopGroups.map((group, index) => (
               <CarouselItem key={index} className="basis-[90vw] px-2 flex justify-center max-w-lg">
                 <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border-1 border-gray">
-                  <div className="bg-blue-100/60 dark:bg-blue-950/20 px-4 py-3 min-h-[64px] flex items-center">
+                  <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
                     <div className="flex items-center w-full">
                       <Badge
                         variant="outline"
@@ -442,7 +442,7 @@ function HomeContent() {
                     }
 
                     return (
-                      <div className="px-4 py-3 bg-green-100/80 dark:bg-green-950/20 min-h-[64px] flex items-center">
+                      <div className="px-4 py-3 bg-green-100/80 dark:bg-green-950/60 min-h-[64px] flex items-center">
                         <div className="flex items-center w-full">
                           <Badge
                             variant="outline"
