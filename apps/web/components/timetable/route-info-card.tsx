@@ -1,7 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { components } from '@/generated/oas'
-import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getShuttleSegments } from '@/lib/utils/timetable'
 import { FaShuttleVan } from 'react-icons/fa'
 import {
