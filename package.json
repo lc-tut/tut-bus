@@ -1,13 +1,14 @@
 {
   "name": "@lc-tut/tut-bus",
   "private": true,
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.12.1",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
     "lint": "prettier --check . && turbo run lint",
+    "lint:ci": "turbo run lint",
     "fix": "prettier --check --write . && turbo run fix",
     "typecheck": "turbo run typecheck",
     "build": "turbo run build",
@@ -16,7 +17,7 @@
     "gen:spec": "pnpm --filter spec run gen:spec",
     "gen:ts": "pnpm --filter spec run gen:ts",
     "gen:go": "pnpm --filter spec run gen:go",
-    "gen:clients": "pnpm run gen:spec:ts && pnpm run gen:spec:go",
+    "gen:clients": "pnpm run gen:ts && pnpm run gen:go",
     "dev:web": "pnpm --filter web run dev",
     "build:web": "pnpm --filter web run build",
     "start:web": "pnpm --filter web run start",

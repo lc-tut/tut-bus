@@ -28,8 +28,8 @@
     {
       "segmentType": "shuttle",
       "condition": { "type": "dayType", "value": "weekday" },
-      "startTime": "08:15",
-      "endTime": "09:22",
+      "startTime": "8:16",
+      "endTime": "9:24",
       "intervalRange": { "min": 3, "max": 5 },
       "note": "Runs every 3-5 minutes"
     },
@@ -92,8 +92,8 @@
     {
       "segmentType": "shuttle",
       "condition": { "type": "dayType", "value": "weekday" },
-      "startTime": "16:46",
-      "endTime": "17:22",
+      "startTime": "16:47",
+      "endTime": "17:24",
       "intervalRange": { "min": 3, "max": 10 },
       "note": "Runs every 3-10 minutes"
     },
@@ -117,8 +117,8 @@
     {
       "segmentType": "shuttle",
       "condition": { "type": "dayType", "value": "weekday" },
-      "startTime": "18:59",
-      "endTime": "19:06",
+      "startTime": "19:00",
+      "endTime": "19:10",
       "intervalRange": { "min": 5, "max": 10 },
       "note": "Runs every 5-10 minutes"
     },

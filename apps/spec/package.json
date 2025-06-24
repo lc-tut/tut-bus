@@ -1,6 +1,7 @@
 {
   "name": "spec",
   "private": true,
+  "packageManager": "pnpm@10.6.2",
   "scripts": {
     "lint": "tsp format . --check",
     "fix": "tsp format .",

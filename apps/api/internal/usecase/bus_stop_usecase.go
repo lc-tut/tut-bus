@@ -4,10 +4,25 @@ import (
 	"api/internal/domain"
 	"api/internal/domain/repository"
 	"api/pkg/oapi"
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
 )
+
+func normalizeTimeStr(t string) (string, error) {
+	parts := strings.Split(t, ":")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid time format: %s", t)
+	}
+	hour, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%d:%s", hour, parts[1]), nil
+}
 
 type BusStopUseCase interface {
 	GetBusStops(groupID *int32) ([]domain.BusStop, error)
@@ -156,19 +171,18 @@ func (u *busStopUseCase) createBusStopSegments(services []domain.ServiceData, bu
 					continue
 				}
 
-				startTime, err := time.Parse("15:04", s.StartTime)
+				fmtStart, err := normalizeTimeStr(s.StartTime)
 				if err != nil {
-					u.log.Error("failed to parse start time",
+					u.log.Error("failed to normalize start time",
 						zap.Error(err),
-						zap.String("startTime", s.StartTime))
+						zap.String("raw", s.StartTime))
 					continue
 				}
-
-				endTime, err := time.Parse("15:04", s.EndTime)
+				fmtEnd, err := normalizeTimeStr(s.EndTime)
 				if err != nil {
-					u.log.Error("failed to parse end time",
+					u.log.Error("failed to normalize end time",
 						zap.Error(err),
-						zap.String("endTime", s.EndTime))
+						zap.String("raw", s.EndTime))
 					continue
 				}
 
@@ -180,8 +194,8 @@ func (u *busStopUseCase) createBusStopSegments(services []domain.ServiceData, bu
 						Lat:      destination.Lat,
 						Lng:      destination.Lng,
 					},
-					StartTime: startTime.Format("15:04"),
-					EndTime:   endTime.Format("15:04"),
+					StartTime: fmtStart,
+					EndTime:   fmtEnd,
 					IntervalRange: struct {
 						Max int32 `json:"max"`
 						Min int32 `json:"min"`
@@ -276,7 +290,7 @@ func (u *busStopUseCase) GetBusStopTimetable(busStopID int32, date *oapi.Scalars
 
 	// データがないときは null ではなく空の配列を返す
 	if segments == nil {
-		segments = []oapi.ModelsBusStopSegment{}
+		segments = make([]oapi.ModelsBusStopSegment, 0)
 	}
 
 	var lat oapi.ScalarsLatitude
@@ -315,10 +329,16 @@ func (u *busStopUseCase) GetBusStopGroupTimetable(groupID int32, date *oapi.Scal
 		return nil, err
 	}
 
-	var segments []oapi.ModelsBusStopSegment
+	// 空の配列で初期化
+	segments := make([]oapi.ModelsBusStopSegment, 0)
 	for _, busStop := range group.BusStops {
 		busStopSegments := u.createBusStopSegments(services, busStop.ID, dateTime)
 		segments = append(segments, busStopSegments...)
+	}
+
+	// データがないときでも空の配列を確実に返す
+	if segments == nil {
+		segments = []oapi.ModelsBusStopSegment{}
 	}
 
 	return &oapi.ModelsBusStopGroupTimetable{

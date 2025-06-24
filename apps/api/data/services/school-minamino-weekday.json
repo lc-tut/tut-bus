@@ -55,8 +55,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "08:08",
-      "endTime": "09:15",
+      "startTime": "8:09",
+      "endTime": "9:17",
       "intervalRange": {
         "min": 3,
         "max": 5
@@ -278,8 +278,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "16:39",
-      "endTime": "17:15",
+      "startTime": "16:40",
+      "endTime": "17:17",
       "intervalRange": {
         "min": 3,
         "max": 10
@@ -345,8 +345,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "18:52",
-      "endTime": "18:59",
+      "startTime": "18:53",
+      "endTime": "19:03",
       "intervalRange": {
         "min": 5,
         "max": 10

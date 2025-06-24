@@ -32,8 +32,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "7:55",
-      "endTime": "9:00",
+      "startTime": "7:44",
+      "endTime": "9:02",
       "intervalRange": { "min": 3, "max": 5 }
     },
     {
@@ -100,8 +100,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "15:11",
-      "endTime": "15:25",
+      "startTime": "15:01",
+      "endTime": "15:29",
       "intervalRange": { "min": 5, "max": 10 }
     },
     {
@@ -125,8 +125,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "16:31",
-      "endTime": "17:27",
+      "startTime": "16:21",
+      "endTime": "17:29",
       "intervalRange": { "min": 3, "max": 10 }
     },
     {
@@ -152,8 +152,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "18:51",
-      "endTime": "19:05",
+      "startTime": "18:41",
+      "endTime": "19:09",
       "intervalRange": { "min": 5, "max": 10 }
     },
     {

@@ -25,14 +25,14 @@ jobs:
           command: pnpm install
 
       - run:
-          name: Lint
+          name: Lint (spec only)
           working_directory: spec
-          command: pnpm lint
+          command: pnpm run lint:ci --filter ./spec
 
       - run:
-          name: Build
+          name: Build (spec only)
           working_directory: spec
-          command: pnpm build
+          command: pnpm build --filter ./spec
 
       - save_cache:
           name: Save spec cache
@@ -64,20 +64,20 @@ jobs:
           command: pnpm install
 
       - run:
-          name: Lint
+          name: Lint (web only)
           working_directory: web
-          command: pnpm lint
+          command: pnpm run lint:ci --filter ./web
 
       - run:
-          name: Build
+          name: Build (web only)
           working_directory: web
-          command: pnpm build
+          command: pnpm build --filter ./web
 
       - run:
           name: Start in background
           working_directory: web
           background: true
-          command: pnpm start
+          command: pnpm start --filter ./web
 
       - save_cache:
           name: Save web cache
