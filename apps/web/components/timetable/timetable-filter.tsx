@@ -107,7 +107,7 @@ export function TimetableFilter({
                         ? 'tomorrow'
                         : 'custom'
                 }
-                className="w-full"
+                className="w-full h-12"
                 onValueChange={(value) => {
                   if (value === 'today') {
                     // 「今日」タブを選択した場合は、今日の日付に設定
