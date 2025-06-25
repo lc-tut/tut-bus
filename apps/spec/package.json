@@ -8,6 +8,8 @@
     "build": "run-s gen:*",
     "clean:go": "node -e \"require('fs').rmSync('../api/pkg/oapi', { recursive: true, force: true });\"",
     "clean:ts": "node -e \"require('fs').rmSync('../web/generated', { recursive: true, force: true });\"",
+    "clean:spec": "node -e \"require('fs').rmSync('./dist', { recursive: true, force: true });\"",
+    "pregen:spec": "npm run clean:spec",
     "gen:spec": "tsp compile .",
     "pregen:ts": "npm run clean:ts",
     "gen:ts": "openapi-typescript ./dist/openapi.yaml -o ../web/generated/oas.d.ts",
@@ -20,6 +22,7 @@
     "@typespec/openapi3": "^1.0.0",
     "autorest": "^3.7.1",
     "npm-run-all": "^4.1.5",
-    "openapi-typescript": "^7.8.0"
+    "openapi-typescript": "^7.8.0",
+    "typescript": "^5.8.3"
   }
 }
