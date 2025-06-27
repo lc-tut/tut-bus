@@ -17,9 +17,15 @@ export function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): Disp
     .filter((bus) => toMinutes(bus.departureTime) >= currentMinutes)
     .sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime)) // 昇順にソート
 
-  // 一本前のバスと次の5本のバスを合わせる
+  // 一本前のバスと次の3本のバスを合わせる
   const previousBus = pastBuses.length > 0 ? [pastBuses[0]] : []
-  const nextBuses = upcomingBuses.slice(0, 2)
+
+  let nextBuses: DisplayBusInfo[]
+  if (previousBus.length === 0) {
+    nextBuses = upcomingBuses.slice(0, 3)
+  } else {
+    nextBuses = upcomingBuses.slice(0, 2)
+  }
 
   // 一本前のバスを先頭に、その後に次の5本のバスを配置
   return [...previousBus, ...nextBuses]

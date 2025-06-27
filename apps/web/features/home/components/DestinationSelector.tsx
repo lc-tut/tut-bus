@@ -1,6 +1,6 @@
 'use client'
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { FaArrowRight } from 'react-icons/fa'
 
 interface Destination {
@@ -19,7 +19,6 @@ export const DestinationSelector = ({
   value,
   onChange,
 }: DestinationSelectorProps) => {
-  // 行き先が 0 件のときは何も表示しない
   if (destinations.length === 0) return null
 
   const single = destinations.length === 1

@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import type { components } from '@/generated/oas'
 import { useGroupTimetable } from '@/features/home/hooks/useGroupTimetable'
+import { filterBusesByDeparture, filterBusesByDestination } from '@/features/timetable/utils'
+import type { components } from '@/generated/oas'
+import { useNow } from '@/hooks/common/useNow'
+import { useEffect, useMemo, useState } from 'react'
 import { extractDestinations } from '../utils'
+import { DepartureCard } from './DepartureCard'
 import { DestinationSelector } from './DestinationSelector'
 import { TimetableBlock } from './TimetableBlock'
-import { DepartureCard } from './DepartureCard'
-import { useNow } from '@/hooks/common/useNow'
 
 type Group = components['schemas']['Models.BusStopGroup']
 
@@ -15,17 +16,33 @@ interface Props {
   group: Group
   date: Date
 }
+
 export const GroupTimetable = ({ group, date }: Props) => {
   const { timetable, isLoading, error } = useGroupTimetable(group, date)
   const now = useNow(15_000)
 
-  /* 行き先セレクト状態（このグループだけ） */
   const [destId, setDestId] = useState<number | null>(null)
 
   const destinations = useMemo(() => extractDestinations(timetable), [timetable])
 
+  const filteredTimetable = useMemo(() => {
+    if (!timetable || !now) return timetable
+
+    const timeFilteredBuses = filterBusesByDeparture(timetable.allBuses, now)
+
+    const finalFilteredBuses = filterBusesByDestination(timeFilteredBuses, destId)
+
+    return {
+      ...timetable,
+      filtered: finalFilteredBuses,
+    }
+  }, [timetable, now, destId])
+
   useEffect(() => {
+    console.debug('GroupTimetable: Filtering buses by destination:', destId)
+    console.debug('Destinations:', destinations)
     if (destId == null && destinations.length === 1) {
+      console.debug('Setting default destination ID:', destinations[0].stopId)
       setDestId(destinations[0].stopId)
     }
   }, [destId, destinations])
@@ -36,6 +53,7 @@ export const GroupTimetable = ({ group, date }: Props) => {
         <div className="py-6 text-center">読み込み中...</div>
       </DepartureCard>
     )
+
   if (error || !timetable)
     return (
       <DepartureCard title={group.name}>
@@ -46,8 +64,9 @@ export const GroupTimetable = ({ group, date }: Props) => {
   return (
     <DepartureCard title={group.name}>
       <DestinationSelector destinations={destinations} value={destId} onChange={setDestId} />
+
       <TimetableBlock
-        timetable={timetable}
+        timetable={filteredTimetable}
         now={now}
         busStopGroups={[group]}
         destinationId={destId}

@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { HomeContent } from '@/features/home/components/HomeContent'
 
 export const metadata = {
@@ -7,9 +6,5 @@ export const metadata = {
 }
 
 export default function HomePage() {
-  return (
-    <Suspense fallback={<div className="py-16 text-center">読み込み中...</div>}>
-      <HomeContent />
-    </Suspense>
-  )
+  return <HomeContent />
 }

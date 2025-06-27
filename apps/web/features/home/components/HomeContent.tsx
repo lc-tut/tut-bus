@@ -35,7 +35,7 @@ export const HomeContent = () => {
   if (isLoading) return <div className="py-16 text-center">読み込み中...</div>
 
   return (
-    <Carousel className="w-full" setApi={bindApi}>
+    <Carousel className="py-5 w-full" setApi={bindApi}>
       <CarouselContent className="mx-[5vw]">
         {busStopGroups.map((g) => (
           <CarouselItem key={g.id} className="basis-[90vw] px-2 flex justify-center max-w-lg">

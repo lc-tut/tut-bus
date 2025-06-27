@@ -5,7 +5,6 @@ import type { Metadata } from 'next'
 import { Noto_Sans_JP } from 'next/font/google'
 import FaviconSwitcher from './favicon-switcher'
 import './globals.css'
-import { SWRProvider } from '@/providers/SWRProvider'
 
 const notoSansJp = Noto_Sans_JP({
   subsets: ['latin'],
@@ -34,18 +33,16 @@ export default function RootLayout({
       <head />
       <body className={`${notoSansJp.variable} antialiased`}>
         {isProd && <GoogleAnalytics gaId={GA_ID} />}
-        <SWRProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <FaviconSwitcher />
-            {children}
-            <Toaster richColors position="top-center" />
-          </ThemeProvider>
-        </SWRProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <FaviconSwitcher />
+          {children}
+          <Toaster richColors position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   )

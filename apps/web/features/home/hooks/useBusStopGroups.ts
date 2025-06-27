@@ -1,6 +1,6 @@
-import useSWRImmutable from 'swr/immutable'
-import { getBusStopGroups } from '@/service/groupTimetableService'
 import type { components } from '@/generated/oas'
+import { getBusStopGroups } from '@/service/groupTimetableService'
+import useSWRImmutable from 'swr/immutable'
 
 type BusStopGroup = components['schemas']['Models.BusStopGroup']
 
@@ -11,7 +11,6 @@ export const useBusStopGroups = () => {
     isLoading,
     mutate,
   } = useSWRImmutable<BusStopGroup[]>('/api/bus-stops/groups', getBusStopGroups, {
-    suspense: true,
     revalidateOnMount: true,
   })
 

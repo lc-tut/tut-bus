@@ -1,10 +1,9 @@
-// features/home/hooks/useHomeCarousel.ts
 'use client'
 
-import { useAtom } from 'jotai'
-import { useRef, useCallback } from 'react'
 import type { CarouselApi } from '@/components/ui/carousel'
 import { lastSlideAtom } from '@/store'
+import { useAtom } from 'jotai'
+import { useCallback, useRef } from 'react'
 
 export const useHomeCarousel = () => {
   const apiRef = useRef<CarouselApi | null>(null)
@@ -23,6 +22,5 @@ export const useHomeCarousel = () => {
     return () => api.off('select', fn)
   }, [])
 
-  /** 外部に渡すのは bindApi と onSelect だけで十分 */
   return { bindApi, onSelect, lastSlide, setLastSlide, apiRef }
 }
