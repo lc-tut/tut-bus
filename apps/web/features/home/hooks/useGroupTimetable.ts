@@ -1,11 +1,10 @@
 'use client'
 
-import useSWR from 'swr'
-import { format } from 'date-fns'
 import type { components } from '@/generated/oas'
-import { getGroupTimetable } from '@/service/groupTimetableService'
 import { generateDisplayBuses } from '@/lib/utils/timetable'
-import type { DisplayBusInfo } from '@/lib/types/timetable'
+import { getGroupTimetable } from '@/service/groupTimetableService'
+import { format } from 'date-fns'
+import useSWR from 'swr'
 
 type Timetable = components['schemas']['Models.BusStopGroupTimetable']
 type Group = components['schemas']['Models.BusStopGroup']
@@ -20,7 +19,6 @@ export const useGroupTimetable = (group: Group | null, date: Date | null) => {
     isLoading,
   } = useSWR<Timetable>(swrKey, () => getGroupTimetable(group!.id, date!), { suspense: false })
 
-  // データ整形（raw が無い間は undefined を返す）
   const timetable = raw
     ? (() => {
         const all = generateDisplayBuses([group!], raw, null)

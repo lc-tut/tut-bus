@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
-import { useHomeCarousel } from '@/features/home/hooks/useHomeCarousel'
 import { useBusStopGroups } from '@/features/home/hooks/useBusStopGroups'
-import { GroupTimetable } from './GroupTimetable'
+import { useHomeCarousel } from '@/features/home/hooks/useHomeCarousel'
 import { useNow } from '@/hooks/common/useNow'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { GroupTimetable } from './GroupTimetable'
 
 export const HomeContent = () => {
   const { busStopGroups, isLoading, error } = useBusStopGroups()
