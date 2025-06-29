@@ -5,8 +5,8 @@ import { getBusStatus } from '@/lib/utils/timetable'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
-import { HomeBusRow } from '../../../components/home/bus-row'
 import { Button } from '../../../components/ui/button'
+import { HomeBusRow } from './HomeBusRow'
 
 export interface TimetableDisplayProps {
   selectedDeparture: number | null
