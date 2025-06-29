@@ -5,6 +5,7 @@ import { filterBusesByDeparture, filterBusesByDestination } from '@/features/tim
 import type { components } from '@/generated/oas'
 import { useNow } from '@/hooks/common/useNow'
 import { useEffect, useMemo, useState } from 'react'
+import { useBusStopGroups } from '../hooks/useBusStopGroups'
 import { extractDestinations } from '../utils'
 import { DepartureCard } from './DepartureCard'
 import { DestinationSelector } from './DestinationSelector'
@@ -24,13 +25,13 @@ export const GroupTimetable = ({ group, date }: Props) => {
   const [destId, setDestId] = useState<number | null>(null)
 
   const destinations = useMemo(() => extractDestinations(timetable), [timetable])
+  const { busStopGroups: groups } = useBusStopGroups()
 
   const filteredTimetable = useMemo(() => {
     if (!timetable || !now) return timetable
 
-    const timeFilteredBuses = filterBusesByDeparture(timetable.allBuses, now)
-
-    const finalFilteredBuses = filterBusesByDestination(timeFilteredBuses, destId)
+    const destinationFilteredBuses = filterBusesByDestination(timetable.allBuses, destId)
+    const finalFilteredBuses = filterBusesByDeparture(destinationFilteredBuses, now)
 
     return {
       ...timetable,
@@ -41,7 +42,7 @@ export const GroupTimetable = ({ group, date }: Props) => {
   useEffect(() => {
     console.debug('GroupTimetable: Filtering buses by destination:', destId)
     console.debug('Destinations:', destinations)
-    if (destId == null && destinations.length === 1) {
+    if (destId == null && destinations.length > 0) {
       console.debug('Setting default destination ID:', destinations[0].stopId)
       setDestId(destinations[0].stopId)
     }
@@ -68,7 +69,7 @@ export const GroupTimetable = ({ group, date }: Props) => {
       <TimetableBlock
         timetable={filteredTimetable}
         now={now}
-        busStopGroups={[group]}
+        busStopGroups={groups}
         destinationId={destId}
         departureId={group.id}
       />

@@ -16,10 +16,17 @@ export const useHomeCarousel = () => {
 
   const onSelect = useCallback((cb: (idx: number) => void): (() => void) => {
     const api = apiRef.current
-    if (!api) return () => {}
-    const fn = () => cb(api.selectedScrollSnap())
+    if (!api) {
+      return () => {}
+    }
+    const fn = () => {
+      const idx = api.selectedScrollSnap()
+      cb(idx)
+    }
     api.on('select', fn)
-    return () => api.off('select', fn)
+    return () => {
+      api.off('select', fn)
+    }
   }, [])
 
   return { bindApi, onSelect, lastSlide, setLastSlide, apiRef }
