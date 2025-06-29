@@ -2,8 +2,8 @@
 
 import type { CarouselApi } from '@/components/ui/carousel'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
-import { useBusStopGroups } from '@/features/home/hooks/useBusStopGroups'
 import { useHomeCarousel } from '@/features/home/hooks/useHomeCarousel'
+import { useBusStopGroups } from '@/hooks/busStops/useBusStopGroups'
 import { useNow } from '@/hooks/common/useNow'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'

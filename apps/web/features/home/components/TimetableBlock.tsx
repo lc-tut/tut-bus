@@ -1,5 +1,5 @@
 'use client'
-import { TimetableDisplay } from '@/components/home/timetable-display'
+import { TimetableDisplay } from '@/features/home/components/TimetableDisplay'
 import type { components } from '@/generated/oas'
 import type { DisplayBusInfo } from '@/lib/types/timetable'
 import { FaBan } from 'react-icons/fa'

@@ -1,7 +1,7 @@
-import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { BusStatus, DisplayBusInfo } from '@/lib/types/timetable'
+import { cn } from '@/lib/utils'
 
 interface BusRowProps {
   bus: DisplayBusInfo
@@ -9,7 +9,7 @@ interface BusRowProps {
   index: number
 }
 
-export function BusRow({ bus, busStatus, index }: BusRowProps) {
+export function HomeBusRow({ bus, busStatus, index }: BusRowProps) {
   return (
     <TableRow
       key={index}

@@ -5,8 +5,8 @@ import { getBusStatus } from '@/lib/utils/timetable'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
-import { BusRow } from '../home/bus-row'
-import { Button } from '../ui/button'
+import { HomeBusRow } from '../../../components/home/bus-row'
+import { Button } from '../../../components/ui/button'
 
 export interface TimetableDisplayProps {
   selectedDeparture: number | null
@@ -103,7 +103,7 @@ export function TimetableDisplay({
             <TableBody>
               {filteredTimetable.map((bus, idx) => {
                 const busStatus = getBusStatus(bus.departureTime, idx, filteredTimetable, now)
-                return <BusRow key={idx} bus={bus} busStatus={busStatus} index={idx} />
+                return <HomeBusRow key={idx} bus={bus} busStatus={busStatus} index={idx} />
               })}
             </TableBody>
           </Table>

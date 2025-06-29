@@ -1,11 +1,11 @@
 'use client'
 
-import { useGroupTimetable } from '@/features/home/hooks/useGroupTimetable'
 import { filterBusesByDeparture, filterBusesByDestination } from '@/features/timetable/utils'
 import type { components } from '@/generated/oas'
 import { useNow } from '@/hooks/common/useNow'
+import { useGroupTimetable } from '@/hooks/timetable/useGroupTimetable'
 import { useEffect, useMemo, useState } from 'react'
-import { useBusStopGroups } from '../hooks/useBusStopGroups'
+import { useBusStopGroups } from '../../../hooks/busStops/useBusStopGroups'
 import { extractDestinations } from '../utils'
 import { DepartureCard } from './DepartureCard'
 import { DestinationSelector } from './DestinationSelector'
