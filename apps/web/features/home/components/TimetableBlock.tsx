@@ -1,8 +1,8 @@
 'use client'
 import { TimetableDisplay } from '@/components/home/timetable-display'
-import { FaBan } from 'react-icons/fa'
-import type { DisplayBusInfo } from '@/lib/types/timetable'
 import type { components } from '@/generated/oas'
+import type { DisplayBusInfo } from '@/lib/types/timetable'
+import { FaBan } from 'react-icons/fa'
 
 interface TimetableBlockProps {
   timetable?: {
@@ -38,12 +38,12 @@ export const TimetableBlock = ({
         </div>
         <h3 className="mt-2 text-base font-medium">
           {hasDestinations
-            ? '選択された時刻・行き先のバスはありません'
+            ? '選択された時刻・目的地のバスはありません'
             : '本日の運行予定はありません'}
         </h3>
         <p className="mt-2 text-xs text-muted-foreground max-w-xs">
           {hasDestinations
-            ? '別の行き先を選択するか、しばらく時間をおいてからご確認ください'
+            ? '別の目的地を選択するか、しばらく時間をおいてからご確認ください'
             : '必ずしも正しいとは限らないため、公式サイトの運行スケジュールをご確認ください'}
         </p>
       </div>

@@ -30,7 +30,7 @@ export const DestinationSelector = ({
         variant="outline"
         className="mr-6 bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-800 dark:text-green-300 text-xs whitespace-nowrap flex items-center"
       >
-        <FaArrowRight className="mr-1 size-3" /> 行先
+        <FaArrowRight className="mr-1 size-3" /> 目的地
       </Badge>
 
       {single ? (
@@ -41,12 +41,12 @@ export const DestinationSelector = ({
             {value ? (
               <span className="truncate font-bold">{selectedLabel}</span>
             ) : (
-              <span className="text-muted-foreground">行先を選択（{destinations.length}件）</span>
+              <span className="text-muted-foreground">目的地を選択（{destinations.length}件）</span>
             )}
           </SelectTrigger>
           <SelectContent className="max-w-[350px]">
             <div className="px-2 py-1.5 text-xs text-muted-foreground border-b">
-              行先を選択してください（{destinations.length}件）
+              目的地を選択してください（{destinations.length}件）
             </div>
             {destinations.map((d) => (
               <SelectItem key={d.stopId} value={String(d.stopId)}>

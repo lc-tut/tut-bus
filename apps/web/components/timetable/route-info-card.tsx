@@ -1,15 +1,15 @@
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import type { components } from '@/generated/oas'
-import { getShuttleSegments } from '@/lib/utils/timetable'
-import { FaShuttleVan } from 'react-icons/fa'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import type { components } from '@/generated/oas'
+import { getShuttleSegments } from '@/lib/utils/timetable'
 import React from 'react'
+import { FaShuttleVan } from 'react-icons/fa'
 
 interface RouteInfoCardProps {
   timetableData: components['schemas']['Models.BusStopGroupTimetable'] | null
@@ -83,7 +83,7 @@ export function RouteInfoCard({
                 <AccordionTrigger className="py-3 text-xs">シャトルの詳細表示</AccordionTrigger>
                 <AccordionContent className="pb-0 text-xs flex flex-col gap-1 text-balance">
                   <div className="grid grid-cols-3 gap-1 text-purple-500 dark:text-purple-400 ">
-                    <p className="mb-1">行き先</p>
+                    <p className="mb-1">目的地</p>
 
                     <p className="mb-1">運行時間帯</p>
 
