@@ -21,7 +21,7 @@ export function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): Disp
   const previousBus = pastBuses.length > 0 ? [pastBuses[0]] : []
 
   let nextBuses: DisplayBusInfo[]
-  if (previousBus.length === 0) {
+  if (previousBus.length <= 0) {
     nextBuses = upcomingBuses.slice(0, 3)
   } else {
     nextBuses = upcomingBuses.slice(0, 2)
