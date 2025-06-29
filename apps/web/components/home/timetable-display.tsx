@@ -30,12 +30,10 @@ export function TimetableDisplay({
     new Set(filteredTimetable.map((bus) => bus.destination.stopId))
   )
 
-  // 目的地が選択されていないが、利用可能な目的地が1つだけの場合は自動選択
   const effectiveDestination =
     selectedDestination ||
     (availableDestinations.length === 1 ? parseInt(availableDestinations[0], 10) : null)
 
-  // stopIdからgroupIdを見つける関数
   const findGroupIdByStopId = (stopId: number): number | null => {
     for (const group of busStopGroups) {
       if (group.busStops.some((stop) => stop.id === stopId)) {
@@ -110,7 +108,7 @@ export function TimetableDisplay({
             </TableBody>
           </Table>
           <Button
-            className="mt-2 mx-4"
+            className="mt-2 mb-4 mx-4"
             variant={'default'}
             onClick={handleViewFullTimetable}
             disabled={!selectedDeparture || !effectiveDestination}
