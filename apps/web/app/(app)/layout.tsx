@@ -1,7 +1,7 @@
 'use client'
 
-import Header from '@/components/header'
-import NavBar from '@/components/nav-bar'
+import Header from '@/components/Header'
+import NavBar from '@/components/NavBar'
 import { cn } from '@/lib/utils'
 
 export default function AppLayout({
