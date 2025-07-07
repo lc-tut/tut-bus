@@ -11,7 +11,6 @@ import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components
 import { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getBusStatus } from '@/lib/utils/timetable'
-import { useRouter } from 'next/navigation'
 import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import { BusRow } from '../home/bus-row'
 import { Button } from '../ui/button'
