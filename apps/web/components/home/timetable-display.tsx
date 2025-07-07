@@ -35,8 +35,6 @@ export function TimetableDisplay({
   timetable,
   now,
 }: TimetableDisplayProps) {
-  const router = useRouter()
-
   // 時刻表から利用可能な目的地を抽出
   const availableDestinations = Array.from(
     new Set(filteredTimetable.map((bus) => bus.destination.stopId))
