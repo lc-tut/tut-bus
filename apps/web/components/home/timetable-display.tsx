@@ -1,22 +1,16 @@
 "use client"
 import * as React from "react"
-import { Minus, Plus } from "lucide-react"
-import { Bar, BarChart, ResponsiveContainer } from "recharts"
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getBusStatus } from '@/lib/utils/timetable'
-// import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import { BusRow } from '../home/bus-row'
@@ -27,7 +21,7 @@ export interface TimetableDisplayProps {
   selectedDestination: number | null
   filteredTimetable: DisplayBusInfo[]
   timetable: DisplayBusInfo[]
-  arriveTimetable:DisplayBusInfo[]
+  arriveTimetable: DisplayBusInfo[]
 
   now: Date | null
   busStopGroups: components['schemas']['Models.BusStopGroup'][]
@@ -39,9 +33,7 @@ export function TimetableDisplay({
   selectedDestination,
   filteredTimetable,
   timetable,
-  arriveTimetable,
   now,
-  busStopGroups,
 }: TimetableDisplayProps) {
   const router = useRouter()
 
@@ -55,34 +47,6 @@ export function TimetableDisplay({
     selectedDestination ||
     (availableDestinations.length === 1 ? parseInt(availableDestinations[0], 10) : null)
 
-  // stopIdからgroupIdを見つける関数
-  // const findGroupIdByStopId = (stopId: number): number | null => {
-  //   for (const group of busStopGroups) {
-  //     if (group.busStops.some((stop) => stop.id === stopId)) {
-  //       return group.id
-  //     }
-  //   }
-  //   return null
-  // }
-
-  // const handleViewFullTimetable = () => {
-  //   if (!selectedDeparture || !effectiveDestination || !now) return
-
-  //   // stopIdからgroupIdを見つける
-  //   const destinationGroupId = findGroupIdByStopId(effectiveDestination)
-  //   if (!destinationGroupId) {
-  //     console.error('Could not find group ID for stop ID:', effectiveDestination)
-  //     return
-  //   }
-
-  //   const params = new URLSearchParams({
-  //     from: selectedDeparture.toString(),
-  //     to: destinationGroupId.toString(),
-  //     date: format(now, 'yyyy-MM-dd'),
-  //   })
-
-  //   router.push(`/timetable?${params.toString()}`)
-  // }
   return (
     <div className="flex-1 flex flex-col min-h-[210px] justify-between">
       {!selectedDeparture ? (
@@ -134,7 +98,6 @@ export function TimetableDisplay({
               <Button
                 className="mt-2 mx-4"
                 variant={'outline'}
-                // onClick={handleViewFullTimetable}
                 disabled={!selectedDeparture || !effectiveDestination}
               >
                 以降の時刻表を表示
@@ -150,19 +113,19 @@ export function TimetableDisplay({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-      {timetable
-        .filter(bus => {
-          if (!now) return true
-          const [h, m] = bus.departureTime.split(':').map(Number)
-          const busDate = new Date(now)
-          busDate.setHours(h, m, 0, 0)
-          return busDate > now
-        })
-        .sort((a, b) => a.departureTime.localeCompare(b.departureTime))
-        .map((bus, idx) => {
-          const busStatus = getBusStatus(bus.departureTime, idx, timetable, now)
-          return <BusRow key={idx} bus={bus} busStatus={busStatus} index={idx} />
-        })}
+                  {timetable
+                    .filter(bus => {
+                      if (!now) return true
+                      const [h, m] = bus.departureTime.split(':').map(Number)
+                      const busDate = new Date(now)
+                      busDate.setHours(h, m, 0, 0)
+                      return busDate > now
+                    })
+                    .sort((a, b) => a.departureTime.localeCompare(b.departureTime))
+                    .map((bus, idx) => {
+                      const busStatus = getBusStatus(bus.departureTime, idx, timetable, now)
+                      return <BusRow key={idx} bus={bus} busStatus={busStatus} index={idx} />
+                    })}
                 </TableBody>
               </Table>
               <div>
