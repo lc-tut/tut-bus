@@ -586,6 +586,8 @@ function HomeContent() {
                       selectedDeparture={group.id}
                       selectedDestination={selectedDestinations[group.id] || null}
                       filteredTimetable={groupTimetables[group.id]?.filtered || []}
+                      timetable={groupTimetables[group.id]?.allBuses || []}
+                      arriveTimetable={groupTimetables[group.id]?.filtered||[]}
                       now={now}
                       busStopGroups={busStopGroups}
                     />
