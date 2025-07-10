@@ -25,4 +25,5 @@ steps:
         chmod +x /tmp/api_server && \
         sudo mv /tmp/api_server /opt/tut-bus/apps/api/api_server && \
         sudo systemctl restart tut-bus
-
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
