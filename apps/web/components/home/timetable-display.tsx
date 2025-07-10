@@ -1,12 +1,12 @@
-"use client"
-import * as React from "react"
+'use client'
+import * as React from 'react'
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerFooter,
   DrawerTrigger,
-} from "@/components/ui/drawer"
+} from '@/components/ui/drawer'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
@@ -25,7 +25,6 @@ export interface TimetableDisplayProps {
   now: Date | null
   busStopGroups: components['schemas']['Models.BusStopGroup'][]
 }
-
 
 export function TimetableDisplay({
   selectedDeparture,
@@ -111,7 +110,7 @@ export function TimetableDisplay({
                 </TableHeader>
                 <TableBody>
                   {timetable
-                    .filter(bus => {
+                    .filter((bus) => {
                       if (!now) return true
                       const [h, m] = bus.departureTime.split(':').map(Number)
                       const busDate = new Date(now)
@@ -128,9 +127,7 @@ export function TimetableDisplay({
               <div>
                 <DrawerFooter>
                   <DrawerClose asChild>
-                    <Button variant="outline">
-                      閉じる
-                    </Button>
+                    <Button variant="outline">閉じる</Button>
                   </DrawerClose>
                 </DrawerFooter>
               </div>
