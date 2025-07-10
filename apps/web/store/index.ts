@@ -12,8 +12,10 @@ export const userConfigAtom = atomWithStorage<{
   username: string
   department: string
   notifications: boolean
+  locateNotifications: boolean
 }>('userConfig', {
   username: '',
   department: '',
   notifications: true,
+  locateNotifications: true,
 })
