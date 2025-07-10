@@ -76,8 +76,8 @@ func LoadConfig() (*Config, error) {
 			}
 		}
 
-		log.Printf("Allowed Origins: %v", allowedOrigins)
 	}
+	log.Printf("Allowed Origins: %v", allowedOrigins)
 
 	return &Config{
 		Enviroment:        env,
