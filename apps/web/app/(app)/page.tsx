@@ -134,40 +134,80 @@ function LoadingMessage() {
   )
 }
 
-// API呼び出し用ヘルパー関数
-function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] {
-  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+// バスフィルタリング用のヘルパー関数群
+const BusFilters = {
+  // 現在時刻以降のバスのみ取得
+  upcomingOnly: (buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] => {
+    const currentMinutes = now.getHours() * 60 + now.getMinutes()
+    const toMinutes = (timeStr: string): number => {
+      const [h, m] = timeStr.split(':').map(Number)
+      return h * 60 + m
+    }
 
-  const toMinutes = (timeStr: string): number => {
-    const [h, m] = timeStr.split(':').map(Number)
-    return h * 60 + m
-  }
+    return buses
+      .filter((bus) => toMinutes(bus.departureTime) >= currentMinutes)
+      .sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
+  },
 
-  // 現在時刻でバスを2つに分ける
-  const pastBuses = buses
-    .filter((bus) => toMinutes(bus.departureTime) < currentMinutes)
-    .sort((a, b) => toMinutes(b.departureTime) - toMinutes(a.departureTime)) // 降順にソート
+  // 件数制限付きフィルタ（過去1本 + 今後2本）
+  limitedWithPrevious: (buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] => {
+    const currentMinutes = now.getHours() * 60 + now.getMinutes()
+    const toMinutes = (timeStr: string): number => {
+      const [h, m] = timeStr.split(':').map(Number)
+      return h * 60 + m
+    }
 
-  const upcomingBuses = buses
-    .filter((bus) => toMinutes(bus.departureTime) >= currentMinutes)
-    .sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime)) // 昇順にソート
+    const pastBuses = buses
+      .filter((bus) => toMinutes(bus.departureTime) < currentMinutes)
+      .sort((a, b) => toMinutes(b.departureTime) - toMinutes(a.departureTime))
 
-  // 一本前のバスと次の5本のバスを合わせる
-  const previousBus = pastBuses.length > 0 ? [pastBuses[0]] : []
-  const nextBuses = upcomingBuses.slice(0, 2)
+    const upcomingBuses = buses
+      .filter((bus) => toMinutes(bus.departureTime) >= currentMinutes)
+      .sort((a, b) => toMinutes(a.departureTime) - toMinutes(b.departureTime))
 
-  // 一本前のバスを先頭に、その後に次の5本のバスを配置
-  return [...previousBus, ...nextBuses]
+    const previousBus = pastBuses.length > 0 ? [pastBuses[0]] : []
+    const nextBuses = upcomingBuses.slice(0, 2)
+
+    return [...previousBus, ...nextBuses]
+  },
+
+  // 目的地でフィルタリング
+  byDestination: (buses: DisplayBusInfo[], destinationId: number | null): DisplayBusInfo[] => {
+    if (!destinationId) return buses
+    return buses.filter((bus) => parseInt(bus.destination.stopId, 10) === destinationId)
+  },
+
+  // 複合フィルタ：目的地 + 今後のバスのみ
+  upcomingByDestination: (
+    buses: DisplayBusInfo[],
+    destinationId: number | null,
+    now: Date
+  ): DisplayBusInfo[] => {
+    const destinationFiltered = BusFilters.byDestination(buses, destinationId)
+    return BusFilters.upcomingOnly(destinationFiltered, now)
+  },
+
+  // 複合フィルタ：目的地 + 件数制限
+  limitedByDestination: (
+    buses: DisplayBusInfo[],
+    destinationId: number | null,
+    now: Date
+  ): DisplayBusInfo[] => {
+    const destinationFiltered = BusFilters.byDestination(buses, destinationId)
+    return BusFilters.limitedWithPrevious(destinationFiltered, now)
+  },
 }
 
-// 目的地でバスをフィルタリングする関数
+// 後方互換性のための関数（既存コードで使用されている）
+function filterBusesByDeparture(buses: DisplayBusInfo[], now: Date): DisplayBusInfo[] {
+  return BusFilters.limitedWithPrevious(buses, now)
+}
+
 function filterBusesByDestination(
   buses: DisplayBusInfo[],
   destinationId: number | null
 ): DisplayBusInfo[] {
-  if (!destinationId) return buses
-
-  return buses.filter((bus) => parseInt(bus.destination.stopId, 10) === destinationId)
+  return BusFilters.byDestination(buses, destinationId)
 }
 
 function HomeContent() {
@@ -470,12 +510,9 @@ function HomeContent() {
 
                                 if (groupTimetables[group.id]) {
                                   const currentTimetable = { ...groupTimetables }
-                                  const destinationFiltered = filterBusesByDestination(
+                                  const timeFiltered = BusFilters.limitedByDestination(
                                     currentTimetable[group.id].allBuses,
-                                    stopId
-                                  )
-                                  const timeFiltered = filterBusesByDeparture(
-                                    destinationFiltered,
+                                    stopId,
                                     now!
                                   )
 
@@ -585,8 +622,16 @@ function HomeContent() {
                     <TimetableDisplay
                       selectedDeparture={group.id}
                       selectedDestination={selectedDestinations[group.id] || null}
-                      filteredTimetable={groupTimetables[group.id]?.filtered || []}
-                      timetable={groupTimetables[group.id]?.allBuses || []}
+                      filteredShortTimetable={groupTimetables[group.id]?.filtered || []}
+                      filteredTimetable={
+                        now && groupTimetables[group.id]?.allBuses
+                          ? BusFilters.upcomingByDestination(
+                              groupTimetables[group.id].allBuses,
+                              selectedDestinations[group.id] || null,
+                              now
+                            )
+                          : []
+                      }
                       arriveTimetable={groupTimetables[group.id]?.filtered || []}
                       now={now}
                       busStopGroups={busStopGroups}
