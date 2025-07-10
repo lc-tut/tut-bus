@@ -20,6 +20,7 @@ export default function ConfigPage() {
   const [userConfig, setUserConfig] = useAtom(userConfigAtom)
   const [username, setUsername] = useState('')
   const [notifications, setNotifications] = useState(true)
+  const [locateNotifications, setLocateNotifications] = useState(true)
   const [department, setDepartment] = useState('')
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function ConfigPage() {
     setUsername(userConfig.username)
     setDepartment(userConfig.department)
     setNotifications(userConfig.notifications)
+    setLocateNotifications(userConfig.locateNotifications)
   }, [userConfig])
 
   const handleSave = () => {
@@ -35,6 +37,7 @@ export default function ConfigPage() {
       username,
       department,
       notifications,
+      locateNotifications,
     })
     alert('設定を保存しました')
   }
@@ -94,6 +97,10 @@ export default function ConfigPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm">通知を有効にする</span>
               <Switch checked={notifications} onCheckedChange={setNotifications} />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">位置情報を有効にする</span>
+              <Switch checked={locateNotifications} onCheckedChange={setLocateNotifications} />
             </div>
           </CardContent>
         </Card>
