@@ -68,14 +68,6 @@ func LoadConfig() (*Config, error) {
 		if originsStr != "" {
 			allowedOrigins = strings.Split(originsStr, ",")
 		}
-
-		for i, origin := range allowedOrigins {
-			// Ensure each origin ends with a slash
-			if !strings.HasSuffix(origin, "/") {
-				allowedOrigins[i] = origin + "/"
-			}
-		}
-
 	}
 	log.Printf("Allowed Origins: %v", allowedOrigins)
 
