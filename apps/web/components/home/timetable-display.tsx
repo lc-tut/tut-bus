@@ -1,5 +1,4 @@
 "use client"
-import * as React from "react"
 import {
   Drawer,
   DrawerClose,
@@ -12,14 +11,15 @@ import { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getBusStatus } from '@/lib/utils/timetable'
 import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
-import { BusRow } from '../home/bus-row'
 import { Button } from '../ui/button'
+import { BusRow } from "./bus-row"
+import { ShortBusRow } from './short-bus-row'
 
 export interface TimetableDisplayProps {
   selectedDeparture: number | null
   selectedDestination: number | null
+  filteredShortTimetable: DisplayBusInfo[]
   filteredTimetable: DisplayBusInfo[]
-  timetable: DisplayBusInfo[]
   arriveTimetable: DisplayBusInfo[]
 
   now: Date | null
@@ -30,13 +30,13 @@ export interface TimetableDisplayProps {
 export function TimetableDisplay({
   selectedDeparture,
   selectedDestination,
+  filteredShortTimetable,
   filteredTimetable,
-  timetable,
   now,
 }: TimetableDisplayProps) {
   // 時刻表から利用可能な目的地を抽出
   const availableDestinations = Array.from(
-    new Set(filteredTimetable.map((bus) => bus.destination.stopId))
+    new Set(filteredShortTimetable.map((bus) => bus.destination.stopId))
   )
 
   // 目的地が選択されていないが、利用可能な目的地が1つだけの場合は自動選択
@@ -66,7 +66,7 @@ export function TimetableDisplay({
             目的地を選択すると、時刻表が表示されます。
           </p>
         </div>
-      ) : filteredTimetable.length === 0 ? (
+      ) : filteredShortTimetable.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-14 px-5 text-center flex-1">
           <div className="rounded-full bg-muted p-4 mb-4">
             <FaClock className="size-16 text-muted-foreground" />
@@ -84,9 +84,9 @@ export function TimetableDisplay({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTimetable.map((bus, idx) => {
-                const busStatus = getBusStatus(bus.departureTime, idx, filteredTimetable, now)
-                return <BusRow key={idx} bus={bus} busStatus={busStatus} index={idx} />
+              {filteredShortTimetable.map((bus, idx) => {
+                const busStatus = getBusStatus(bus.departureTime, idx, filteredShortTimetable, now)
+                return <ShortBusRow key={idx} bus={bus} busStatus={busStatus} index={idx} />
               })}
             </TableBody>
           </Table>
@@ -100,7 +100,7 @@ export function TimetableDisplay({
                 以降の時刻表を表示
               </Button>
             </DrawerTrigger>
-            <DrawerContent>
+            <DrawerContent className="min-h-[400px] max-h-[60vh]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -110,30 +110,21 @@ export function TimetableDisplay({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {timetable
-                    .filter(bus => {
-                      if (!now) return true
-                      const [h, m] = bus.departureTime.split(':').map(Number)
-                      const busDate = new Date(now)
-                      busDate.setHours(h, m, 0, 0)
-                      return busDate > now
-                    })
+                  {filteredTimetable
                     .sort((a, b) => a.departureTime.localeCompare(b.departureTime))
                     .map((bus, idx) => {
-                      const busStatus = getBusStatus(bus.departureTime, idx, timetable, now)
+                      const busStatus = getBusStatus(bus.departureTime, idx, filteredTimetable, now)
                       return <BusRow key={idx} bus={bus} busStatus={busStatus} index={idx} />
                     })}
                 </TableBody>
               </Table>
-              <div>
-                <DrawerFooter>
-                  <DrawerClose asChild>
-                    <Button variant="outline">
-                      閉じる
-                    </Button>
-                  </DrawerClose>
-                </DrawerFooter>
-              </div>
+              <DrawerFooter>
+                <DrawerClose asChild>
+                  <Button variant="default" className="p-5 font-bold">
+                    閉じる
+                  </Button>
+                </DrawerClose>
+              </DrawerFooter>
             </DrawerContent>
           </Drawer>
         </>
