@@ -5,36 +5,24 @@ steps:
     entrypoint: 'go'
     args: ['build', '-o', 'api_server', './cmd/server']
 
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'Copy binary'
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: 'Upload to GCS'
     args:
-      - compute
-      - scp
+      - cp
       - /workspace/apps/api/api_server
-      - 'tut-bus@tut-bus-api:/tmp/api_server'
-      - --zone
-      - 'us-central1-c'
+      - gs://tut-bus-prod-binaries/api_server
 
   - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'Deploy, git pull, and restart service'
+    id: 'Download-and-deploy'
     args:
       - compute
       - ssh
       - 'tut-bus-api'
-      - --zone
-      - 'us-central1-c'
+      - --zone=us-central1-c
       - --command
       - |
-        cd /opt/tut-bus/apps/api && \
-        sudo rm -f .git/index.lock && \
-        sudo rm -f .git/COMMIT_EDITMSG && \
-        sudo rm -f .git/.COMMIT_EDITMSG.swp && \
-        sudo git config --global --add safe.directory /opt/tut-bus && \
-        sudo git checkout main && \
-        sudo git pull origin main && \
+        gsutil cp gs://tut-bus-prod-binaries/api_server /tmp/api_server && \
+        chmod +x /tmp/api_server && \
         sudo mv /tmp/api_server /opt/tut-bus/apps/api/api_server && \
-        sudo chown tut-bus:nogroup /opt/tut-bus/apps/api/api_server && \
-        sudo chmod 755 /opt/tut-bus/apps/api/api_server && \
         sudo systemctl restart tut-bus
-options:
-  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
+
