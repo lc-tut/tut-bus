@@ -1,18 +1,18 @@
-"use client"
+'use client'
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerFooter,
   DrawerTrigger,
-} from "@/components/ui/drawer"
+} from '@/components/ui/drawer'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getBusStatus } from '@/lib/utils/timetable'
 import { FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import { Button } from '../ui/button'
-import { BusRow } from "./bus-row"
+import { BusRow } from './bus-row'
 import { ShortBusRow } from './short-bus-row'
 
 export interface TimetableDisplayProps {
@@ -25,7 +25,6 @@ export interface TimetableDisplayProps {
   now: Date | null
   busStopGroups: components['schemas']['Models.BusStopGroup'][]
 }
-
 
 export function TimetableDisplay({
   selectedDeparture,

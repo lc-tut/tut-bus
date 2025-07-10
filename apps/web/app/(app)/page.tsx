@@ -178,16 +178,24 @@ const BusFilters = {
   },
 
   // 複合フィルタ：目的地 + 今後のバスのみ
-  upcomingByDestination: (buses: DisplayBusInfo[], destinationId: number | null, now: Date): DisplayBusInfo[] => {
+  upcomingByDestination: (
+    buses: DisplayBusInfo[],
+    destinationId: number | null,
+    now: Date
+  ): DisplayBusInfo[] => {
     const destinationFiltered = BusFilters.byDestination(buses, destinationId)
     return BusFilters.upcomingOnly(destinationFiltered, now)
   },
 
   // 複合フィルタ：目的地 + 件数制限
-  limitedByDestination: (buses: DisplayBusInfo[], destinationId: number | null, now: Date): DisplayBusInfo[] => {
+  limitedByDestination: (
+    buses: DisplayBusInfo[],
+    destinationId: number | null,
+    now: Date
+  ): DisplayBusInfo[] => {
     const destinationFiltered = BusFilters.byDestination(buses, destinationId)
     return BusFilters.limitedWithPrevious(destinationFiltered, now)
-  }
+  },
 }
 
 // 後方互換性のための関数（既存コードで使用されている）
@@ -624,7 +632,7 @@ function HomeContent() {
                             )
                           : []
                       }
-                      arriveTimetable={groupTimetables[group.id]?.filtered||[]}
+                      arriveTimetable={groupTimetables[group.id]?.filtered || []}
                       now={now}
                       busStopGroups={busStopGroups}
                     />
