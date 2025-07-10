@@ -11,7 +11,7 @@ steps:
       - compute
       - scp
       - /workspace/apps/api/api_server
-      - 'tut-bus-api:/tmp/api_server'
+      - 'tut-bus@tut-bus-api:/tmp/api_server'
       - --zone
       - 'us-central1-c'
 
