@@ -94,7 +94,7 @@ function TimetableContent() {
     if (dateParam) {
       try {
         const parsedDate = parseISO(dateParam)
-        setSelectedDate(parsedDate)
+        if (!isNaN(parsedDate.getTime())) setSelectedDate(parsedDate)
       } catch (e) {
         console.error('Invalid date format in URL', e)
       }
