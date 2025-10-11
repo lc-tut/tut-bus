@@ -1,0 +1,66 @@
+{
+  "id": "hachioji-to-school-kokasai2025",
+  "name": "八王子駅 → 大学（八王子駅方面） (紅華祭2025)",
+  "from": {
+    "stopId": 1,
+    "displayName": "八王子駅"
+  },
+  "to": {
+    "stopId": 3,
+    "displayName": "大学（八王子駅方面）"
+  },
+  "direction": "inbound",
+  "validityPeriods": [{ "from": "2025-10-12", "to": "2025-10-13" }],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "times": [
+        { "departure": "7:30", "arrival": "7:47" },
+        { "departure": "7:40", "arrival": "7:58" },
+        { "departure": "7:50", "arrival": "8:08" },
+        { "departure": "8:00", "arrival": "8:18" },
+        { "departure": "8:10", "arrival": "8:28" }
+      ]
+    },
+    {
+      "segmentType": "shuttle",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "startTime": "8:29",
+      "endTime": "19:11",
+      "intervalRange": { "min": 7, "max": 10 },
+      "note": "紅華祭期間中の集中運行"
+    },
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "times": [
+        { "departure": "19:12", "arrival": "19:30" },
+        { "departure": "19:22", "arrival": "19:40" },
+        { "departure": "19:42", "arrival": "20:00" },
+        { "departure": "19:52", "arrival": "20:10" },
+        { "departure": "20:02", "arrival": "20:20" },
+        { "departure": "20:22", "arrival": "20:40" },
+        { "departure": "20:32", "arrival": "20:50" },
+        { "departure": "20:42", "arrival": "21:00" },
+        { "departure": "20:52", "arrival": "21:10" },
+        { "departure": "21:02", "arrival": "21:20" },
+        { "departure": "21:12", "arrival": "21:30" },
+        { "departure": "21:22", "arrival": "21:40" },
+        { "departure": "21:32", "arrival": "21:45" }
+      ]
+    }
+  ]
+}

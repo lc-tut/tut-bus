@@ -10,7 +10,7 @@
     "displayName": "大学（学生会館方面）"
   },
   "direction": "inbound",
-  "validityPeriods": [{ "from": "2025-04-07", "to": "2025-08-10" }],
+  "validityPeriods": [{ "from": "2025-09-22", "to": "2025-12-19" },  {"from": "2025-12-22", "to": "2025-12-22" }],
   "segments": [
     {
       "segmentType": "fixed",
@@ -19,14 +19,13 @@
         "value": "weekday"
       },
       "times": [
-        { "departure": "8:14", "arrival": "8:20" },
-        { "departure": "8:28", "arrival": "8:34" },
-        { "departure": "8:42", "arrival": "8:48" },
-        { "departure": "8:56", "arrival": "9:02" },
-        { "departure": "9:10", "arrival": "9:16" },
-        { "departure": "10:24", "arrival": "10:30" },
-        { "departure": "10:48", "arrival": "10:54" },
-        { "departure": "17:08", "arrival": "17:14" }
+        { "departure": "8:14", "arrival": "8:24" },
+        { "departure": "8:34", "arrival": "8:44" },
+        { "departure": "8:54", "arrival": "9:04" },
+        { "departure": "9:14", "arrival": "9:24" },
+        { "departure": "10:20", "arrival": "10:30" },
+        { "departure": "10:45", "arrival": "10:55" },
+        { "departure": "17:09", "arrival": "17:19" }
       ]
     }
   ]
