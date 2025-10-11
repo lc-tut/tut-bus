@@ -1,6 +1,6 @@
 module api
 
-go 1.23.5
+go 1.25.2
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
@@ -22,6 +22,7 @@ require (
 	github.com/oapi-codegen/echo-middleware v1.0.2 // indirect
 	github.com/oapi-codegen/runtime v1.1.1 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
+	github.com/rickar/cal/v2 v2.1.25 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
