@@ -1,0 +1,65 @@
+{
+  "id": "minamino-school-kokasai2025",
+  "name": "八王子みなみ野駅 -> 大学（みなみ野駅方面） (紅華祭2025)",
+  "from": {
+    "stopId": 2,
+    "displayName": "八王子みなみ野駅"
+  },
+  "to": {
+    "stopId": 5,
+    "displayName": "大学（みなみ野駅方面）"
+  },
+  "direction": "inbound",
+  "validityPeriods": [{ "from": "2025-10-12", "to": "2025-10-13" }],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "times": [
+        { "departure": "7:35", "arrival": "7:47" },
+        { "departure": "7:44", "arrival": "7:56" },
+        { "departure": "7:55", "arrival": "8:07" },
+        { "departure": "8:06", "arrival": "8:18" },
+        { "departure": "8:16", "arrival": "8:28" }
+      ]
+    },
+    {
+      "segmentType": "shuttle",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "startTime": "8:29",
+      "endTime": "19:23",
+      "intervalRange": { "min": 7, "max": 10 },
+      "note": "紅華祭期間中の集中運行"
+    },
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "times": [
+        { "departure": "19:24", "arrival": "19:36" },
+        { "departure": "19:35", "arrival": "19:47" },
+        { "departure": "19:46", "arrival": "19:58" },
+        { "departure": "19:57", "arrival": "20:09" },
+        { "departure": "20:17", "arrival": "20:29" },
+        { "departure": "20:27", "arrival": "20:39" },
+        { "departure": "20:37", "arrival": "20:49" },
+        { "departure": "20:47", "arrival": "20:59" },
+        { "departure": "20:58", "arrival": "21:10" },
+        { "departure": "21:09", "arrival": "21:21" },
+        { "departure": "21:21", "arrival": "21:33" },
+        { "departure": "21:28", "arrival": "21:40" }
+      ]
+    }
+  ]
+}

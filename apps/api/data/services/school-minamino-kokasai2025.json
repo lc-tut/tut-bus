@@ -1,0 +1,66 @@
+{
+  "id": "school-minamino-kokasai2025",
+  "name": "大学（みなみ野駅方面）-> 八王子みなみ野駅 (紅華祭2025)",
+  "from": {
+    "stopId": 5,
+    "displayName": "大学（みなみ野駅方面）"
+  },
+  "to": {
+    "stopId": 2,
+    "displayName": "八王子みなみ野駅"
+  },
+  "direction": "outbound",
+  "validityPeriods": [{ "from": "2025-10-12", "to": "2025-10-13" }],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "times": [
+        { "departure": "7:27", "arrival": "7:35" },
+        { "departure": "7:36", "arrival": "7:44" },
+        { "departure": "7:47", "arrival": "7:55" },
+        { "departure": "7:58", "arrival": "8:06" },
+        { "departure": "8:08", "arrival": "8:16" }
+      ]
+    },
+    {
+      "segmentType": "shuttle",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "startTime": "8:17",
+      "endTime": "19:15",
+      "intervalRange": { "min": 7, "max": 10 },
+      "note": "紅華祭期間中の集中運行"
+    },
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2025-10-12",
+        "to": "2025-10-13"
+      },
+      "times": [
+        { "departure": "19:16", "arrival": "19:24" },
+        { "departure": "19:27", "arrival": "19:35" },
+        { "departure": "19:38", "arrival": "19:46" },
+        { "departure": "19:49", "arrival": "19:57" },
+        { "departure": "19:59", "arrival": "20:07" },
+        { "departure": "20:09", "arrival": "20:17" },
+        { "departure": "20:19", "arrival": "20:27" },
+        { "departure": "20:29", "arrival": "20:37" },
+        { "departure": "20:39", "arrival": "20:47" },
+        { "departure": "20:50", "arrival": "20:58" },
+        { "departure": "21:01", "arrival": "21:09" },
+        { "departure": "21:13", "arrival": "21:21" },
+        { "departure": "21:20", "arrival": "21:28" }
+      ]
+    }
+  ]
+}

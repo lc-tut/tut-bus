@@ -7,8 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-)
 
+	"github.com/rickar/cal/v2"
+	"github.com/rickar/cal/v2/jp"
+)
 // DayType 曜日の種類を定義
 type DayType string
 
@@ -16,6 +18,7 @@ const (
 	DayTypeWeekday   DayType = "weekday"
 	DayTypeSaturday  DayType = "saturday"
 	DayTypeSunday    DayType = "sunday"
+	DayTypeWeekend    DayType = "weekend"
 	DayTypeHoliday   DayType = "holiday"
 	DayTypeMonday    DayType = "monday"
 	DayTypeTuesday   DayType = "tuesday"
@@ -121,6 +124,45 @@ type ServiceData struct {
 var serviceCache []ServiceData
 var serviceCacheLocked bool = false
 
+// 日本の祝日カレンダー（グローバル変数）
+var japaneseCalendar *cal.Calendar
+
+// init 関数で日本の祝日カレンダーを初期化
+func init() {
+	japaneseCalendar = &cal.Calendar{}
+	
+	// 日本の祝日を追加
+	japaneseCalendar.AddHoliday(
+		jp.NewYear,
+		jp.ComingOfAgeDay,
+		jp.NationalFoundationDay,
+		jp.TheEmperorsBirthday,
+		jp.VernalEquinoxDay,
+		jp.ShowaDay,
+		jp.ConstitutionMemorialDay,
+		jp.GreeneryDay,
+		jp.ChildrensDay,
+		jp.MarineDay,
+		jp.MountainDay,
+		jp.RespectForTheAgedDay,
+		jp.AutumnalEquinoxDay,
+		jp.SportsDay,
+		jp.CultureDay,
+		jp.LaborThanksgivingDay,
+	)
+}
+
+// IsHoliday は指定された日付が日本の祝日かどうかを判定します
+func IsHoliday(date time.Time) bool {
+	actual, observed, _ := japaneseCalendar.IsHoliday(date)
+	return actual || observed
+}
+
+// IsWeekend は指定された曜日が週末（土日）かどうかを判定します
+func IsWeekend(dayType DayType) bool {
+	return dayType == DayTypeSaturday || dayType == DayTypeSunday
+}
+
 // LoadServiceData はJSONファイルからサービスデータを読み込みます
 func LoadServiceData(dataDir string) ([]ServiceData, error) {
 
@@ -211,6 +253,11 @@ func (s *ServiceData) IsValidForDate(date time.Time) bool {
 
 // GetDayType は指定された日付の曜日タイプを返します
 func GetDayType(date time.Time) DayType {
+	// rickar/calを使用して祝日チェックを最初に行う
+	if IsHoliday(date) {
+		return DayTypeHoliday
+	}
+	
 	weekday := date.Weekday()
 
 	switch weekday {
@@ -231,7 +278,6 @@ func GetDayType(date time.Time) DayType {
 	default:
 		return DayTypeWeekday // 念のため
 	}
-	// 注: 祝日の判定は別途ロジックが必要です
 }
 
 // IsWeekday は指定された曜日が平日（月〜金）かどうかを判定します
@@ -247,9 +293,17 @@ func IsSegmentValidForDate(condition SegmentCondition, date time.Time) bool {
 
 	switch condition.Type {
 	case ConditionTypeDayType:
-		// 特別ケース: "weekday" は月〜金のどれかに一致するか
+		// 特別ケース: "weekday" は月〜金のどれかに一致するか（祝日除く）
 		if condition.Value == string(DayTypeWeekday) {
-			return IsWeekday(dayType)
+			return IsWeekday(dayType) && dayType != DayTypeHoliday
+		}
+		// 特別ケース: "weekend" は土日のどれかに一致するか
+		if condition.Value == string(DayTypeWeekend) {
+			return IsWeekend(dayType)
+		}
+		// 特別ケース: "holiday" は祝日に一致するか
+		if condition.Value == string(DayTypeHoliday) {
+			return dayType == DayTypeHoliday
 		}
 		return condition.Value == string(dayType)
 
@@ -269,7 +323,13 @@ func IsSegmentValidForDate(condition SegmentCondition, date time.Time) bool {
 	// 後方互換性のため
 	if condition.Type == "" && condition.Value != "" {
 		if condition.Value == string(DayTypeWeekday) {
-			return IsWeekday(dayType)
+			return IsWeekday(dayType) && dayType != DayTypeHoliday
+		}
+		if condition.Value == string(DayTypeWeekend) {
+			return IsWeekend(dayType)
+		}
+		if condition.Value == string(DayTypeHoliday) {
+			return dayType == DayTypeHoliday
 		}
 		return condition.Value == string(dayType)
 	}
@@ -294,4 +354,35 @@ func ParseDateString(dateStr string) (time.Time, error) {
 		return time.Time{}, ErrInvalidDate
 	}
 	return t, nil
+}
+
+// GetHolidaysInRange は指定された期間内の祝日一覧を取得します
+func GetHolidaysInRange(startDate, endDate time.Time) []*cal.Holiday {
+	var holidays []*cal.Holiday
+	
+	current := startDate
+	for !current.After(endDate) {
+		if actual, observed, h := japaneseCalendar.IsHoliday(current); (actual || observed) && h != nil {
+			holidays = append(holidays, h)
+		}
+		current = current.AddDate(0, 0, 1)
+	}
+	
+	return holidays
+}
+
+// GetNextHoliday は指定された日付以降の次の祝日を取得します
+func GetNextHoliday(from time.Time) *cal.Holiday {
+	current := from
+	// 最大1年先まで検索
+	endDate := from.AddDate(1, 0, 0)
+	
+	for !current.After(endDate) {
+		if actual, observed, h := japaneseCalendar.IsHoliday(current); (actual || observed) && h != nil {
+			return h
+		}
+		current = current.AddDate(0, 0, 1)
+	}
+	
+	return nil
 }
