@@ -10,7 +10,7 @@
     "displayName": "八王子みなみ野駅"
   },
   "direction": "outbound",
-  "validityPeriods": [{ "from": "2025-04-07", "to": "2025-08-10" }],
+  "validityPeriods": [{ "from": "2025-09-22", "to": "2025-12-19" }],
   "segments": [
     {
       "segmentType": "fixed",
@@ -24,7 +24,7 @@
         { "departure": "9:02", "arrival": "9:10" },
         { "departure": "9:25", "arrival": "9:33" },
         { "departure": "10:17", "arrival": "10:25" },
-        { "departure": "11:15", "arrival": "11:23" },
+        { "departure": "11:28", "arrival": "11:36" },
         { "departure": "12:28", "arrival": "12:36" },
         { "departure": "13:08", "arrival": "13:16" },
         { "departure": "14:08", "arrival": "14:16" },
@@ -32,7 +32,7 @@
         { "departure": "16:21", "arrival": "16:29" },
         { "departure": "17:01", "arrival": "17:09" },
         { "departure": "17:41", "arrival": "17:49" },
-        { "departure": "18:11", "arrival": "18:19" },
+        { "departure": "18:10", "arrival": "18:18" },
         { "departure": "19:10", "arrival": "19:18" }
       ]
     }
