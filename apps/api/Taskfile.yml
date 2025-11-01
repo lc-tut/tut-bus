@@ -1,0 +1,139 @@
+version: '3'
+
+vars:
+  DB_HOST: localhost
+  DB_PORT: 5432
+  DB_USER: postgres
+  DB_PASSWORD: p@ssw0rd
+  DB_NAME: tut_bus
+  DB_URL: 'postgres://{{.DB_USER}}:{{.DB_PASSWORD}}@{{.DB_HOST}}:{{.DB_PORT}}/{{.DB_NAME}}?sslmode=disable'
+  MIGRATIONS_DIR: db/migrations
+  QUERIES_DIR: db/queries
+
+tasks:
+  run:
+    desc: "APIサーバーを起動"
+    cmd: go run ./cmd/server/main.go
+
+  build:
+    desc: "APIをビルド"
+    cmd: go build -o bin/server ./cmd/server/main.go
+
+  test:
+    desc: "テストを実行"
+    cmd: go test -v ./...
+
+  mod:tidy:
+    desc: "go.modを整理"
+    cmd: go mod tidy
+
+  mod:download:
+    desc: "依存パッケージをダウンロード"
+    cmd: go mod download
+
+  vet:
+    desc: "go vetを実行"
+    cmd: go vet ./...
+
+  fmt:
+    desc: "コードをフォーマット"
+    cmd: go fmt ./...
+
+  lint:
+    desc: "golangci-lintを実行"
+    cmd: golangci-lint run ./...
+
+  migrate:create:
+    desc: "新しいマイグレーションファイルを作成 (usage: task migrate:create -- create_users_table)"
+    cmd: migrate create -ext sql -dir {{.MIGRATIONS_DIR}} -seq {{.CLI_ARGS}}
+
+  migrate:up:
+    desc: "マイグレーションを適用"
+    cmd: migrate -path {{.MIGRATIONS_DIR}} -database "{{.DB_URL}}" up
+
+  migrate:down:
+    desc: "マイグレーションを1つロールバック"
+    cmd: migrate -path {{.MIGRATIONS_DIR}} -database "{{.DB_URL}}" down 1
+
+  migrate:down:all:
+    desc: "全てのマイグレーションをロールバック"
+    cmd: migrate -path {{.MIGRATIONS_DIR}} -database "{{.DB_URL}}" down -all
+
+  migrate:force:
+    desc: "マイグレーションバージョンを強制設定 (usage: task migrate:force -- 1)"
+    cmd: migrate -path {{.MIGRATIONS_DIR}} -database "{{.DB_URL}}" force {{.CLI_ARGS}}
+
+  migrate:version:
+    desc: "現在のマイグレーションバージョンを表示"
+    cmd: migrate -path {{.MIGRATIONS_DIR}} -database "{{.DB_URL}}" version
+
+  migrate:goto:
+    desc: "特定のバージョンにマイグレーション (usage: task migrate:goto -- 2)"
+    cmd: migrate -path {{.MIGRATIONS_DIR}} -database "{{.DB_URL}}" goto {{.CLI_ARGS}}
+
+  sqlc:generate:
+    desc: "sqlcでGoコードを生成"
+    cmd: sqlc generate
+
+  sqlc:compile:
+    desc: "sqlcクエリの構文チェック"
+    cmd: sqlc compile
+
+  sqlc:verify:
+    desc: "sqlc生成コードの検証"
+    cmd: sqlc verify
+
+  sqlc:vet:
+    desc: "sqlcクエリの静的解析"
+    cmd: sqlc vet
+
+  db:shell:
+    desc: "PostgreSQLシェルに接続"
+    cmd: PGPASSWORD={{.DB_PASSWORD}} psql -h {{.DB_HOST}} -p {{.DB_PORT}} -U {{.DB_USER}} -d {{.DB_NAME}}
+
+  db:reset:
+    desc: "データベースをリセット(全マイグレーションdown→up)"
+    cmds:
+      - task: migrate:down:all
+      - task: migrate:up
+
+  db:seed:
+    desc: "シードデータを投入"
+    cmd: go run ./cmd/seed/main.go
+
+  db:dump:
+    desc: "データベースをダンプ"
+    cmd: PGPASSWORD={{.DB_PASSWORD}} pg_dump -h {{.DB_HOST}} -p {{.DB_PORT}} -U {{.DB_USER}} {{.DB_NAME}} > dump_{{.TIMESTAMP}}.sql
+    vars:
+      TIMESTAMP:
+        sh: date +%Y%m%d_%H%M%S
+
+  db:restore:
+    desc: "ダンプからリストア (usage: task db:restore -- dump_20241016_123456.sql)"
+    cmd: PGPASSWORD={{.DB_PASSWORD}} psql -h {{.DB_HOST}} -p {{.DB_PORT}} -U {{.DB_USER}} -d {{.DB_NAME}} < {{.CLI_ARGS}}
+
+  setup:
+    desc: "開発環境をセットアップ"
+    cmds:
+      - task: mod:download
+      - task: migrate:up
+      - task: sqlc:generate
+      - echo "✅ セットアップ完了!"
+
+  gen:
+    desc: "コード生成(sqlc)"
+    cmd: task sqlc:generate
+
+  docker:shell:
+    desc: "APIコンテナにシェル接続"
+    cmd: docker exec -it api sh
+
+  docker:logs:
+    desc: "APIコンテナのログを表示"
+    cmd: docker logs -f api
+
+  default:
+    desc: "利用可能なタスク一覧を表示"
+    cmds:
+      - task --list
+    silent: true
