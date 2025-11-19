@@ -1,4 +1,4 @@
-CREATE TABLE bus_stops (
+CREATE TABLE IF NOT EXISTS bus_stops (
     id SERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
     lat DOUBLE PRECISION,
