@@ -243,7 +243,7 @@ function TimetableContent() {
 
   return (
     <div className="container mx-auto py-6 space-y-6 px-4 max-w-none xl:w-full">
-      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
+      <div>
         <div>
           <TimetableFilter
             selectedDeparture={selectedDepartureGroupId}

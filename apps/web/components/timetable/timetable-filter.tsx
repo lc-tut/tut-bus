@@ -429,7 +429,7 @@ export function TimetableFilter({
                 検索
               </Button>
             </DrawerTrigger>
-            <DrawerContent className="min-h-[400px] max-h-[60vh]">
+            <DrawerContent>
             <TimetableDisplay
               selectedDeparture={selectedDeparture}
               selectedDestination={selectedDestination}
