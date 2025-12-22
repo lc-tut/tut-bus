@@ -48,16 +48,15 @@ services:
       POSTGRES_PASSWORD: p@ssw0rd
       POSTGRES_DB: tut_bus
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/pg_hba.conf:/etc/postgresql/pg_hba.custom:ro
-    command:
-      postgres
+    command: postgres
       -c hba_file=/etc/postgresql/pg_hba.custom
       -c ssl=off
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres -d tut_bus"]
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U postgres -d tut_bus']
       interval: 5s
       timeout: 3s
       retries: 10

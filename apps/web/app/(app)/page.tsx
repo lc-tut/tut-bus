@@ -354,10 +354,7 @@ function HomeContent() {
             }
 
             if (destinationToUse) {
-              const destinationFiltered = filterBusesByDestination(
-                displayBuses,
-                destinationToUse
-              )
+              const destinationFiltered = filterBusesByDestination(displayBuses, destinationToUse)
               result.filtered = filterBusesByDeparture(destinationFiltered, currentNow)
             }
           }
@@ -431,15 +428,12 @@ function HomeContent() {
     if (Object.keys(groupTimetables).length === 0) return
 
     const updates: { [groupId: number]: number } = {}
-    
+
     busStopGroups.forEach((group) => {
       const destinations = extractDestinations(groupTimetables[group.id])
-      
+
       // 行先が1つだけで、まだ選択されていない場合
-      if (
-        destinations.length === 1 &&
-        selectedDestinations[group.id] !== destinations[0].stopId
-      ) {
+      if (destinations.length === 1 && selectedDestinations[group.id] !== destinations[0].stopId) {
         updates[group.id] = destinations[0].stopId
       }
     })
