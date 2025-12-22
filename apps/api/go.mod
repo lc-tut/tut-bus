@@ -1,6 +1,6 @@
 module api
 
-go 1.25.2
+go 1.24.6
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect

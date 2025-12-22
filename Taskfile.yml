@@ -1,0 +1,129 @@
+version: '3'
+
+vars:
+  DOCKER_COMPOSE: docker compose
+
+includes:
+  api:
+    taskfile: ./apps/api/Taskfile.yml
+    dir: ./apps/api
+  web:
+    taskfile: ./apps/web/Taskfile.yml
+    dir: ./apps/web
+  spec:
+    taskfile: ./apps/spec/Taskfile.yml
+    dir: ./apps/spec
+
+tasks:
+  up:
+    desc: 'Docker環境を起動'
+    cmd: '{{.DOCKER_COMPOSE}} up -d'
+
+  down:
+    desc: 'Docker環境を停止'
+    cmd: '{{.DOCKER_COMPOSE}} down'
+
+  restart:
+    desc: 'Docker環境を再起動'
+    cmds:
+      - '{{.DOCKER_COMPOSE}} down'
+      - '{{.DOCKER_COMPOSE}} up -d'
+
+  logs:
+    desc: 'Docker環境のログを表示'
+    cmd: '{{.DOCKER_COMPOSE}} logs -f'
+
+  logs:web:
+    desc: 'webコンテナのログを表示'
+    cmd: '{{.DOCKER_COMPOSE}} logs -f web'
+
+  logs:api:
+    desc: 'apiコンテナのログを表示'
+    cmd: '{{.DOCKER_COMPOSE}} logs -f api'
+
+  logs:db:
+    desc: 'dbコンテナのログを表示'
+    cmd: '{{.DOCKER_COMPOSE}} logs -f db'
+
+  ps:
+    desc: '実行中のコンテナを表示'
+    cmd: '{{.DOCKER_COMPOSE}} ps'
+
+  clean:
+    desc: 'Docker環境を完全にクリーンアップ(ボリュームも削除)'
+    cmd: '{{.DOCKER_COMPOSE}} down -v'
+
+  setup:
+    desc: '初回開発環境セットアップ'
+    cmds:
+      - pnpm install
+      - task: up
+      - sleep 5
+      - task: api:migrate:up
+      - echo "✅ セットアップ完了!"
+
+  install:
+    desc: '依存パッケージをインストール'
+    cmd: pnpm install
+
+  gen:spec:
+    desc: 'OpenAPI仕様を生成'
+    cmd: pnpm run gen:spec
+
+  gen:clients:
+    desc: 'TypeScript/Goクライアントを生成'
+    cmd: pnpm run gen:clients
+
+  gen:all:
+    desc: 'すべてのコード生成を実行'
+    cmds:
+      - task: gen:spec
+      - task: gen:clients
+      - task: api:sqlc:generate
+
+  lint:
+    desc: '全プロジェクトのLint実行'
+    cmd: pnpm run lint
+
+  fix:
+    desc: '全プロジェクトの自動修正'
+    cmd: pnpm run fix
+
+  typecheck:
+    desc: '全プロジェクトの型チェック'
+    cmd: pnpm run typecheck
+
+  build:
+    desc: '全プロジェクトをビルド'
+    cmd: pnpm run build
+
+  build:web:
+    desc: 'webプロジェクトをビルド'
+    cmd: pnpm run build:web
+
+  build:api:
+    desc: 'apiプロジェクトをビルド'
+    cmd: pnpm run build:api
+
+  dev:
+    desc: '開発サーバー起動(すべて)'
+    cmds:
+      - task: up
+
+  dev:web:
+    desc: 'webの開発サーバー起動'
+    cmd: pnpm run dev:web
+
+  db:shell:
+    desc: 'PostgreSQLシェルに接続'
+    cmd: task api:db:shell
+
+  db:reset:
+    desc: 'データベースをリセット'
+    cmd: task api:db:reset
+
+  default:
+    desc: '利用可能なタスク一覧を表示'
+    cmds:
+      - task --list
+    silent: true
