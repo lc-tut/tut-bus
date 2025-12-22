@@ -324,6 +324,7 @@ function HomeContent() {
             allBuses: displayBuses,
           }
 
+          // セグメントから利用可能な目的地情報を保存（選択はuseEffectで行う）
           if (data.segments && data.segments.length > 0) {
             const uniqueDestinations = new Map<number, { stopId: number; stopName: string }>()
 
@@ -337,21 +338,12 @@ function HomeContent() {
               }
             })
 
+            // 既存の選択があればそれを使用、なければ後でuseEffectで選択される
             const existingSelection = selectedDestinations[group.id]
-            let destinationToUse: number | null = null
-
-            if (existingSelection && uniqueDestinations.has(existingSelection)) {
-              destinationToUse = existingSelection
-            } else {
-              const firstDestination = Array.from(uniqueDestinations.values())[0]
-              if (firstDestination) {
-                destinationToUse = firstDestination.stopId
-                setSelectedDestinations((prev) => ({
-                  ...prev,
-                  [group.id]: firstDestination.stopId,
-                }))
-              }
-            }
+            const destinationToUse =
+              existingSelection && uniqueDestinations.has(existingSelection)
+                ? existingSelection
+                : null
 
             if (destinationToUse) {
               const destinationFiltered = filterBusesByDestination(displayBuses, destinationToUse)
@@ -391,7 +383,7 @@ function HomeContent() {
         }
       }
     },
-    [busStopGroups, selectedDestinations, setSelectedDestinations]
+    [busStopGroups, selectedDestinations]
   )
 
   useEffect(() => {
@@ -423,29 +415,27 @@ function HomeContent() {
     fetchAllTimetables()
   }, [busStopGroups, now, fetchGroupTimetable, handleError])
 
-  // 行先が1つだけの場合は自動的に選択
   useEffect(() => {
     if (Object.keys(groupTimetables).length === 0) return
 
-    const updates: { [groupId: number]: number } = {}
+    setSelectedDestinations((prev) => {
+      const updates: { [groupId: number]: number } = {}
 
-    busStopGroups.forEach((group) => {
-      const destinations = extractDestinations(groupTimetables[group.id])
+      busStopGroups.forEach((group) => {
+        const destinations = extractDestinations(groupTimetables[group.id])
 
-      // 行先が1つだけで、まだ選択されていない場合
-      if (destinations.length === 1 && selectedDestinations[group.id] !== destinations[0].stopId) {
-        updates[group.id] = destinations[0].stopId
-      }
+        if (destinations.length > 0) {
+          const currentSelection = prev[group.id]
+
+          if (!currentSelection || !destinations.some((d) => d.stopId === currentSelection)) {
+            updates[group.id] = destinations[0].stopId
+          }
+        }
+      })
+
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev
     })
-
-    // 更新が必要な場合のみstateを更新
-    if (Object.keys(updates).length > 0) {
-      setSelectedDestinations((prev) => ({
-        ...prev,
-        ...updates,
-      }))
-    }
-  }, [groupTimetables, busStopGroups, selectedDestinations, setSelectedDestinations])
+  }, [groupTimetables, busStopGroups])
 
   useEffect(() => {
     const currentDate = new Date()
