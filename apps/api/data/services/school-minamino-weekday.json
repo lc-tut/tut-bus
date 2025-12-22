@@ -10,7 +10,10 @@
     "displayName": "八王子みなみ野駅"
   },
   "direction": "outbound",
-  "validityPeriods": [{ "from": "2025-09-22", "to": "2025-12-19" },  {"from": "2025-12-22", "to": "2025-12-22" }],
+  "validityPeriods": [
+    { "from": "2025-09-22", "to": "2025-12-19" },
+    { "from": "2025-12-22", "to": "2025-12-22" }
+  ],
   "segments": [
     {
       "segmentType": "fixed",

@@ -2,67 +2,67 @@ version: '3'
 
 tasks:
   dev:
-    desc: "開発サーバーを起動"
+    desc: '開発サーバーを起動'
     cmd: pnpm dev
 
   build:
-    desc: "プロダクションビルド"
+    desc: 'プロダクションビルド'
     cmd: pnpm build
 
   start:
-    desc: "プロダクションサーバーを起動"
+    desc: 'プロダクションサーバーを起動'
     cmd: pnpm start
 
   lint:
-    desc: "Lintを実行"
+    desc: 'Lintを実行'
     cmd: pnpm lint
 
   lint:eslint:
-    desc: "ESLintを実行"
+    desc: 'ESLintを実行'
     cmd: pnpm lint:eslint
 
   lint:prettier:
-    desc: "Prettierチェックを実行"
+    desc: 'Prettierチェックを実行'
     cmd: pnpm lint:prettier
 
   fix:
-    desc: "自動修正を実行"
+    desc: '自動修正を実行'
     cmd: pnpm fix
 
   fix:eslint:
-    desc: "ESLintで自動修正"
+    desc: 'ESLintで自動修正'
     cmd: pnpm fix:eslint
 
   fix:prettier:
-    desc: "Prettierで自動修正"
+    desc: 'Prettierで自動修正'
     cmd: pnpm fix:prettier
 
   typecheck:
-    desc: "型チェックを実行"
+    desc: '型チェックを実行'
     cmd: pnpm typecheck
 
   analyze:
-    desc: "バンドルサイズを分析"
+    desc: 'バンドルサイズを分析'
     cmd: ANALYZE=true pnpm build
 
   info:
-    desc: "Next.jsの情報を表示"
+    desc: 'Next.jsの情報を表示'
     cmd: pnpm next info
 
   test:
-    desc: "テストを実行"
+    desc: 'テストを実行'
     cmd: pnpm test
 
   docker:shell:
-    desc: "webコンテナにシェル接続"
+    desc: 'webコンテナにシェル接続'
     cmd: docker exec -it web sh
 
   docker:logs:
-    desc: "webコンテナのログを表示"
+    desc: 'webコンテナのログを表示'
     cmd: docker logs -f web
 
   default:
-    desc: "利用可能なタスク一覧を表示"
+    desc: '利用可能なタスク一覧を表示'
     cmds:
       - task --list
     silent: true

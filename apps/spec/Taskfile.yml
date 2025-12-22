@@ -7,46 +7,46 @@ vars:
 
 tasks:
   compile:
-    desc: "TypeSpec仕様をコンパイル"
+    desc: 'TypeSpec仕様をコンパイル'
     cmd: pnpm gen:spec
 
   lint:
-    desc: "TypeSpecのフォーマットチェック"
+    desc: 'TypeSpecのフォーマットチェック'
     cmd: pnpm lint
 
   fix:
-    desc: "TypeSpecを自動フォーマット"
+    desc: 'TypeSpecを自動フォーマット'
     cmd: pnpm fix
 
   gen:spec:
-    desc: "OpenAPI仕様を生成"
+    desc: 'OpenAPI仕様を生成'
     cmd: pnpm gen:spec
 
   gen:ts:
-    desc: "TypeScriptクライアントを生成"
+    desc: 'TypeScriptクライアントを生成'
     cmd: pnpm gen:ts
 
   gen:go:
-    desc: "Goサーバーコードを生成"
+    desc: 'Goサーバーコードを生成'
     cmd: pnpm gen:go
 
   gen:all:
-    desc: "すべてのコードを生成(spec→ts→go)"
+    desc: 'すべてのコードを生成(spec→ts→go)'
     cmds:
       - task: gen:spec
       - task: gen:ts
       - task: gen:go
 
   clean:ts:
-    desc: "TypeScript生成ファイルを削除"
+    desc: 'TypeScript生成ファイルを削除'
     cmd: pnpm clean:ts
 
   clean:go:
-    desc: "Go生成ファイルを削除"
+    desc: 'Go生成ファイルを削除'
     cmd: pnpm clean:go
 
   clean:all:
-    desc: "すべての生成ファイルを削除"
+    desc: 'すべての生成ファイルを削除'
     cmds:
       - task: clean:ts
       - task: clean:go
@@ -54,7 +54,7 @@ tasks:
       - echo "✅ すべての生成ファイルを削除しました"
 
   validate:
-    desc: "OpenAPI仕様を検証"
+    desc: 'OpenAPI仕様を検証'
     cmd: |
       if [ -f "{{.OPENAPI_FILE}}" ]; then
         echo "✅ OpenAPI仕様ファイルが存在します"
@@ -65,7 +65,7 @@ tasks:
       fi
 
   check:outputs:
-    desc: "生成されたファイルの確認"
+    desc: '生成されたファイルの確認'
     cmds:
       - echo "=== TypeScript出力 ==="
       - ls -lh {{.TS_OUTPUT}} 2>/dev/null || echo "❌ TypeScriptファイルが見つかりません"
@@ -74,22 +74,22 @@ tasks:
       - ls -lh {{.GO_OUTPUT_DIR}}/ 2>/dev/null || echo "❌ Goファイルが見つかりません"
 
   install:
-    desc: "依存パッケージをインストール"
+    desc: '依存パッケージをインストール'
     cmd: pnpm install
 
   update:
-    desc: "パッケージをアップデート"
+    desc: 'パッケージをアップデート'
     cmd: pnpm update
 
   rebuild:
-    desc: "クリーン→すべて再生成"
+    desc: 'クリーン→すべて再生成'
     cmds:
       - task: clean:all
       - task: gen:all
       - echo "✅ 再生成完了!"
 
   docs:
-    desc: "OpenAPI仕様をブラウザで表示"
+    desc: 'OpenAPI仕様をブラウザで表示'
     cmd: |
       if command -v open > /dev/null; then
         open {{.OPENAPI_FILE}}
@@ -100,7 +100,7 @@ tasks:
       fi
 
   default:
-    desc: "利用可能なタスク一覧を表示"
+    desc: '利用可能なタスク一覧を表示'
     cmds:
       - task --list
     silent: true
