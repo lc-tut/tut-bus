@@ -13,6 +13,7 @@ resource "vercel_project" "main" {
   build_command    = var.build_command
   install_command  = var.install_command
   output_directory = var.output_directory
+  root_directory   = var.root_directory
 }
 
 # 環境変数 - Production
