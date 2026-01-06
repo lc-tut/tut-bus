@@ -15,7 +15,7 @@ output "api_record_id" {
 
 output "api_record_hostname" {
   description = "APIの完全修飾ドメイン名"
-  value       = "${cloudflare_dns_record.api.name}.${var.zone_name}"
+  value       = "${var.api_record_name}.${var.zone_name}"
 }
 
 output "api_record_value" {
