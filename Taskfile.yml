@@ -127,3 +127,36 @@ tasks:
     cmds:
       - task --list
     silent: true
+
+  # ========================================
+  # Terraform Tasks
+  # ========================================
+  tf:init:
+    desc: 'Terraformを初期化'
+    dir: infra
+    cmd: terraform init
+
+  tf:plan:
+    desc: 'Terraformプランを表示'
+    dir: infra
+    cmd: terraform plan -var-file=production.tfvars
+
+  tf:apply:
+    desc: 'Terraformを適用'
+    dir: infra
+    cmd: terraform apply -var-file=production.tfvars
+
+  tf:validate:
+    desc: 'Terraform設定を検証'
+    dir: infra
+    cmd: terraform validate
+
+  tf:fmt:
+    desc: 'Terraform設定をフォーマット'
+    dir: infra
+    cmd: terraform fmt -recursive
+
+  tf:output:
+    desc: 'Terraform出力を表示'
+    dir: infra
+    cmd: terraform output

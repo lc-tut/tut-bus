@@ -1,0 +1,51 @@
+# This file specifies files that are *not* uploaded to Google Cloud
+# using gcloud. It follows the same syntax as .gitignore.
+
+.gcloudignore
+.git
+.gitignore
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+server
+
+# Test files
+*_test.go
+test/
+tests/
+
+# Development files
+.env
+.env.*
+!.env.sample
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Documentation
+README.md
+*.md
+
+# Docker (not needed for App Engine)
+Dockerfile
+.dockerignore
+
+# Task
+Taskfile.yml
+
+# Database
+db/
+
+# Misc
+tmp/
+temp/
