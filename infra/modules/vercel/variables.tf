@@ -83,3 +83,43 @@ variable "enable_deployment_retention" {
   type        = bool
   default     = true
 }
+
+# ========================================
+# Announcement Banner Variables
+# ========================================
+
+variable "announcement_message" {
+  description = "アナウンスメントバナーのメッセージ（空の場合は表示しない）"
+  type        = string
+  default     = ""
+}
+
+variable "announcement_title" {
+  description = "アナウンスメントバナーのタイトル"
+  type        = string
+  default     = "お知らせ"
+}
+
+variable "announcement_type" {
+  description = "アナウンスメントバナーのタイプ（info / warning）"
+  type        = string
+  default     = "info"
+}
+
+variable "announcement_link_url" {
+  description = "アナウンスメントバナーのリンクURL"
+  type        = string
+  default     = ""
+}
+
+variable "announcement_link_text" {
+  description = "アナウンスメントバナーのリンクテキスト"
+  type        = string
+  default     = ""
+}
+
+variable "ga_id" {
+  description = "Google Analytics ID"
+  type        = string
+  default     = ""
+}

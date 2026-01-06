@@ -176,3 +176,43 @@ variable "vercel_enable_deployment_retention" {
   type        = bool
   default     = true
 }
+
+# ========================================
+# Vercel Announcement Banner Variables
+# ========================================
+
+variable "vercel_announcement_message" {
+  description = "アナウンスメントバナーのメッセージ（空の場合は表示しない）"
+  type        = string
+  default     = ""
+}
+
+variable "vercel_announcement_title" {
+  description = "アナウンスメントバナーのタイトル"
+  type        = string
+  default     = "お知らせ"
+}
+
+variable "vercel_announcement_type" {
+  description = "アナウンスメントバナーのタイプ（info / warning）"
+  type        = string
+  default     = "info"
+}
+
+variable "vercel_announcement_link_url" {
+  description = "アナウンスメントバナーのリンクURL"
+  type        = string
+  default     = ""
+}
+
+variable "vercel_announcement_link_text" {
+  description = "アナウンスメントバナーのリンクテキスト"
+  type        = string
+  default     = ""
+}
+
+variable "vercel_ga_id" {
+  description = "Google Analytics ID"
+  type        = string
+  default     = ""
+}
