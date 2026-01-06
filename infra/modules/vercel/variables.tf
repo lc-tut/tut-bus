@@ -63,13 +63,19 @@ variable "build_command" {
 variable "install_command" {
   description = "インストールコマンド"
   type        = string
-  default     = "pnpm install"
+  default     = "pnpm install --frozen-lockfile"
 }
 
 variable "output_directory" {
   description = "出力ディレクトリ"
   type        = string
   default     = ".next"
+}
+
+variable "root_directory" {
+  description = "プロジェクトのルートディレクトリ（monorepo用）"
+  type        = string
+  default     = null
 }
 
 variable "enable_deployment_retention" {
