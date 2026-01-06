@@ -149,6 +149,59 @@ gcloud app versions list --project=YOUR_PROJECT_ID
 - `DATA_PATH`: データファイルのパス（./data）
 - `CORS_ALLOWED_ORIGINS`: CORSで許可するオリジン（Terraformの`cors_allowed_origins`変数から設定）
 
+### Vercel（Frontend）の環境変数
+
+#### 開発環境 (.env.local)
+
+```bash
+# Google Analytics ID
+NEXT_PUBLIC_GA_ID=
+
+# APIエンドポイント
+NEXT_PUBLIC_API_URL=http://localhost:8000  # ローカル開発時
+# または
+NEXT_PUBLIC_API_URL=https://tut-bus-api.hekuta.net  # 本番API
+
+# アナウンスメントバナー（任意）
+NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE=年末年始の臨時便が多く、現在の時刻表には反映されていません。ご不便をおかけして申し訳ございません。
+NEXT_PUBLIC_ANNOUNCEMENT_TITLE=お知らせ
+NEXT_PUBLIC_ANNOUNCEMENT_TYPE=warning  # "info" または "warning"
+```
+
+#### 本番環境（Vercel Dashboard で設定）
+
+1. [Vercel Dashboard](https://vercel.com/dashboard) > プロジェクト `tut-bus-web` 選択
+2. Settings > Environment Variables に移動
+3. 以下の環境変数を追加：
+
+| 環境変数名 | 値の例 | 説明 | 必須 |
+|-----------|--------|------|------|
+| `NEXT_PUBLIC_GA_ID` | G-XXXXXXXXXX | Google Analytics ID | No |
+| `NEXT_PUBLIC_API_URL` | https://tut-bus-api.hekuta.net | API URL | Yes |
+| `NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE` | 年末年始の臨時便が多く... | バナーメッセージ | No |
+| `NEXT_PUBLIC_ANNOUNCEMENT_TITLE` | お知らせ | バナータイトル | No |
+| `NEXT_PUBLIC_ANNOUNCEMENT_TYPE` | warning | info/warning | No |
+
+4. Environment を `Production` に設定して Save
+5. 再デプロイ
+
+**Vercel CLI での設定：**
+
+```bash
+# 環境変数を追加
+vercel env add NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE production
+# プロンプトでメッセージを入力
+
+vercel env add NEXT_PUBLIC_ANNOUNCEMENT_TYPE production
+# warning または info を入力
+
+# 再デプロイ
+vercel --prod
+```
+
+**バナーを非表示にする：**
+- `NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE` を削除または空にする
+
 ## 🔧 環境管理
 
 ### Workspaceで環境を分離
