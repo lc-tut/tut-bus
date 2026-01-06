@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TUT Bus Web Frontend
 
-## Getting Started
+東京工科大学のスクールバス時刻表Webアプリケーションのフロントエンド。
 
-First, run the development server:
+## 技術スタック
+
+- **Next.js 14** (App Router)
+- **React 19**
+- **TypeScript**
+- **Tailwind CSS**
+- **Shadcn/ui** (UIコンポーネント)
+- **openapi-fetch** (型安全なAPIクライアント)
+
+## 開発環境のセットアップ
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# 依存関係のインストール（ワークスペースルートから）
+cd /path/to/tut-bus
+pnpm install
+
+# 開発サーバーの起動
+pnpm dev:web
+# または
+cd apps/web
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 環境変数
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env.local` に以下を設定：
 
-## Learn More
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000  # ローカル開発時
+# または
+NEXT_PUBLIC_API_URL=https://tut-bus-api.hekuta.net  # 本番API
+```
 
-To learn more about Next.js, take a look at the following resources:
+## ビルド
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm build:web
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## デプロイ
 
-## Deploy on Vercel
+Vercel にデプロイされます。`main` ブランチへのプッシュで自動デプロイ。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 主な機能
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 現在時刻から次のバスを表示
+- 出発地・目的地別の時刻表検索
+- レスポンシブデザイン（スマホ・PC対応）
+- ダークモード対応
