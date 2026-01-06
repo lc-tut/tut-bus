@@ -62,3 +62,51 @@ TypeScript, Go, Typespec
 #### ハッカソンで開発した独自機能・技術
 
 - ホーム画面のUI
+
+## デプロイ
+
+### アーキテクチャ
+
+- **Vercel**: フロントエンド (Next.js) のホスティング
+- **App Engine Standard**: API (Go) アプリケーションの実行
+- **Cloud SQL (PostgreSQL)**: データベース
+- **VPC Network**: プライベートネットワーク
+- **Cloudflare**: DNS + SSL/TLS + DDoS Protection
+
+### デプロイ手順
+
+詳細は [infra/README.md](infra/README.md) を参照してください。
+
+#### 1. App Engine にアプリケーションをデプロイ
+
+```bash
+cd apps/api
+gcloud app deploy app.yaml --project=YOUR_PROJECT_ID --quiet
+```
+
+#### 2. インフラのプロビジョニング (Terraform)
+
+```bash
+cd infra
+terraform init
+terraform apply -var-file=production.tfvars
+```
+
+#### 3. フロントエンド (Vercel)
+
+Vercelにプロジェクトをデプロイし、`main`ブランチにプッシュすることで自動デプロイされます。
+
+環境変数：
+```
+NEXT_PUBLIC_API_URL=https://tut-bus-api.hekuta.net
+```
+
+### 運用コマンド
+
+```bash
+# ログの確認
+gcloud app logs read --service=default --project=YOUR_PROJECT_ID
+
+# アプリケーションの状態確認
+gcloud app describe --project=YOUR_PROJECT_ID
+```

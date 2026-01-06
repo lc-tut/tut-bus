@@ -1,0 +1,79 @@
+variable "project_name" {
+  description = "Vercelプロジェクト名"
+  type        = string
+  default     = "tut-bus-web"
+}
+
+variable "framework" {
+  description = "フレームワーク名"
+  type        = string
+  default     = "nextjs"
+}
+
+variable "github_org" {
+  description = "GitHubオーガニゼーション/ユーザー名"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "GitHubリポジトリ名"
+  type        = string
+}
+
+variable "team_id" {
+  description = "Vercel Team ID（オプション）"
+  type        = string
+  default     = null
+}
+
+variable "production_branch" {
+  description = "本番環境のブランチ名"
+  type        = string
+  default     = "main"
+}
+
+variable "custom_domain" {
+  description = "カスタムドメイン名（オプション）"
+  type        = string
+  default     = ""
+}
+
+variable "api_url_production" {
+  description = "本番環境のAPI URL"
+  type        = string
+}
+
+variable "api_url_preview" {
+  description = "プレビュー環境のAPI URL"
+  type        = string
+}
+
+variable "api_url_development" {
+  description = "開発環境のAPI URL"
+  type        = string
+  default     = "http://localhost:8000"
+}
+
+variable "build_command" {
+  description = "ビルドコマンド"
+  type        = string
+  default     = "pnpm run build"
+}
+
+variable "install_command" {
+  description = "インストールコマンド"
+  type        = string
+  default     = "pnpm install"
+}
+
+variable "output_directory" {
+  description = "出力ディレクトリ"
+  type        = string
+  default     = ".next"
+}
+
+variable "enable_deployment_retention" {
+  description = "デプロイメント保持を有効化"
+  type        = bool
+  default     = true
+}
