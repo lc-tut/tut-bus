@@ -4,8 +4,8 @@ Google Cloudインフラを管理するモジュール。
 
 ## 構成
 
-- **App Engine**: Standard Environment (Go 1.22, APIサーバー)
-- **Cloud SQL**: PostgreSQL 17 (データベース)
+- **App Engine**: Standard Environment (Go 1.24, APIサーバー)
+- **Cloud SQL**: PostgreSQL 15 (データベース)
 - **VPC Network**: Private Service Connection
 - **IAM**: サービスアカウント、Cloud SQL IAM認証
 

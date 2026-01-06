@@ -21,7 +21,7 @@ TerraformでTUT Busのインフラを管理します。
          ↓
 ┌─────────────────┐
 │  Google Cloud   │  ← App Engine (F1) + Cloud SQL
-│   (Backend)     │     API Server (Go) + PostgreSQL 17
+│   (Backend)     │     API Server (Go) + PostgreSQL 15
 └─────────────────┘
 ```
 
@@ -29,7 +29,7 @@ TerraformでTUT Busのインフラを管理します。
 
 ### `modules/gcp/` - Google Cloud Platform
 - App Engine Standard Environment
-- Cloud SQL (PostgreSQL 17)
+- Cloud SQL (PostgreSQL 15)
 - VPC Network & Private Service Connection
 - IAM & Service Accounts
 
@@ -67,7 +67,7 @@ export CLOUDFLARE_API_TOKEN="your-token"
 export VERCEL_API_TOKEN="your-token"
 ```
 
-### 2. 環境ごとの設定ファイルを作成
+### 3. 環境ごとの設定ファイルを作成
 
 ```bash
 # 開発環境
@@ -79,7 +79,7 @@ cp production.tfvars.example production.tfvars
 # 実際の値を編集
 ```
 
-### 3. Workspace を使って環境を切り替え
+### 4. Workspace を使って環境を切り替え
 
 ```bash
 # 初期化
@@ -104,7 +104,7 @@ terraform workspace show
 terraform workspace list
 ```
 
-### 4. デプロイの確認
+### 5. デプロイの確認
 
 ```bash
 # リソースの状態を確認
@@ -127,13 +127,15 @@ gcloud app versions list --project=YOUR_PROJECT_ID
 
 ### API サーバーの環境変数
 
-`infra/scripts/startup-script.sh` で以下の環境変数が設定されます：
+`apps/api/app.yaml` で以下の環境変数が設定されます：
 
 #### データベース関連（App Engine標準環境）
-- `INSTANCE_CONNECTION_NAME`: Cloud SQLインスタンスの接続名
-- `DB_USER`: Cloud SQL IAMユーザー（サービスアカウント）
+- `DB_HOST`: `/cloudsql/PROJECT_ID:REGION:INSTANCE_NAME` (Unix socket)
+- `DB_PORT`: "" (空)
 - `DB_NAME`: データベース名
-- `DB_PASSWORD`: ""（空 - IAM認証を使用）
+- `DB_USER`: Cloud SQL IAMユーザー（postgres）
+- `DB_PASSWORD`: "" (空 - IAM認証を使用)
+- `DB_SSLMODE`: disable (Unix socket経由のため不要)
 
 **注意**:
 - App Engine標準環境ではCloud SQL Unix socketを使用
@@ -143,8 +145,8 @@ gcloud app versions list --project=YOUR_PROJECT_ID
 #### アプリケーション設定
 - `API_ENV`: 環境（production）
 - `HOST`: バインドするホスト（0.0.0.0）
-- `PORT`: APIポート（8000）
-- `DATA_PATH`: データファイルのパス（/app/data）
+- `PORT`: App Engineが自動設定（環境変数 $PORT）
+- `DATA_PATH`: データファイルのパス（./data）
 - `CORS_ALLOWED_ORIGINS`: CORSで許可するオリジン（Terraformの`cors_allowed_origins`変数から設定）
 
 ## 🔧 環境管理
@@ -169,7 +171,7 @@ terraform destroy -var-file="dev.tfvars"
 
 | 項目 | 開発環境 | 本番環境 |
 |------|----------|----------|
-| マシンタイプ | e2-micro | e2-medium |
+| App Engineインスタンス | F1 | F1 |
 | DNS | tut-bus-api-dev | tut-bus-api |
 | SSL | flexible | strict |
 | Vercelブランチ | dev | main |
