@@ -54,6 +54,7 @@ module "vercel" {
   # Deployment Configuration
   production_branch = var.vercel_production_branch
   custom_domain     = var.vercel_custom_domain
+  root_directory    = "apps/web"
 
   # API URLs
   api_url_production  = "https://${module.cloudflare.api_record_hostname}"
