@@ -38,6 +38,12 @@ func Initialize() *AppContext {
 		log.Fatalf("failed to initialize zap logger: %v", err)
 	}
 
+	// 開発環境ではキャッシュを無効化してファイル変更を即座に反映
+	if cfg.IsDev() {
+		domain.SetCacheEnabled(false)
+		logger.Info("開発環境: サービスデータのキャッシュを無効化しました")
+	}
+
 	// サービスデータの読み込み
 	services, err := domain.LoadServiceData(cfg.GetDataDir())
 	if err != nil {
