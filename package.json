@@ -1,7 +1,10 @@
 {
   "name": "@lc-tut/tut-bus",
   "private": true,
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@9.15.5",
+  "engines": {
+    "node": "24.x"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
