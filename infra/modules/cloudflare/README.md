@@ -4,7 +4,7 @@ DNS管理とCDNを提供するモジュール。
 
 ## 構成
 
-- **DNS**: Aレコード設定 (tut-bus-api.hekuta.net)
+- **DNS**: CNAMEレコード設定 (tut-bus-api.hekuta.net → ghs.googlehosted.com)
 - **SSL/TLS**: Flexible/Full/Strictモード対応
 - **Proxy**: DDoS保護、CDN機能
 

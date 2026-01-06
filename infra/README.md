@@ -20,7 +20,7 @@ TerraformでTUT Busのインフラを管理します。
          │ Proxy
          ↓
 ┌─────────────────┐
-│  Google Cloud   │  ← Container-Optimized OS + Cloud SQL
+│  Google Cloud   │  ← App Engine (F1) + Cloud SQL
 │   (Backend)     │     API Server (Go) + PostgreSQL 17
 └─────────────────┘
 ```
@@ -28,13 +28,13 @@ TerraformでTUT Busのインフラを管理します。
 ## 📦 モジュール構成
 
 ### `modules/gcp/` - Google Cloud Platform
-- Compute Engine (Container-Optimized OS)
+- App Engine Standard Environment
 - Cloud SQL (PostgreSQL 17)
-- VPC & Firewall
+- VPC Network & Private Service Connection
 - IAM & Service Accounts
 
 ### `modules/cloudflare/` - DNS & CDN
-- DNS管理 (A Record)
+- DNS管理 (CNAME Record → App Engine)
 - SSL/TLS設定
 - DDoS保護
 
@@ -45,17 +45,15 @@ TerraformでTUT Busのインフラを管理します。
 
 ## 🚀 クイックスタート
 
-### 1. Docker イメージのビルド & プッシュ
+### 1. App Engine へのデプロイ準備
 
-APIサーバーのDockerイメージをビルドし、GCRにプッシュします：
+App Engine Standard環境を使用するため、Dockerイメージのビルドは不要です。
+ソースコードから直接デプロイされます。
 
 ```bash
-# ワークスペースルートから実行
-cd /path/to/tut-bus
-
-# Dockerfileは apps/api/Dockerfile にあります
-docker build -f apps/api/Dockerfile -t gcr.io/YOUR_PROJECT_ID/tut-bus-api:latest .
-docker push gcr.io/YOUR_PROJECT_ID/tut-bus-api:latest
+# App Engineへのデプロイ
+cd apps/api
+gcloud app deploy app.yaml --project=YOUR_PROJECT_ID
 ```
 
 ### 2. 認証情報を設定
@@ -113,17 +111,16 @@ terraform workspace list
 terraform output
 
 # APIにアクセス
-curl http://$(terraform output -raw instance_public_ip):8000
+curl https://tut-bus-api.hekuta.net/api/bus-stops/groups
 
-# COSインスタンスにSSH接続
-gcloud compute ssh tut-bus-api-production --zone=asia-northeast1-a
+# App Engineのログ確認
+gcloud app logs tail --project=YOUR_PROJECT_ID
 
-# コンテナの状態確認
-docker ps -a --filter name=tut-bus-api
-docker logs tut-bus-api
+# App Engineサービスの状態確認
+gcloud app describe --project=YOUR_PROJECT_ID
 
-# systemdサービスの状態確認
-sudo systemctl status tut-bus.service
+# デプロイされたバージョン確認
+gcloud app versions list --project=YOUR_PROJECT_ID
 ```
 
 ## 🌍 環境変数
@@ -132,18 +129,16 @@ sudo systemctl status tut-bus.service
 
 `infra/scripts/startup-script.sh` で以下の環境変数が設定されます：
 
-#### データベース関連（Cloud SQL Auth Proxy経由）
-- `DB_HOST`: 127.0.0.1（Cloud SQL Proxyのローカルエンドポイント）
-- `DB_PORT`: 5432
+#### データベース関連（App Engine標準環境）
+- `INSTANCE_CONNECTION_NAME`: Cloud SQLインスタンスの接続名
+- `DB_USER`: Cloud SQL IAMユーザー（サービスアカウント）
 - `DB_NAME`: データベース名
-- `DB_USER`: postgres（IAM認証）
 - `DB_PASSWORD`: ""（空 - IAM認証を使用）
-- `DB_SSLMODE`: disable（Proxy経由のため不要）
 
 **注意**:
-- Cloud SQL Proxyが `--private-ip` でプライベートIP経由で接続
+- App Engine標準環境ではCloud SQL Unix socketを使用
 - IAM認証を使用するため、パスワード不要
-- より安全でパスワード管理が不要
+- VPC経由のプライベート接続で安全
 
 #### アプリケーション設定
 - `API_ENV`: 環境（production）
