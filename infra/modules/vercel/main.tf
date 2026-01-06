@@ -10,10 +10,11 @@ resource "vercel_project" "main" {
   }
 
   # ビルド設定
-  build_command    = var.build_command
-  install_command  = var.install_command
-  output_directory = var.output_directory
-  root_directory   = var.root_directory
+  build_command      = var.build_command
+  install_command    = var.install_command
+  output_directory   = var.output_directory
+  root_directory     = var.root_directory
+  build_machine_type = "enhanced"
 }
 
 # 環境変数 - Production
@@ -38,6 +39,14 @@ resource "vercel_project_environment_variable" "api_url_development" {
   target     = ["development"]
   key        = "NEXT_PUBLIC_API_URL"
   value      = var.api_url_development
+}
+
+# Corepack有効化（pnpm 9.x を使用するため）
+resource "vercel_project_environment_variable" "enable_corepack" {
+  project_id = vercel_project.main.id
+  target     = ["production", "preview", "development"]
+  key        = "ENABLE_EXPERIMENTAL_COREPACK"
+  value      = "1"
 }
 
 # カスタムドメイン（オプション）
