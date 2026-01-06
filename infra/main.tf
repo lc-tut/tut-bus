@@ -69,5 +69,15 @@ module "vercel" {
   # Deployment Retention
   enable_deployment_retention = var.vercel_enable_deployment_retention
 
+  # Announcement Banner
+  announcement_message   = var.vercel_announcement_message
+  announcement_title     = var.vercel_announcement_title
+  announcement_type      = var.vercel_announcement_type
+  announcement_link_url  = var.vercel_announcement_link_url
+  announcement_link_text = var.vercel_announcement_link_text
+
+  # Google Analytics
+  ga_id = var.vercel_ga_id
+
   depends_on = [module.cloudflare]
 }
