@@ -31,7 +31,7 @@ services:
     volumes:
       - ./apps/api:/app
     environment:
-      - ENVIRONMENT=development
+      - API_ENV=development
       - HOST=api
       - PORT=8000
     restart: always

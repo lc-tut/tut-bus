@@ -1,0 +1,41 @@
+# ========================================
+# Provider API Tokens
+# ========================================
+# Note: 環境変数で設定することを推奨
+# export CLOUDFLARE_API_TOKEN="your-cloudflare-token"
+# export VERCEL_API_TOKEN="your-vercel-token"
+
+cloudflare_api_token = "your-cloudflare-api-token"
+vercel_api_token     = "your-vercel-api-token"
+vercel_team_id       = null
+
+# ========================================
+# GCP
+# ========================================
+project_id       = "your-gcp-project-id"
+region           = "asia-northeast1"
+zone             = "asia-northeast1-a"
+environment      = "dev"
+db_instance_name = "tut-bus-db-dev"
+db_tier          = "db-f1-micro"
+machine_type     = "e2-micro"
+
+# Application Configuration
+cors_allowed_origins = "https://tut-bus-web-dev.vercel.app"
+
+# ========================================
+# Cloudflare
+# ========================================
+cloudflare_zone_name       = "hekuta.net"
+cloudflare_api_record_name = "tut-bus-api-dev"
+cloudflare_ssl_mode        = "flexible"
+cloudflare_min_tls_version = "1.2"
+
+# ========================================
+# Vercel
+# ========================================
+github_org                   = "lc-tut"
+github_repo                  = "tut-bus"
+vercel_project_name          = "tut-bus-web-dev"
+vercel_production_branch     = "dev"
+vercel_custom_domain         = ""
