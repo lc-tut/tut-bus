@@ -49,6 +49,59 @@ resource "vercel_project_environment_variable" "enable_corepack" {
   value      = "1"
 }
 
+# ========================================
+# Announcement Banner Environment Variables
+# ========================================
+
+resource "vercel_project_environment_variable" "announcement_message" {
+  count      = var.announcement_message != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE"
+  value      = var.announcement_message
+}
+
+resource "vercel_project_environment_variable" "announcement_title" {
+  count      = var.announcement_message != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "NEXT_PUBLIC_ANNOUNCEMENT_TITLE"
+  value      = var.announcement_title
+}
+
+resource "vercel_project_environment_variable" "announcement_type" {
+  count      = var.announcement_message != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "NEXT_PUBLIC_ANNOUNCEMENT_TYPE"
+  value      = var.announcement_type
+}
+
+resource "vercel_project_environment_variable" "announcement_link_url" {
+  count      = var.announcement_link_url != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "NEXT_PUBLIC_ANNOUNCEMENT_LINK_URL"
+  value      = var.announcement_link_url
+}
+
+resource "vercel_project_environment_variable" "announcement_link_text" {
+  count      = var.announcement_link_text != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "NEXT_PUBLIC_ANNOUNCEMENT_LINK_TEXT"
+  value      = var.announcement_link_text
+}
+
+# Google Analytics
+resource "vercel_project_environment_variable" "ga_id" {
+  count      = var.ga_id != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["production"]
+  key        = "NEXT_PUBLIC_GA_ID"
+  value      = var.ga_id
+}
+
 # カスタムドメイン（オプション）
 resource "vercel_project_domain" "custom_domain" {
   count      = var.custom_domain != "" ? 1 : 0
