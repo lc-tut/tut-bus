@@ -111,10 +111,10 @@ resource "vercel_project_domain" "custom_domain" {
 
 # Vercelのデフォルトドメインからカスタムドメインへのリダイレクト
 resource "vercel_project_domain" "vercel_app_redirect" {
-  count               = var.custom_domain != "" ? 1 : 0
-  project_id          = vercel_project.main.id
-  domain              = "${var.project_name}.vercel.app"
-  redirect            = var.custom_domain
+  count                = var.custom_domain != "" ? 1 : 0
+  project_id           = vercel_project.main.id
+  domain               = "${var.project_name}.vercel.app"
+  redirect             = var.custom_domain
   redirect_status_code = 308
 }
 
