@@ -1,6 +1,5 @@
 'use client'
 
-import { TimetableDisplay } from '@/components/timetable/timetable-display'
 import { TimetableFilter } from '@/components/timetable/timetable-filter'
 import type { components, operations } from '@/generated/oas'
 import { client } from '@/lib/client'
@@ -244,7 +243,7 @@ function TimetableContent() {
 
   return (
     <div className="container mx-auto py-6 space-y-6 px-4 max-w-none xl:w-full">
-      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
+      <div>
         <div>
           <TimetableFilter
             selectedDeparture={selectedDepartureGroupId}
@@ -261,18 +260,9 @@ function TimetableContent() {
             endTime={endTime}
             setEndTime={setEndTime}
             swapStations={swapStations}
-            busStopGroups={busStopGroups}
+            busStopGroups={busStopGroups} filteredTimetable={[]}            
           />
         </div>
-        <TimetableDisplay
-          selectedDeparture={selectedDepartureGroupId}
-          selectedDestination={selectedDestinationGroupId}
-          filteredTimetable={filteredTimetable}
-          now={now}
-          timetableData={timetableData}
-          busStopGroups={busStopGroups}
-          isLoading={isLoadingTimetable}
-        />
       </div>
     </div>
   )
