@@ -11,6 +11,7 @@ import (
 	"github.com/rickar/cal/v2"
 	"github.com/rickar/cal/v2/jp"
 )
+
 // DayType 曜日の種類を定義
 type DayType string
 
@@ -18,7 +19,7 @@ const (
 	DayTypeWeekday   DayType = "weekday"
 	DayTypeSaturday  DayType = "saturday"
 	DayTypeSunday    DayType = "sunday"
-	DayTypeWeekend    DayType = "weekend"
+	DayTypeWeekend   DayType = "weekend"
 	DayTypeHoliday   DayType = "holiday"
 	DayTypeMonday    DayType = "monday"
 	DayTypeTuesday   DayType = "tuesday"
@@ -123,6 +124,7 @@ type ServiceData struct {
 // serviceCache はサービスデータのキャッシュ
 var serviceCache []ServiceData
 var serviceCacheLocked bool = false
+var cacheEnabled bool = true
 
 // 日本の祝日カレンダー（グローバル変数）
 var japaneseCalendar *cal.Calendar
@@ -130,7 +132,7 @@ var japaneseCalendar *cal.Calendar
 // init 関数で日本の祝日カレンダーを初期化
 func init() {
 	japaneseCalendar = &cal.Calendar{}
-	
+
 	// 日本の祝日を追加
 	japaneseCalendar.AddHoliday(
 		jp.NewYear,
@@ -163,10 +165,20 @@ func IsWeekend(dayType DayType) bool {
 	return dayType == DayTypeSaturday || dayType == DayTypeSunday
 }
 
+// SetCacheEnabled はキャッシュの有効/無効を設定します（開発環境ではfalseを推奨）
+func SetCacheEnabled(enabled bool) {
+	cacheEnabled = enabled
+	if !enabled {
+		// キャッシュを無効化する場合、既存のキャッシュもクリア
+		serviceCache = nil
+		serviceCacheLocked = false
+	}
+}
+
 // LoadServiceData はJSONファイルからサービスデータを読み込みます
 func LoadServiceData(dataDir string) ([]ServiceData, error) {
 
-	if serviceCacheLocked && len(serviceCache) > 0 {
+	if cacheEnabled && serviceCacheLocked && len(serviceCache) > 0 {
 		return serviceCache, nil
 	}
 
@@ -220,8 +232,10 @@ func LoadServiceData(dataDir string) ([]ServiceData, error) {
 		services = append(services, service)
 	}
 
-	serviceCache = services
-	serviceCacheLocked = true
+	if cacheEnabled {
+		serviceCache = services
+		serviceCacheLocked = true
+	}
 
 	return services, nil
 }
@@ -257,7 +271,7 @@ func GetDayType(date time.Time) DayType {
 	if IsHoliday(date) {
 		return DayTypeHoliday
 	}
-	
+
 	weekday := date.Weekday()
 
 	switch weekday {
@@ -359,7 +373,7 @@ func ParseDateString(dateStr string) (time.Time, error) {
 // GetHolidaysInRange は指定された期間内の祝日一覧を取得します
 func GetHolidaysInRange(startDate, endDate time.Time) []*cal.Holiday {
 	var holidays []*cal.Holiday
-	
+
 	current := startDate
 	for !current.After(endDate) {
 		if actual, observed, h := japaneseCalendar.IsHoliday(current); (actual || observed) && h != nil {
@@ -367,7 +381,7 @@ func GetHolidaysInRange(startDate, endDate time.Time) []*cal.Holiday {
 		}
 		current = current.AddDate(0, 0, 1)
 	}
-	
+
 	return holidays
 }
 
@@ -376,13 +390,13 @@ func GetNextHoliday(from time.Time) *cal.Holiday {
 	current := from
 	// 最大1年先まで検索
 	endDate := from.AddDate(1, 0, 0)
-	
+
 	for !current.After(endDate) {
 		if actual, observed, h := japaneseCalendar.IsHoliday(current); (actual || observed) && h != nil {
 			return h
 		}
 		current = current.AddDate(0, 0, 1)
 	}
-	
+
 	return nil
 }
