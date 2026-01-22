@@ -94,7 +94,11 @@ function TimetableContent() {
     if (dateParam) {
       try {
         const parsedDate = parseISO(dateParam)
-        if (!isNaN(parsedDate.getTime())) setSelectedDate(parsedDate)
+        if (isNaN(parsedDate.getTime())) {
+          setSelectedDate(new Date())
+        } else {
+          setSelectedDate(parsedDate)
+        }
       } catch (e) {
         console.error('Invalid date format in URL', e)
       }
@@ -120,7 +124,7 @@ function TimetableContent() {
   useEffect(() => {
     const currentDate = new Date()
     // URLに日付パラメータがない場合のみ、現在の日付を設定
-    if (!searchParams.has('date')) {
+    if (!searchParams.get('date')) {
       setSelectedDate(currentDate)
     }
     setNow(currentDate)
