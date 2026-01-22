@@ -83,11 +83,11 @@ function TimetableContent() {
     const startTimeParam = searchParams.get('startTime')
     const endTimeParam = searchParams.get('endTime')
 
-    if (departureParam) {
+    if (departureParam && !isNaN(Number(departureParam))) {
       setSelectedDepartureGroupId(Number(departureParam))
     }
 
-    if (destinationParam) {
+    if (destinationParam && !isNaN(Number(destinationParam))) {
       setSelectedDestinationGroupId(Number(destinationParam))
     }
 
