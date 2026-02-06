@@ -1,38 +1,41 @@
 'use client'
 
-import Header from '@/components/Header'
+import Header from '@/components/header'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerFooter,
-    DrawerTitle,
-    DrawerTrigger,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerTitle,
+  DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BiWifiOff } from 'react-icons/bi'
-import {
-    FaArrowLeft,
-    FaArrowRight,
-    FaBus,
-    FaClock,
-    FaMapMarkerAlt,
-    FaTrash,
-} from 'react-icons/fa'
+import { FaArrowLeft, FaArrowRight, FaBus, FaClock, FaMapMarkerAlt, FaTrash } from 'react-icons/fa'
 
 // ─── 型定義 ───
 
@@ -95,6 +98,8 @@ export default function OfflineTimetablePage() {
   const [entries, setEntries] = useState<CachedGroupEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [clearing, setClearing] = useState(false)
+  const [clearAllOpen, setClearAllOpen] = useState(false)
+  const [clearDateTarget, setClearDateTarget] = useState<string | null>(null)
 
   const dateLabel = useMemo(
     () => (selectedDate ? formatDateLabel(selectedDate) : null),
@@ -160,7 +165,7 @@ export default function OfflineTimetablePage() {
 
   // キャッシュ全削除
   const handleClearCache = useCallback(async () => {
-    if (!confirm('保存済みの時刻表データをすべて削除しますか？')) return
+    setClearAllOpen(false)
     setClearing(true)
     try {
       await clearTimetableCache()
@@ -178,7 +183,7 @@ export default function OfflineTimetablePage() {
   // 単一日付のキャッシュ削除
   const handleClearDateCache = useCallback(
     async (date: string) => {
-      if (!confirm(`${formatDateLabel(date)}のデータを削除しますか？`)) return
+      setClearDateTarget(null)
       try {
         await clearCacheForDate(date)
         // 日付一覧を再読み込み
@@ -244,7 +249,14 @@ export default function OfflineTimetablePage() {
             <DateEmptyState date={dateLabel!} onBack={goBack} />
           ) : (
             <>
-              <TimetableCarousel entries={entries} />
+              {/* モバイル: カルーセル */}
+              <div className="md:hidden">
+                <TimetableCarousel entries={entries} />
+              </div>
+              {/* PC: サイドバー + テーブル */}
+              <div className="hidden md:block">
+                <PCTimetableView entries={entries} />
+              </div>
               <p className="mt-4 mb-8 text-center text-xs text-muted-foreground">
                 ※ オンラインで開いた時刻表が自動保存されます
               </p>
@@ -254,40 +266,40 @@ export default function OfflineTimetablePage() {
         dates.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="py-4 space-y-3 px-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              日付を選択して時刻表を確認できます
-            </p>
+          <div className="py-4 px-4">
+            <p className="text-sm text-muted-foreground mb-4">日付を選択して時刻表を確認できます</p>
 
-            {dates.map((entry) => (
-              <div key={entry.date} className="flex items-stretch gap-2">
-                <button onClick={() => selectDate(entry.date)} className="flex-1 text-left">
-                  <div className="flex items-center gap-4 rounded-lg border p-4 hover:bg-muted/50 transition-colors h-full">
-                    <div className="rounded-full bg-blue-100 dark:bg-blue-950/60 p-3 shrink-0">
-                      <FaBus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {dates.map((entry) => (
+                <div key={entry.date} className="flex items-stretch gap-2">
+                  <button onClick={() => selectDate(entry.date)} className="flex-1 text-left">
+                    <div className="flex items-center gap-4 rounded-lg border p-4 hover:bg-muted/50 transition-colors h-full">
+                      <div className="rounded-full bg-blue-100 dark:bg-blue-950/60 p-3 shrink-0">
+                        <FaBus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-semibold text-base">{entry.label}</h2>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          {entry.groupCount}箇所の出発地 ・ {entry.totalBuses}便
+                        </p>
+                      </div>
+                      <span className="text-muted-foreground text-lg">›</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h2 className="font-semibold text-base">{entry.label}</h2>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {entry.groupCount}箇所の出発地 ・ {entry.totalBuses}便
-                      </p>
-                    </div>
-                    <span className="text-muted-foreground text-lg">›</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleClearDateCache(entry.date)}
-                  className="shrink-0 flex items-center justify-center rounded-lg border px-3 hover:bg-destructive/10 hover:border-destructive/30 transition-colors text-muted-foreground hover:text-destructive"
-                  aria-label={`${entry.label}のデータを削除`}
-                >
-                  <FaTrash className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
+                  </button>
+                  <button
+                    onClick={() => setClearDateTarget(entry.date)}
+                    className="shrink-0 flex items-center justify-center rounded-lg border px-3 hover:bg-destructive/10 hover:border-destructive/30 transition-colors text-muted-foreground hover:text-destructive"
+                    aria-label={`${entry.label}のデータを削除`}
+                  >
+                    <FaTrash className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
 
             <div className="mt-6 pt-4 border-t space-y-3">
               <Button
-                onClick={handleClearCache}
+                onClick={() => setClearAllOpen(true)}
                 variant="outline"
                 className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
                 disabled={clearing}
@@ -302,6 +314,45 @@ export default function OfflineTimetablePage() {
           </div>
         )}
       </div>
+
+      {/* 全削除確認ダイアログ */}
+      <AlertDialog open={clearAllOpen} onOpenChange={setClearAllOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>すべてのキャッシュを削除</AlertDialogTitle>
+            <AlertDialogDescription>
+              保存済みの時刻表データをすべて削除しますか？この操作は取り消せません。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleClearCache}>
+              削除する
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 日付別削除確認ダイアログ */}
+      <AlertDialog open={!!clearDateTarget} onOpenChange={(open) => !open && setClearDateTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>データを削除</AlertDialogTitle>
+            <AlertDialogDescription>
+              {clearDateTarget && formatDateLabel(clearDateTarget)}のデータを削除しますか？この操作は取り消せません。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => clearDateTarget && handleClearDateCache(clearDateTarget)}
+            >
+              削除する
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -363,9 +414,59 @@ function TimetableCarousel({ entries }: { entries: CachedGroupEntry[] }) {
   )
 }
 
+// ─── PC用レイアウト ───
+
+function PCTimetableView({ entries }: { entries: CachedGroupEntry[] }) {
+  const [selectedIdx, setSelectedIdx] = useState(0)
+  const selected = entries[selectedIdx]
+
+  return (
+    <div className="grid grid-cols-[280px_1fr] gap-6 py-4 px-6">
+      {/* サイドバー: 出発地一覧 */}
+      <div className="space-y-1.5">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+          出発地
+        </h3>
+        {entries.map((entry, idx) => (
+          <button
+            key={entry.groupId}
+            onClick={() => setSelectedIdx(idx)}
+            className={cn(
+              'w-full text-left rounded-lg border p-3 transition-colors',
+              idx === selectedIdx
+                ? 'bg-blue-50 border-blue-300 dark:bg-blue-950/60 dark:border-blue-700'
+                : 'hover:bg-muted/50'
+            )}
+          >
+            <div className="font-semibold text-sm truncate">{entry.groupName}</div>
+            {entry.timetable ? (
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {entry.busCount}便{entry.savedAt && ` ・ ${entry.savedAt} に保存`}
+              </div>
+            ) : (
+              <div className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">データなし</div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* メイン: 選択された出発地の時刻表 */}
+      <div>
+        <TimetableCard key={selected.groupId} entry={selected} fullTable />
+      </div>
+    </div>
+  )
+}
+
 // ─── 出発地カード ───
 
-function TimetableCard({ entry }: { entry: CachedGroupEntry }) {
+function TimetableCard({
+  entry,
+  fullTable = false,
+}: {
+  entry: CachedGroupEntry
+  fullTable?: boolean
+}) {
   if (!entry.timetable) {
     return (
       <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border border-gray">
@@ -396,15 +497,17 @@ function TimetableCard({ entry }: { entry: CachedGroupEntry }) {
     )
   }
 
-  return <TimetableCardWithData entry={entry} timetable={entry.timetable} />
+  return <TimetableCardWithData entry={entry} timetable={entry.timetable} fullTable={fullTable} />
 }
 
 function TimetableCardWithData({
   entry,
   timetable,
+  fullTable = false,
 }: {
   entry: CachedGroupEntry
   timetable: CachedTimetable
+  fullTable?: boolean
 }) {
   const flatEntries = useMemo(() => flattenTimetable(timetable), [timetable])
 
@@ -514,7 +617,7 @@ function TimetableCardWithData({
           </p>
         </div>
       ) : (
-        <OfflineTimetableTable entries={filteredEntries} />
+        <OfflineTimetableTable entries={filteredEntries} fullTable={fullTable} />
       )}
     </Card>
   )
@@ -522,28 +625,36 @@ function TimetableCardWithData({
 
 // ─── テーブル表示 ───
 
-function OfflineTimetableTable({ entries }: { entries: FlatBusEntry[] }) {
-  const shortEntries = entries.slice(0, 3)
-  const allEntries = entries
+function OfflineTimetableTable({
+  entries,
+  fullTable = false,
+}: {
+  entries: FlatBusEntry[]
+  fullTable?: boolean
+}) {
+  const displayEntries = fullTable ? entries : entries.slice(0, 3)
 
   return (
     <div className="flex-1 flex flex-col min-h-[210px] justify-between">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-xs font-medium pl-4 md:pl-6">目的地</TableHead>
-            <TableHead className="text-xs font-medium">出発時刻</TableHead>
+            <TableHead className="text-xs md:text-sm font-medium pl-4 md:pl-6">目的地</TableHead>
+            <TableHead className="text-xs md:text-sm font-medium">出発時刻</TableHead>
+            <TableHead className="text-xs md:text-sm font-medium hidden md:table-cell">
+              到着時刻
+            </TableHead>
             <TableHead className="text-right text-xs font-medium"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {shortEntries.map((bus, idx) => (
+          {displayEntries.map((bus, idx) => (
             <OfflineBusRow key={idx} bus={bus} />
           ))}
         </TableBody>
       </Table>
 
-      {allEntries.length > 3 && (
+      {!fullTable && entries.length > 3 && (
         <Drawer
           onOpenChange={(open) => {
             if (open) (document.activeElement as HTMLElement)?.blur()
@@ -559,13 +670,18 @@ function OfflineTimetableTable({ entries }: { entries: FlatBusEntry[] }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs font-medium pl-4 md:pl-6">目的地</TableHead>
-                  <TableHead className="text-xs font-medium">出発時刻</TableHead>
+                  <TableHead className="text-xs md:text-sm font-medium pl-4 md:pl-6">
+                    目的地
+                  </TableHead>
+                  <TableHead className="text-xs md:text-sm font-medium">出発時刻</TableHead>
+                  <TableHead className="text-xs md:text-sm font-medium hidden md:table-cell">
+                    到着時刻
+                  </TableHead>
                   <TableHead className="text-right text-xs font-medium"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allEntries.map((bus, idx) => (
+                {entries.map((bus, idx) => (
                   <OfflineBusRow key={idx} bus={bus} />
                 ))}
               </TableBody>
@@ -597,6 +713,7 @@ function OfflineBusRow({ bus }: { bus: FlatBusEntry }) {
     >
       <TableCell
         className={cn(
+          'text-xs md:text-sm',
           isShuttle &&
             'bg-purple-100/40 dark:bg-purple-900/40 border-l-2 border-purple-500 dark:border-purple-600'
         )}
@@ -608,7 +725,9 @@ function OfflineBusRow({ bus }: { bus: FlatBusEntry }) {
         </div>
       </TableCell>
 
-      <TableCell className={cn(isShuttle && 'bg-purple-100/40 dark:bg-purple-900/40')}>
+      <TableCell
+        className={cn('text-xs md:text-sm', isShuttle && 'bg-purple-100/40 dark:bg-purple-900/40')}
+      >
         {isShuttle && bus.shuttleInfo ? (
           <div className="flex items-start flex-col sm:flex-row">
             {bus.shuttleInfo.startTime}&nbsp;~&nbsp;{bus.shuttleInfo.endTime}
@@ -616,6 +735,16 @@ function OfflineBusRow({ bus }: { bus: FlatBusEntry }) {
         ) : (
           <span>{bus.departureTime}</span>
         )}
+      </TableCell>
+
+      {/* 到着時刻: PC専用列 */}
+      <TableCell
+        className={cn(
+          'hidden md:table-cell text-sm',
+          isShuttle && 'bg-purple-100/40 dark:bg-purple-900/40'
+        )}
+      >
+        {!isShuttle && bus.arrivalTime && <span>{bus.arrivalTime}</span>}
       </TableCell>
 
       <TableCell
@@ -632,9 +761,9 @@ function OfflineBusRow({ bus }: { bus: FlatBusEntry }) {
               : `約${bus.shuttleInfo.min}〜${bus.shuttleInfo.max}分間隔`}
           </Badge>
         ) : bus.arrivalTime ? (
-          <span className="text-xs text-muted-foreground hidden md:inline">
-            着 {bus.arrivalTime}
-          </span>
+          <Badge variant="outline" className="text-xs md:hidden">
+            {bus.arrivalTime} 着
+          </Badge>
         ) : null}
       </TableCell>
     </TableRow>
@@ -710,16 +839,18 @@ async function findCachedDates(): Promise<CachedDateEntry[]> {
     }
   }
 
-  return [...dateMap.entries()]
-    // totalBuses が 0 の日付は除外
-    .filter(([, info]) => info.totalBuses > 0)
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([date, info]) => ({
-      date,
-      label: formatDateLabel(date),
-      groupCount: info.groupIds.size,
-      totalBuses: info.totalBuses,
-    }))
+  return (
+    [...dateMap.entries()]
+      // totalBuses が 0 の日付は除外
+      .filter(([, info]) => info.totalBuses > 0)
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([date, info]) => ({
+        date,
+        label: formatDateLabel(date),
+        groupCount: info.groupIds.size,
+        totalBuses: info.totalBuses,
+      }))
+  )
 }
 
 /** 指定日付のキャッシュ済みエントリを取得 */
@@ -810,8 +941,7 @@ async function getAllCachedGroups(): Promise<{ id: number; name: string }[]> {
     const groupsKey = keys.find((req) => {
       const url = new URL(req.url)
       return (
-        url.pathname === '/api/bus-stops/groups' ||
-        url.pathname.endsWith('/api/bus-stops/groups')
+        url.pathname === '/api/bus-stops/groups' || url.pathname.endsWith('/api/bus-stops/groups')
       )
     })
     if (groupsKey) {

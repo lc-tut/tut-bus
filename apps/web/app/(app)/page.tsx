@@ -512,199 +512,209 @@ function HomeContent() {
       ) : isLoadingDepartures ? (
         <div className="text-center text-lg py-10">読み込み中...</div>
       ) : (
-        <Carousel className="w-full" setApi={setCarouselApi}>
-          <CarouselContent className="mx-[5vw]">
+        <>
+          {/* モバイル: カルーセル */}
+          <div className="sm:hidden">
+            <Carousel className="w-full" setApi={setCarouselApi}>
+              <CarouselContent className="mx-[5vw]">
+                {busStopGroups.map((group, index) => (
+                  <CarouselItem
+                    key={index}
+                    className="basis-[90vw] px-2 flex justify-center max-w-lg"
+                  >
+                    {renderGroupCard(group, index)}
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
+          {/* PC: グリッド */}
+          <div className="hidden sm:grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 py-2">
             {busStopGroups.map((group, index) => (
-              <CarouselItem key={index} className="basis-[90vw] px-2 flex justify-center max-w-lg">
-                <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border border-gray">
-                  <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
-                    <div className="flex items-center w-full">
-                      <Badge
-                        variant="outline"
-                        className="mr-6 bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-300 text-xs whitespace-nowrap flex items-center"
-                      >
-                        <FaMapMarkerAlt className="mr-1 size-3" />
-                        出発地
-                      </Badge>
-                      <h2 className="text-lg font-bold truncate">{group.name}</h2>
-                    </div>
-                  </div>
-
-                  {(() => {
-                    const destinations = extractDestinations(groupTimetables[group.id])
-
-                    // 行き先がない場合は選択UIを表示しない（下のメッセージで処理）
-                    if (destinations.length === 0) {
-                      return null
-                    }
-
-                    return (
-                      <div className="px-4 py-3 bg-green-100/80 dark:bg-green-950/60 min-h-[64px] flex items-center">
-                        <div className="flex items-center w-full">
-                          <Badge
-                            variant="outline"
-                            className="mr-6 bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-800 dark:text-green-300 text-xs whitespace-nowrap flex items-center"
-                          >
-                            <FaArrowRight className="mr-1 size-3" />
-                            行先
-                          </Badge>
-
-                          {destinations.length === 1 ? (
-                            <div className="min-h-[36px] h-9 flex items-center py-1">
-                              <h2 className="text-lg font-semibold truncate">
-                                {destinations[0].stopName}
-                              </h2>
-                            </div>
-                          ) : (
-                            <Select
-                              value={selectedDestinations[group.id]?.toString() || ''}
-                              onValueChange={(value) => {
-                                const stopId = parseInt(value, 10)
-                                setSelectedDestinations({
-                                  ...selectedDestinations,
-                                  [group.id]: stopId,
-                                })
-
-                                if (groupTimetables[group.id]) {
-                                  const currentTimetable = { ...groupTimetables }
-                                  const timeFiltered = BusFilters.limitedByDestination(
-                                    currentTimetable[group.id].allBuses,
-                                    stopId,
-                                    now!
-                                  )
-
-                                  currentTimetable[group.id] = {
-                                    ...currentTimetable[group.id],
-                                    filtered: timeFiltered,
-                                  }
-
-                                  setGroupTimetables(currentTimetable)
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="w-full text-lg  h-9 py-1 min-h-[36px] bg-background">
-                                {selectedDestinations[group.id] &&
-                                (selectedDestinations[group.id] ?? 0) > 0 ? (
-                                  <span className="truncate font-bold">
-                                    {
-                                      destinations.find(
-                                        (d) => d.stopId === selectedDestinations[group.id]
-                                      )?.stopName
-                                    }
-                                  </span>
-                                ) : (
-                                  <span className="text-muted-foreground">
-                                    行先を選択（{destinations.length}件）
-                                  </span>
-                                )}
-                              </SelectTrigger>
-                              <SelectContent className="max-w-[350px]">
-                                <div className="px-2 py-1.5 text-xs text-muted-foreground border-b">
-                                  行先を選択してください（{destinations.length}件）
-                                </div>
-                                {destinations.map((dest, idx) => (
-                                  <SelectItem
-                                    key={idx}
-                                    value={String(dest.stopId)}
-                                    className="text-sm py-2"
-                                  >
-                                    <div className="flex items-center w-full">
-                                      <span className="truncate">{dest.stopName}</span>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })()}
-
-                  {(() => {
-                    const uniqueDestinations = new Map<
-                      number,
-                      { stopId: number; stopName: string }
-                    >()
-                    groupTimetables[group.id]?.allBuses?.forEach((bus) => {
-                      if (bus?.destination?.stopId && bus?.destination?.stopName) {
-                        const stopId = parseInt(bus.destination.stopId, 10)
-                        uniqueDestinations.set(stopId, {
-                          stopId: stopId,
-                          stopName: bus.destination.stopName,
-                        })
-                      }
-                    })
-
-                    if (uniqueDestinations.size === 0) {
-                      groupTimetables[group.id]?.raw?.segments?.forEach((segment) => {
-                        if (segment?.destination?.stopId && segment?.destination?.stopName) {
-                          const stopId = segment.destination.stopId
-                          uniqueDestinations.set(stopId, {
-                            stopId: stopId,
-                            stopName: segment.destination.stopName,
-                          })
-                        }
-                      })
-                    }
-
-                    const hasDestinations = uniqueDestinations.size > 0
-                    const hasFilteredBuses = groupTimetables[group.id]?.filtered?.length > 0
-                    const hasAllBuses = groupTimetables[group.id]?.allBuses?.length > 0
-                    const hasData = groupTimetables[group.id]
-
-                    const shouldShowNoService = hasData && (!hasDestinations || !hasFilteredBuses)
-
-                    return shouldShowNoService ? (
-                      <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
-                        <div className="rounded-full bg-muted p-4 mb-4">
-                          <FaBan className="h-8 w-8 text-orange-500" />
-                        </div>
-                        <h3 className="mt-2 text-base font-medium">
-                          {!hasDestinations || !hasAllBuses
-                            ? '本日の運行予定はありません'
-                            : '選択された時刻・行き先のバスはありません'}
-                        </h3>
-                        <p className="mt-2 text-xs text-muted-foreground max-w-xs">
-                          {!hasDestinations || !hasAllBuses
-                            ? '必ずしも正しいとは限らないため、公式サイトの運行スケジュールをご確認ください'
-                            : '別の行き先を選択するか、しばらく時間をおいてからご確認ください'}
-                        </p>
-                      </div>
-                    ) : null
-                  })()}
-
-                  {/* 時刻表表示 */}
-                  {groupTimetables[group.id]?.filtered?.length > 0 && (
-                    <TimetableDisplay
-                      selectedDeparture={group.id}
-                      selectedDestination={selectedDestinations[group.id] || null}
-                      filteredShortTimetable={groupTimetables[group.id]?.filtered || []}
-                      filteredTimetable={
-                        now && groupTimetables[group.id]?.allBuses
-                          ? BusFilters.upcomingByDestination(
-                              groupTimetables[group.id].allBuses,
-                              selectedDestinations[group.id] || null,
-                              now
-                            )
-                          : []
-                      }
-                      arriveTimetable={groupTimetables[group.id]?.filtered || []}
-                      now={now}
-                      busStopGroups={busStopGroups}
-                    />
-                  )}
-
-                  {/* データがまだ読み込まれていない場合 */}
-                  {!groupTimetables[group.id]?.allBuses && <LoadingMessage />}
-                </Card>
-              </CarouselItem>
+              <div key={index}>{renderGroupCard(group, index)}</div>
             ))}
-          </CarouselContent>
-        </Carousel>
+          </div>
+        </>
       )}
     </div>
   )
+
+  function renderGroupCard(group: components['schemas']['Models.BusStopGroup'], _index: number) {
+    return (
+      <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border border-gray">
+        <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
+          <div className="flex items-center w-full">
+            <Badge
+              variant="outline"
+              className="mr-6 bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-300 text-xs whitespace-nowrap flex items-center"
+            >
+              <FaMapMarkerAlt className="mr-1 size-3" />
+              出発地
+            </Badge>
+            <h2 className="text-lg font-bold truncate">{group.name}</h2>
+          </div>
+        </div>
+
+        {(() => {
+          const destinations = extractDestinations(groupTimetables[group.id])
+
+          // 行き先がない場合は選択UIを表示しない（下のメッセージで処理）
+          if (destinations.length === 0) {
+            return null
+          }
+
+          return (
+            <div className="px-4 py-3 bg-green-100/80 dark:bg-green-950/60 min-h-[64px] flex items-center">
+              <div className="flex items-center w-full">
+                <Badge
+                  variant="outline"
+                  className="mr-6 bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-800 dark:text-green-300 text-xs whitespace-nowrap flex items-center"
+                >
+                  <FaArrowRight className="mr-1 size-3" />
+                  行先
+                </Badge>
+
+                {destinations.length === 1 ? (
+                  <div className="min-h-[36px] h-9 flex items-center py-1">
+                    <h2 className="text-lg font-semibold truncate">{destinations[0].stopName}</h2>
+                  </div>
+                ) : (
+                  <Select
+                    value={selectedDestinations[group.id]?.toString() || ''}
+                    onValueChange={(value) => {
+                      const stopId = parseInt(value, 10)
+                      setSelectedDestinations({
+                        ...selectedDestinations,
+                        [group.id]: stopId,
+                      })
+
+                      if (groupTimetables[group.id]) {
+                        const currentTimetable = { ...groupTimetables }
+                        const timeFiltered = BusFilters.limitedByDestination(
+                          currentTimetable[group.id].allBuses,
+                          stopId,
+                          now!
+                        )
+
+                        currentTimetable[group.id] = {
+                          ...currentTimetable[group.id],
+                          filtered: timeFiltered,
+                        }
+
+                        setGroupTimetables(currentTimetable)
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full text-lg  h-9 py-1 min-h-[36px] bg-background">
+                      {selectedDestinations[group.id] &&
+                      (selectedDestinations[group.id] ?? 0) > 0 ? (
+                        <span className="truncate font-bold">
+                          {
+                            destinations.find((d) => d.stopId === selectedDestinations[group.id])
+                              ?.stopName
+                          }
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          行先を選択（{destinations.length}件）
+                        </span>
+                      )}
+                    </SelectTrigger>
+                    <SelectContent className="max-w-[350px]">
+                      <div className="px-2 py-1.5 text-xs text-muted-foreground border-b">
+                        行先を選択してください（{destinations.length}件）
+                      </div>
+                      {destinations.map((dest, idx) => (
+                        <SelectItem key={idx} value={String(dest.stopId)} className="text-sm py-2">
+                          <div className="flex items-center w-full">
+                            <span className="truncate">{dest.stopName}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+
+        {(() => {
+          const uniqueDestinations = new Map<number, { stopId: number; stopName: string }>()
+          groupTimetables[group.id]?.allBuses?.forEach((bus) => {
+            if (bus?.destination?.stopId && bus?.destination?.stopName) {
+              const stopId = parseInt(bus.destination.stopId, 10)
+              uniqueDestinations.set(stopId, {
+                stopId: stopId,
+                stopName: bus.destination.stopName,
+              })
+            }
+          })
+
+          if (uniqueDestinations.size === 0) {
+            groupTimetables[group.id]?.raw?.segments?.forEach((segment) => {
+              if (segment?.destination?.stopId && segment?.destination?.stopName) {
+                const stopId = segment.destination.stopId
+                uniqueDestinations.set(stopId, {
+                  stopId: stopId,
+                  stopName: segment.destination.stopName,
+                })
+              }
+            })
+          }
+
+          const hasDestinations = uniqueDestinations.size > 0
+          const hasFilteredBuses = groupTimetables[group.id]?.filtered?.length > 0
+          const hasAllBuses = groupTimetables[group.id]?.allBuses?.length > 0
+          const hasData = groupTimetables[group.id]
+
+          const shouldShowNoService = hasData && (!hasDestinations || !hasFilteredBuses)
+
+          return shouldShowNoService ? (
+            <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+              <div className="rounded-full bg-muted p-4 mb-4">
+                <FaBan className="h-8 w-8 text-orange-500" />
+              </div>
+              <h3 className="mt-2 text-base font-medium">
+                {!hasDestinations || !hasAllBuses
+                  ? '本日の運行予定はありません'
+                  : '選択された時刻・行き先のバスはありません'}
+              </h3>
+              <p className="mt-2 text-xs text-muted-foreground max-w-xs">
+                {!hasDestinations || !hasAllBuses
+                  ? '必ずしも正しいとは限らないため、公式サイトの運行スケジュールをご確認ください'
+                  : '別の行き先を選択するか、しばらく時間をおいてからご確認ください'}
+              </p>
+            </div>
+          ) : null
+        })()}
+
+        {/* 時刻表表示 */}
+        {groupTimetables[group.id]?.filtered?.length > 0 && (
+          <TimetableDisplay
+            selectedDeparture={group.id}
+            selectedDestination={selectedDestinations[group.id] || null}
+            filteredShortTimetable={groupTimetables[group.id]?.filtered || []}
+            filteredTimetable={
+              now && groupTimetables[group.id]?.allBuses
+                ? BusFilters.upcomingByDestination(
+                    groupTimetables[group.id].allBuses,
+                    selectedDestinations[group.id] || null,
+                    now
+                  )
+                : []
+            }
+            arriveTimetable={groupTimetables[group.id]?.filtered || []}
+            now={now}
+            busStopGroups={busStopGroups}
+          />
+        )}
+
+        {/* データがまだ読み込まれていない場合 */}
+        {!groupTimetables[group.id]?.allBuses && <LoadingMessage />}
+      </Card>
+    )
+  }
 }
 
 export default function Home() {

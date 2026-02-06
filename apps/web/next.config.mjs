@@ -13,6 +13,7 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [
     { url: '/~offline', revision },
     { url: '/~offline/timetable', revision },
+    { url: '/', revision },
     { url: '/timetable', revision },
     { url: '/manifest.webmanifest', revision },
   ],
@@ -21,6 +22,7 @@ const withSerwist = withSerwistInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {},
   images: {
     remotePatterns: [
       {

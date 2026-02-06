@@ -12,6 +12,8 @@ test-timings.json
 pnpm-lock.yaml
 .pnpm-store/
 
+infra/
+
 packages/next/src/bundles/webpack/packages/*.runtime.js
 packages/next/src/bundles/webpack/packages/lazy-compilation-*.js
 packages/next/wasm/@next

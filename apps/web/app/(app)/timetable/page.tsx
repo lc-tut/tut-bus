@@ -186,11 +186,9 @@ function TimetableContent() {
         console.error('Failed to fetch timetable data:', error)
         // API エラー時は Cache API にフォールバック（同一日付のみ）
         const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
-        const cached =
-          await getLatestCachedTimetable<components['schemas']['Models.BusStopGroupTimetable']>(
-            selectedDepartureGroupId,
-            dateStr
-          )
+        const cached = await getLatestCachedTimetable<
+          components['schemas']['Models.BusStopGroupTimetable']
+        >(selectedDepartureGroupId, dateStr)
         if (cached) {
           setTimetableData(cached)
           setFetchError(null)
@@ -205,11 +203,9 @@ function TimetableContent() {
       console.error('Network error fetching timetable:', e)
       // ネットワークエラー時は Cache API にフォールバック（同一日付のみ）
       const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
-      const cached =
-        await getLatestCachedTimetable<components['schemas']['Models.BusStopGroupTimetable']>(
-          selectedDepartureGroupId,
-          dateStr
-        )
+      const cached = await getLatestCachedTimetable<
+        components['schemas']['Models.BusStopGroupTimetable']
+      >(selectedDepartureGroupId, dateStr)
       if (cached) {
         setTimetableData(cached)
         setFetchError(null)
