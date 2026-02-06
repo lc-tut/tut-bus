@@ -29,3 +29,4 @@ terraform.rc
 # Terraform variable files
 *.tfvars
 !*.tfvars.example
+!environments/*.tfvars

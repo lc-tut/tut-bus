@@ -99,3 +99,19 @@ output "deployment_summary" {
     project_id  = var.project_id
   }
 }
+
+# ========================================
+# GitHub Actions Workload Identity Outputs
+# ========================================
+
+output "github_actions_terraform_sa" {
+  description = "GitHub Actions Terraform用サービスアカウント"
+  value       = module.gcp.terraform_service_account_email
+}
+
+output "github_actions_workload_identity_provider" {
+  description = "GitHub Actions用Workload Identity Provider（GitHub Actionsで使用）"
+  value       = module.gcp.workload_identity_provider_name
+}
+
+
