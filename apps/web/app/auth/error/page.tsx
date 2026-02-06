@@ -1,13 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -45,13 +39,7 @@ function ErrorContent() {
       {/* ヘッダー */}
       <header className="w-full flex items-center justify-between border-b h-16 shadow-sm bg-background fixed top-0 left-0 z-50">
         <div className="flex items-center gap-4 px-4">
-          <Image
-            src="/tut-logo.png"
-            alt="Logo"
-            width={40}
-            height={40}
-            priority={true}
-          />
+          <Image src="/tut-logo.png" alt="Logo" width={40} height={40} priority={true} />
           <h1 className="text-xl font-bold">スクールバス</h1>
         </div>
       </header>

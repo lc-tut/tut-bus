@@ -28,17 +28,20 @@ TerraformでTUT Busのインフラを管理します。
 ## 📦 モジュール構成
 
 ### `modules/gcp/` - Google Cloud Platform
+
 - App Engine Standard Environment
 - Cloud SQL (PostgreSQL 15)
 - VPC Network & Private Service Connection
 - IAM & Service Accounts
 
 ### `modules/cloudflare/` - DNS & CDN
+
 - DNS管理 (CNAME Record → App Engine)
 - SSL/TLS設定
 - DDoS保護
 
 ### `modules/vercel/` - Frontend Hosting
+
 - Next.jsプロジェクト
 - GitHub連携 (自動デプロイ)
 - 環境変数管理
@@ -130,6 +133,7 @@ gcloud app versions list --project=YOUR_PROJECT_ID
 `apps/api/app.yaml` で以下の環境変数が設定されます：
 
 #### データベース関連（App Engine標準環境）
+
 - `DB_HOST`: `/cloudsql/PROJECT_ID:REGION:INSTANCE_NAME` (Unix socket)
 - `DB_PORT`: "" (空)
 - `DB_NAME`: データベース名
@@ -138,11 +142,13 @@ gcloud app versions list --project=YOUR_PROJECT_ID
 - `DB_SSLMODE`: disable (Unix socket経由のため不要)
 
 **注意**:
+
 - App Engine標準環境ではCloud SQL Unix socketを使用
 - IAM認証を使用するため、パスワード不要
 - VPC経由のプライベート接続で安全
 
 #### アプリケーション設定
+
 - `API_ENV`: 環境（production）
 - `HOST`: バインドするホスト（0.0.0.0）
 - `PORT`: App Engineが自動設定（環境変数 $PORT）
@@ -174,13 +180,13 @@ NEXT_PUBLIC_ANNOUNCEMENT_TYPE=warning  # "info" または "warning"
 2. Settings > Environment Variables に移動
 3. 以下の環境変数を追加：
 
-| 環境変数名 | 値の例 | 説明 | 必須 |
-|-----------|--------|------|------|
-| `NEXT_PUBLIC_GA_ID` | G-XXXXXXXXXX | Google Analytics ID | No |
-| `NEXT_PUBLIC_API_URL` | https://tut-bus-api.hekuta.net | API URL | Yes |
-| `NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE` | 年末年始の臨時便が多く... | バナーメッセージ | No |
-| `NEXT_PUBLIC_ANNOUNCEMENT_TITLE` | お知らせ | バナータイトル | No |
-| `NEXT_PUBLIC_ANNOUNCEMENT_TYPE` | warning | info/warning | No |
+| 環境変数名                         | 値の例                         | 説明                | 必須 |
+| ---------------------------------- | ------------------------------ | ------------------- | ---- |
+| `NEXT_PUBLIC_GA_ID`                | G-XXXXXXXXXX                   | Google Analytics ID | No   |
+| `NEXT_PUBLIC_API_URL`              | https://tut-bus-api.hekuta.net | API URL             | Yes  |
+| `NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE` | 年末年始の臨時便が多く...      | バナーメッセージ    | No   |
+| `NEXT_PUBLIC_ANNOUNCEMENT_TITLE`   | お知らせ                       | バナータイトル      | No   |
+| `NEXT_PUBLIC_ANNOUNCEMENT_TYPE`    | warning                        | info/warning        | No   |
 
 4. Environment を `Production` に設定して Save
 5. 再デプロイ
@@ -200,6 +206,7 @@ vercel --prod
 ```
 
 **バナーを非表示にする：**
+
 - `NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE` を削除または空にする
 
 ## 🔧 環境管理
@@ -222,13 +229,14 @@ terraform destroy -var-file="dev.tfvars"
 
 ### 環境の違い
 
-| 項目 | 開発環境 | 本番環境 |
-|------|----------|----------|
-| App Engineインスタンス | F1 | F1 |
-| DNS | tut-bus-api-dev | tut-bus-api |
-| SSL | flexible | strict |
-| Vercelブランチ | dev | main |
-| DB名 | tut-bus-db-dev | tut-bus-db-prod |
+| 項目                   | 開発環境        | 本番環境        |
+| ---------------------- | --------------- | --------------- |
+| App Engineインスタンス | F1              | F1              |
+| DNS                    | tut-bus-api-dev | tut-bus-api     |
+| SSL                    | flexible        | strict          |
+| Vercelブランチ         | dev             | main            |
+| DB名                   | tut-bus-db-dev  | tut-bus-db-prod |
+
 主要な設定は `terraform.tfvars` で管理します。詳細は各モジュールの `variables.tf` を参照してください。
 
 ## 🔒 セキュリティ
