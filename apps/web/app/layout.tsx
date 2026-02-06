@@ -18,6 +18,10 @@ const notoSansJp = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: '東京工科大学 - バスNavi',
   description: '東京工科大学のバスの時刻表や運行情報を提供するアプリです。',
+  themeColor: '#3a4d91',
+  icons: {
+    apple: '/logo-192x192.png',
+  },
 }
 
 const isProd = process.env.NODE_ENV === 'production'
