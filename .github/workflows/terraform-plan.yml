@@ -3,13 +3,13 @@
 # ========================================
 # PR時に自動でplan実行、結果をPRコメントに投稿
 
-name: "Terraform Plan"
+name: 'Terraform Plan'
 
 on:
   pull_request:
     branches: [main, dev]
     paths:
-      - "infra/**"
+      - 'infra/**'
 
 permissions:
   contents: read
@@ -29,7 +29,7 @@ env:
 
 jobs:
   plan:
-    name: "Terraform Plan"
+    name: 'Terraform Plan'
     runs-on: ubuntu-latest
 
     steps:
@@ -39,7 +39,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "~> 1.14.2"
+          terraform_version: '~> 1.14.2'
 
       - name: Google Cloud Auth
         uses: google-github-actions/auth@v3

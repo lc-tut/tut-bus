@@ -23,21 +23,21 @@
 
 このプロジェクトの構築・運用に関わるには、以下の知識が必要です。
 
-| カテゴリ | 技術 | 用途 |
-|---------|------|------|
-| 言語 | TypeScript, Go | フロントエンド / バックエンド |
-| フレームワーク | Next.js (App Router), Echo (Go) | Web / API |
-| API 定義 | TypeSpec → OpenAPI 3.0 → コード生成 | API スキーマ定義 |
-| DB | PostgreSQL, sqlc | データベース + Go コード生成 |
-| 認証 | Better Auth + GitHub OAuth | 管理画面のアクセス制御 |
-| IaC | Terraform (HCL) | GCP / Cloudflare / Vercel のインフラ管理 |
-| CI/CD | GitHub Actions | Terraform plan/apply の自動化 |
-| クラウド | GCP (App Engine, Cloud SQL, VPC, IAM) | バックエンド基盤 |
-| DNS/CDN | Cloudflare | DNS, SSL/TLS, DDoS 保護 |
-| ホスティング | Vercel | Next.js フロントエンド |
-| タスクランナー | Task (go-task), Turborepo | ローカル開発の自動化 |
-| パッケージ管理 | pnpm (monorepo) | Node.js 依存パッケージ |
-| コンテナ | Docker Compose | ローカル開発環境 |
+| カテゴリ       | 技術                                  | 用途                                     |
+| -------------- | ------------------------------------- | ---------------------------------------- |
+| 言語           | TypeScript, Go                        | フロントエンド / バックエンド            |
+| フレームワーク | Next.js (App Router), Echo (Go)       | Web / API                                |
+| API 定義       | TypeSpec → OpenAPI 3.0 → コード生成   | API スキーマ定義                         |
+| DB             | PostgreSQL, sqlc                      | データベース + Go コード生成             |
+| 認証           | Better Auth + GitHub OAuth            | 管理画面のアクセス制御                   |
+| IaC            | Terraform (HCL)                       | GCP / Cloudflare / Vercel のインフラ管理 |
+| CI/CD          | GitHub Actions                        | Terraform plan/apply の自動化            |
+| クラウド       | GCP (App Engine, Cloud SQL, VPC, IAM) | バックエンド基盤                         |
+| DNS/CDN        | Cloudflare                            | DNS, SSL/TLS, DDoS 保護                  |
+| ホスティング   | Vercel                                | Next.js フロントエンド                   |
+| タスクランナー | Task (go-task), Turborepo             | ローカル開発の自動化                     |
+| パッケージ管理 | pnpm (monorepo)                       | Node.js 依存パッケージ                   |
+| コンテナ       | Docker Compose                        | ローカル開発環境                         |
 
 ---
 
@@ -236,32 +236,32 @@ cp secrets.tfvars.example secrets.tfvars
 
 以下の値を設定:
 
-| 変数 | 値 | 取得元 |
-|------|-----|--------|
-| `cloudflare_api_token` | Cloudflare API トークン | [3.2 Cloudflare](#32-cloudflare) |
-| `vercel_api_token` | Vercel API トークン | [3.3 Vercel](#33-vercel) |
-| `better_auth_secret` | ランダム文字列 | `openssl rand -base64 32` |
-| `auth_github_id` | GitHub OAuth Client ID | [3.4 GitHub OAuth App](#34-github-oauth-app管理画面認証用) |
-| `auth_github_secret` | GitHub OAuth Client Secret | [3.4 GitHub OAuth App](#34-github-oauth-app管理画面認証用) |
+| 変数                   | 値                         | 取得元                                                     |
+| ---------------------- | -------------------------- | ---------------------------------------------------------- |
+| `cloudflare_api_token` | Cloudflare API トークン    | [3.2 Cloudflare](#32-cloudflare)                           |
+| `vercel_api_token`     | Vercel API トークン        | [3.3 Vercel](#33-vercel)                                   |
+| `better_auth_secret`   | ランダム文字列             | `openssl rand -base64 32`                                  |
+| `auth_github_id`       | GitHub OAuth Client ID     | [3.4 GitHub OAuth App](#34-github-oauth-app管理画面認証用) |
+| `auth_github_secret`   | GitHub OAuth Client Secret | [3.4 GitHub OAuth App](#34-github-oauth-app管理画面認証用) |
 
 ### 5.2 environments/production.tfvars の確認
 
 `infra/environments/production.tfvars` にプロジェクト固有の非機密設定が入っています。  
 新環境を作る場合は値を適宜変更してください:
 
-| 変数 | 説明 | 例 |
-|------|------|-----|
-| `project_id` | GCP プロジェクト ID | `main-vcompute` |
-| `region` | GCP リージョン | `asia-northeast1` |
-| `environment` | 環境名 | `production` |
-| `db_instance_name` | Cloud SQL インスタンス名 | `tut-bus-db-prod` |
-| `github_org` | GitHub 組織名 | `lc-tut` |
-| `github_repo` | GitHub リポジトリ名 | `tut-bus` |
-| `cloudflare_zone_name` | ドメイン名 | `hekuta.net` |
-| `vercel_team_id` | Vercel チーム ID | `team_xxxxx` |
-| `vercel_custom_domain` | フロントエンドドメイン | `tut-bus.lcn.ad.jp` |
-| `app_url_production` | 本番 URL (Better Auth 用) | `https://tut-bus.lcn.ad.jp` |
-| `auth_allowed_team` | 管理者 GitHub チーム slug | `linuxclub-tut-bus` |
+| 変数                   | 説明                      | 例                          |
+| ---------------------- | ------------------------- | --------------------------- |
+| `project_id`           | GCP プロジェクト ID       | `main-vcompute`             |
+| `region`               | GCP リージョン            | `asia-northeast1`           |
+| `environment`          | 環境名                    | `production`                |
+| `db_instance_name`     | Cloud SQL インスタンス名  | `tut-bus-db-prod`           |
+| `github_org`           | GitHub 組織名             | `lc-tut`                    |
+| `github_repo`          | GitHub リポジトリ名       | `tut-bus`                   |
+| `cloudflare_zone_name` | ドメイン名                | `hekuta.net`                |
+| `vercel_team_id`       | Vercel チーム ID          | `team_xxxxx`                |
+| `vercel_custom_domain` | フロントエンドドメイン    | `tut-bus.lcn.ad.jp`         |
+| `app_url_production`   | 本番 URL (Better Auth 用) | `https://tut-bus.lcn.ad.jp` |
+| `auth_allowed_team`    | 管理者 GitHub チーム slug | `linuxclub-tut-bus`         |
 
 ### 5.3 Terraform Init & Apply
 
@@ -284,18 +284,18 @@ terraform apply \
 
 初回 apply で作成されるリソース:
 
-| カテゴリ | リソース |
-|---------|---------|
-| GCP | VPC ネットワーク + サブネット |
-| GCP | Cloud SQL (PostgreSQL) インスタンス + データベース |
-| GCP | App Engine アプリケーション設定 |
-| GCP | サービスアカウント (アプリ用 + Terraform 用) |
-| GCP | Workload Identity Pool / Provider (GitHub Actions 用) |
-| GCP | IAM ロールバインディング |
-| GCP | 必要な API の有効化 (10+ 個) |
-| Cloudflare | DNS レコード (API サブドメイン) |
-| Cloudflare | SSL/TLS / HTTPS 設定 |
-| Vercel | プロジェクト + 環境変数 + カスタムドメイン |
+| カテゴリ   | リソース                                              |
+| ---------- | ----------------------------------------------------- |
+| GCP        | VPC ネットワーク + サブネット                         |
+| GCP        | Cloud SQL (PostgreSQL) インスタンス + データベース    |
+| GCP        | App Engine アプリケーション設定                       |
+| GCP        | サービスアカウント (アプリ用 + Terraform 用)          |
+| GCP        | Workload Identity Pool / Provider (GitHub Actions 用) |
+| GCP        | IAM ロールバインディング                              |
+| GCP        | 必要な API の有効化 (10+ 個)                          |
+| Cloudflare | DNS レコード (API サブドメイン)                       |
+| Cloudflare | SSL/TLS / HTTPS 設定                                  |
+| Vercel     | プロジェクト + 環境変数 + カスタムドメイン            |
 
 ### 5.4 出力値の確認
 
@@ -316,10 +316,10 @@ terraform output deployment_summary
 
 Repository → **Settings → Secrets and variables → Actions → Variables** タブ
 
-| 変数名 | 取得方法 | 説明 |
-|--------|---------|------|
+| 変数名         | 取得方法                                                          | 説明                                    |
+| -------------- | ----------------------------------------------------------------- | --------------------------------------- |
 | `WIF_PROVIDER` | `terraform output -raw github_actions_workload_identity_provider` | Workload Identity Provider の完全修飾名 |
-| `TERRAFORM_SA` | `terraform output -raw github_actions_terraform_sa` | Terraform 用サービスアカウントのメール |
+| `TERRAFORM_SA` | `terraform output -raw github_actions_terraform_sa`               | Terraform 用サービスアカウントのメール  |
 
 > **注意**: Terraform で Workload Identity の名称を変更した場合は、ここも更新が必要です。
 
@@ -327,13 +327,13 @@ Repository → **Settings → Secrets and variables → Actions → Variables** 
 
 Repository → **Settings → Secrets and variables → Actions → Secrets** タブ
 
-| シークレット名 | 値 | 説明 |
-|---------------|-----|------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API トークン | Terraform Cloudflare provider 認証 |
-| `VERCEL_API_TOKEN` | Vercel API トークン | Terraform Vercel provider 認証 |
-| `BETTER_AUTH_SECRET` | `openssl rand -base64 32` | Better Auth セッション暗号化 |
-| `AUTH_GITHUB_ID` | GitHub OAuth Client ID | 管理画面 GitHub ログイン |
-| `AUTH_GITHUB_SECRET` | GitHub OAuth Client Secret | 管理画面 GitHub ログイン |
+| シークレット名         | 値                         | 説明                               |
+| ---------------------- | -------------------------- | ---------------------------------- |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API トークン    | Terraform Cloudflare provider 認証 |
+| `VERCEL_API_TOKEN`     | Vercel API トークン        | Terraform Vercel provider 認証     |
+| `BETTER_AUTH_SECRET`   | `openssl rand -base64 32`  | Better Auth セッション暗号化       |
+| `AUTH_GITHUB_ID`       | GitHub OAuth Client ID     | 管理画面 GitHub ログイン           |
+| `AUTH_GITHUB_SECRET`   | GitHub OAuth Client Secret | 管理画面 GitHub ログイン           |
 
 ### 6.3 GitHub Environments の設定（推奨）
 
@@ -348,11 +348,11 @@ Repository → **Settings → Secrets and variables → Actions → Secrets** �
 
 `.github/workflows/` に3つのワークフローがあります:
 
-| ワークフロー | トリガー | 内容 |
-|-------------|---------|------|
-| `terraform-ci.yml` | `infra/**` への PR / push | `fmt -check` + `validate` の結果を PR コメント |
-| `terraform-plan.yml` | `infra/**` への PR | `plan` 結果を PR コメントに投稿 |
-| `terraform-apply.yml` | 手動 (workflow_dispatch) | `apply` 実行（confirm: `yes` 入力が必要） |
+| ワークフロー          | トリガー                  | 内容                                           |
+| --------------------- | ------------------------- | ---------------------------------------------- |
+| `terraform-ci.yml`    | `infra/**` への PR / push | `fmt -check` + `validate` の結果を PR コメント |
+| `terraform-plan.yml`  | `infra/**` への PR        | `plan` 結果を PR コメントに投稿                |
+| `terraform-apply.yml` | 手動 (workflow_dispatch)  | `apply` 実行（confirm: `yes` 入力が必要）      |
 
 動作確認: `infra/` 配下のファイルを変更して PR を作成 → CI と Plan が自動実行されることを確認。
 
@@ -381,12 +381,12 @@ task setup
 
 起動するサービス:
 
-| サービス | ポート | 説明 |
-|---------|-------|------|
-| web | 3000 | Next.js 開発サーバー |
-| api | 8000 | Go API サーバー (Air ホットリロード) |
-| db | 5432 | PostgreSQL 17 (`postgres` / `p@ssw0rd` / `tut_bus`) |
-| swagger | 8080 | Swagger UI (OpenAPI ドキュメント) |
+| サービス | ポート | 説明                                                |
+| -------- | ------ | --------------------------------------------------- |
+| web      | 3000   | Next.js 開発サーバー                                |
+| api      | 8000   | Go API サーバー (Air ホットリロード)                |
+| db       | 5432   | PostgreSQL 17 (`postgres` / `p@ssw0rd` / `tut_bus`) |
+| swagger  | 8080   | Swagger UI (OpenAPI ドキュメント)                   |
 
 ### 7.3 コード生成
 
@@ -448,11 +448,11 @@ gcloud app describe --project=<PROJECT_ID>
 `apps/api/app.yaml` に本番の環境変数が定義されています。  
 DB パスワードなどの機密値は、デプロイ前に適切な値に設定してください。
 
-| 変数 | 説明 |
-|------|------|
-| `DB_HOST` | Cloud SQL 接続名 (`/cloudsql/<CONNECTION_NAME>`) |
-| `DB_PASSWORD` | DB パスワード |
-| `CORS_ALLOWED_ORIGINS` | CORS 許可オリジン (カンマ区切り) |
+| 変数                   | 説明                                             |
+| ---------------------- | ------------------------------------------------ |
+| `DB_HOST`              | Cloud SQL 接続名 (`/cloudsql/<CONNECTION_NAME>`) |
+| `DB_PASSWORD`          | DB パスワード                                    |
+| `CORS_ALLOWED_ORIGINS` | CORS 許可オリジン (カンマ区切り)                 |
 
 ---
 
@@ -462,6 +462,7 @@ Vercel 設定は Terraform で管理されています。
 **`main` ブランチへの push で自動デプロイ** されます。
 
 環境変数の変更:
+
 - `infra/environments/production.tfvars` の Vercel 関連変数を変更 → `terraform apply`
 - 緊急時: Vercel Dashboard から直接変更（次回 apply 時に上書きされるので注意）
 
@@ -471,14 +472,14 @@ Vercel 設定は Terraform で管理されています。
 
 ### よくある問題
 
-| 症状 | 原因 | 対処 |
-|------|------|------|
-| `terraform init` で "bucket does not exist" | GCS バケット未作成 | [4.1](#41-terraform-state-用-gcs-バケットの作成) を実行 |
-| GitHub Actions で "Unable to authenticate" | WIF 設定不備 | Variables の `WIF_PROVIDER`/`TERRAFORM_SA` を確認 |
-| `terraform apply` で "permission denied" | IAM ロール不足 | `workload_identity.tf` のロール一覧を確認 |
-| Cloudflare で "must be replaced" | Provider バージョン差 | 設定値には影響なし、apply して OK |
-| Cloud SQL に接続できない | ネットワーク/認証 | VPC 設定, IP 許可リスト, Auth Proxy を確認 |
-| `pnpm install` がエラー | Node.js バージョン不一致 | `node -v` が v24.x であることを確認 |
+| 症状                                        | 原因                     | 対処                                                    |
+| ------------------------------------------- | ------------------------ | ------------------------------------------------------- |
+| `terraform init` で "bucket does not exist" | GCS バケット未作成       | [4.1](#41-terraform-state-用-gcs-バケットの作成) を実行 |
+| GitHub Actions で "Unable to authenticate"  | WIF 設定不備             | Variables の `WIF_PROVIDER`/`TERRAFORM_SA` を確認       |
+| `terraform apply` で "permission denied"    | IAM ロール不足           | `workload_identity.tf` のロール一覧を確認               |
+| Cloudflare で "must be replaced"            | Provider バージョン差    | 設定値には影響なし、apply して OK                       |
+| Cloud SQL に接続できない                    | ネットワーク/認証        | VPC 設定, IP 許可リスト, Auth Proxy を確認              |
+| `pnpm install` がエラー                     | Node.js バージョン不一致 | `node -v` が v24.x であることを確認                     |
 
 ### Cloud SQL Auth Proxy（ローカルから本番 DB に接続）
 

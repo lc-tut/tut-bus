@@ -81,6 +81,14 @@ tasks:
       - task: gen:clients
       - task: api:sqlc:generate
 
+  fmt:
+    desc: '全プロダクトのフォーマットを実行'
+    cmds:
+      - pnpm run fix
+      - task: api:fmt
+      - task: spec:fix
+      - task: tf:fmt
+
   lint:
     desc: '全プロジェクトのLint実行'
     cmd: pnpm run lint

@@ -3,17 +3,17 @@
 # ========================================
 # PR時にterraformのフォーマット・バリデーションチェックを実行
 
-name: "Terraform CI"
+name: 'Terraform CI'
 
 on:
   pull_request:
     branches: [main, dev]
     paths:
-      - "infra/**"
+      - 'infra/**'
   push:
     branches: [main, dev]
     paths:
-      - "infra/**"
+      - 'infra/**'
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ defaults:
 
 jobs:
   lint:
-    name: "Lint & Validate"
+    name: 'Lint & Validate'
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "~> 1.14.2"
+          terraform_version: '~> 1.14.2'
 
       - name: Terraform Format Check
         id: fmt

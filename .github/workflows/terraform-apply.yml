@@ -4,20 +4,20 @@
 # 手動トリガー（workflow_dispatch）でapplyを実行
 # apply失敗時は自動でrevertPRを作成
 
-name: "Terraform Apply"
+name: 'Terraform Apply'
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "対象環境"
+        description: '対象環境'
         required: true
-        default: "production"
+        default: 'production'
         type: choice
         options:
           - production
       confirm:
-        description: "applyを実行しますか？（yesと入力）"
+        description: 'applyを実行しますか？（yesと入力）'
         required: true
         type: string
 
@@ -40,7 +40,7 @@ env:
 
 jobs:
   apply:
-    name: "Terraform Apply (${{ inputs.environment }})"
+    name: 'Terraform Apply (${{ inputs.environment }})'
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
@@ -57,7 +57,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "~> 1.14.2"
+          terraform_version: '~> 1.14.2'
 
       - name: Google Cloud Auth
         uses: google-github-actions/auth@v3
