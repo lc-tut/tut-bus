@@ -79,5 +79,13 @@ module "vercel" {
   # Google Analytics
   ga_id = var.vercel_ga_id
 
+  # Better Auth Configuration
+  app_url_production = var.app_url_production
+  app_url_preview    = var.app_url_preview
+  better_auth_secret = var.better_auth_secret
+  auth_github_id     = var.auth_github_id
+  auth_github_secret = var.auth_github_secret
+  auth_allowed_team  = var.auth_allowed_team
+
   depends_on = [module.cloudflare]
 }

@@ -216,3 +216,41 @@ variable "vercel_ga_id" {
   type        = string
   default     = ""
 }
+
+# ========================================
+# Better Auth Variables (管理画面認証)
+# ========================================
+
+variable "app_url_production" {
+  description = "本番環境のアプリURL（Better Auth用）"
+  type        = string
+}
+
+variable "app_url_preview" {
+  description = "プレビュー環境のアプリURL（Better Auth用）"
+  type        = string
+  default     = ""
+}
+
+variable "better_auth_secret" {
+  description = "Better Auth セッション暗号化シークレット"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_github_id" {
+  description = "GitHub OAuth App Client ID"
+  type        = string
+}
+
+variable "auth_github_secret" {
+  description = "GitHub OAuth App Client Secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_allowed_team" {
+  description = "アクセスを許可するGitHubチーム（オプション）"
+  type        = string
+  default     = ""
+}

@@ -123,3 +123,41 @@ variable "ga_id" {
   type        = string
   default     = ""
 }
+
+# ========================================
+# Better Auth Environment Variables
+# ========================================
+
+variable "app_url_production" {
+  description = "本番環境のアプリURL（Better Auth用）"
+  type        = string
+}
+
+variable "app_url_preview" {
+  description = "プレビュー環境のアプリURL（Better Auth用）"
+  type        = string
+  default     = ""
+}
+
+variable "better_auth_secret" {
+  description = "Better Auth セッション暗号化シークレット"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_github_id" {
+  description = "GitHub OAuth App Client ID"
+  type        = string
+}
+
+variable "auth_github_secret" {
+  description = "GitHub OAuth App Client Secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_allowed_team" {
+  description = "アクセスを許可するGitHubチーム（オプション、空の場合は組織メンバー全員を許可）"
+  type        = string
+  default     = ""
+}

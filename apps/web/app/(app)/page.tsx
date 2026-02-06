@@ -556,7 +556,7 @@ function HomeContent() {
                                   <SelectItem
                                     key={idx}
                                     value={String(dest.stopId)}
-                                    className="text-sm py-2 cursor-pointer"
+                                    className="text-sm py-2"
                                   >
                                     <div className="flex items-center w-full">
                                       <span className="truncate">{dest.stopName}</span>
