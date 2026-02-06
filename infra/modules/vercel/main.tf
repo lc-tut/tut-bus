@@ -102,6 +102,60 @@ resource "vercel_project_environment_variable" "ga_id" {
   value      = var.ga_id
 }
 
+# ========================================
+# Better Auth Environment Variables
+# ========================================
+
+# アプリURL - Production
+resource "vercel_project_environment_variable" "app_url_production" {
+  project_id = vercel_project.main.id
+  target     = ["production"]
+  key        = "NEXT_PUBLIC_APP_URL"
+  value      = var.app_url_production
+}
+
+# アプリURL - Preview
+resource "vercel_project_environment_variable" "app_url_preview" {
+  count      = var.app_url_preview != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["preview"]
+  key        = "NEXT_PUBLIC_APP_URL"
+  value      = var.app_url_preview
+}
+
+# Better Auth Secret
+resource "vercel_project_environment_variable" "better_auth_secret" {
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "BETTER_AUTH_SECRET"
+  value      = var.better_auth_secret
+}
+
+# GitHub OAuth - Client ID
+resource "vercel_project_environment_variable" "auth_github_id" {
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "AUTH_GITHUB_ID"
+  value      = var.auth_github_id
+}
+
+# GitHub OAuth - Client Secret
+resource "vercel_project_environment_variable" "auth_github_secret" {
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "AUTH_GITHUB_SECRET"
+  value      = var.auth_github_secret
+}
+
+# Allowed Team（オプション）
+resource "vercel_project_environment_variable" "auth_allowed_team" {
+  count      = var.auth_allowed_team != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "AUTH_ALLOWED_TEAM"
+  value      = var.auth_allowed_team
+}
+
 # カスタムドメイン（オプション）
 resource "vercel_project_domain" "custom_domain" {
   count      = var.custom_domain != "" ? 1 : 0

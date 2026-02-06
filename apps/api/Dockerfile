@@ -7,13 +7,13 @@ WORKDIR /app
 RUN apk add --no-cache git make
 
 # Copy go mod files
-COPY apps/api/go.mod apps/api/go.sum ./
+COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
 
 # Copy API source code
-COPY apps/api/ .
+COPY . .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o server .
@@ -29,8 +29,8 @@ RUN apk --no-cache add ca-certificates
 # Copy the binary from builder
 COPY --from=builder /app/server .
 
-# Copy data files (if they exist in the build context)
-COPY apps/api/data ./data
+# Copy data files
+COPY data ./data
 
 # Create non-root user
 RUN addgroup -g 1001 -S appuser && \
