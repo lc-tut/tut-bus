@@ -58,8 +58,4 @@ output "workload_identity_provider_name" {
   value       = google_iam_workload_identity_pool_provider.github.name
 }
 
-# Storage Outputs
-output "terraform_state_bucket" {
-  description = "Terraform state用GCSバケット名"
-  value       = google_storage_bucket.terraform_state.name
-}
+
