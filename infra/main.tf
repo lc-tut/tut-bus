@@ -54,6 +54,7 @@ module "vercel" {
   # Deployment Configuration
   production_branch = var.vercel_production_branch
   custom_domain     = var.vercel_custom_domain
+  redirect_domains  = var.vercel_redirect_domains
   root_directory    = "apps/web"
 
   # API URLs
