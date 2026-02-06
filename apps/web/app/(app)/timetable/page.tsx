@@ -267,8 +267,6 @@ function TimetableContent() {
             '/api/bus-stops/groups'
           )
         setBusStopGroups(cached ?? [])
-      } finally {
-        setIsLoadingTimetable(false)
       }
     }
     fetchBusStopGroups()
