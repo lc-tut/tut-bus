@@ -5,9 +5,10 @@ import { TimetableFilter } from '@/components/timetable/timetable-filter'
 import type { components, operations } from '@/generated/oas'
 import { client } from '@/lib/client'
 import { TimeFilterType } from '@/lib/types/timetable'
+import { getCachedResponse, getLatestCachedTimetable } from '@/lib/utils/cache'
 import { canSwapStations, filterTimetable } from '@/lib/utils/timetable'
 import { format, parseISO } from 'date-fns'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 
 export default function TimetablePage() {
@@ -19,7 +20,6 @@ export default function TimetablePage() {
 }
 
 function TimetableContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   // 状態管理
@@ -31,6 +31,7 @@ function TimetableContent() {
   const [startTime, setStartTime] = useState<string>('10:00')
   const [endTime, setEndTime] = useState<string>('10:00')
   const [isLoadingTimetable, setIsLoadingTimetable] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   // APIからの時刻表データを保持するstate (型を修正)
   const [timetableData, setTimetableData] = useState<
     components['schemas']['Models.BusStopGroupTimetable'] | null
@@ -62,8 +63,15 @@ function TimetableContent() {
       params.set('endTime', endTime)
     }
 
+    // 現在のURLと同じならスキップ（無限ループ防止）
+    const newSearch = params.toString()
+    const currentSearch = new URLSearchParams(window.location.search).toString()
+    if (newSearch === currentSearch) return
+
     // URLを更新（履歴を残さない）
-    router.replace(`/timetable?${params.toString()}`, { scroll: false })
+    // window.history.replaceState を使用: router.replace だとRSCフェッチが発生し、
+    // オフライン時に失敗→ブラウザフォールバック→リロード→ループの原因になる
+    window.history.replaceState(null, '', `/timetable?${newSearch}`)
   }, [
     selectedDepartureGroupId,
     selectedDestinationGroupId,
@@ -71,7 +79,6 @@ function TimetableContent() {
     timeFilter,
     startTime,
     endTime,
-    router,
   ]) // URLパラメータから状態を読み込む
   useEffect(() => {
     // 両方の形式のパラメータ名に対応
@@ -95,9 +102,12 @@ function TimetableContent() {
       try {
         const parsedDate = parseISO(dateParam)
         if (isNaN(parsedDate.getTime())) {
-          setSelectedDate(new Date())
+          setSelectedDate((prev) => prev ?? new Date())
         } else {
-          setSelectedDate(parsedDate)
+          setSelectedDate((prev) => {
+            if (prev && format(prev, 'yyyy-MM-dd') === dateParam) return prev
+            return parsedDate
+          })
         }
       } catch (e) {
         console.error('Invalid date format in URL', e)
@@ -135,7 +145,8 @@ function TimetableContent() {
     }, 60000)
 
     return () => clearInterval(intervalId)
-  }, [searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // 状態が変更されたらURLパラメータを更新
   useEffect(() => {
@@ -155,27 +166,63 @@ function TimetableContent() {
   const fetchTimetableData = useCallback(async () => {
     if (selectedDepartureGroupId == null || !selectedDate) return
     setIsLoadingTimetable(true)
-    // client.GET の期待する型に合わせて修正
-    const paramsForGet: operations['BusStopGroupsService_getBusStopGroupsTimetable']['parameters'] =
-      {
-        path: {
-          id: selectedDepartureGroupId,
-        },
+    setFetchError(null)
+    try {
+      // client.GET の期待する型に合わせて修正
+      const paramsForGet: operations['BusStopGroupsService_getBusStopGroupsTimetable']['parameters'] =
+        {
+          path: {
+            id: selectedDepartureGroupId,
+          },
+        }
+      if (selectedDate) {
+        paramsForGet.query = { date: format(selectedDate, 'yyyy-MM-dd') }
       }
-    if (selectedDate) {
-      paramsForGet.query = { date: format(selectedDate, 'yyyy-MM-dd') }
+      // client.GET の呼び出しでは、{ params: ... } の形にする
+      const { data, error } = await client.GET('/api/bus-stops/groups/{id}/timetable', {
+        params: paramsForGet,
+      })
+      if (error) {
+        console.error('Failed to fetch timetable data:', error)
+        // API エラー時は Cache API にフォールバック（同一日付のみ）
+        const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
+        const cached =
+          await getLatestCachedTimetable<components['schemas']['Models.BusStopGroupTimetable']>(
+            selectedDepartureGroupId,
+            dateStr
+          )
+        if (cached) {
+          setTimetableData(cached)
+          setFetchError(null)
+        } else {
+          setTimetableData(null)
+          setFetchError('時刻表データの取得に失敗しました')
+        }
+        return
+      }
+      setTimetableData(data)
+    } catch (e) {
+      console.error('Network error fetching timetable:', e)
+      // ネットワークエラー時は Cache API にフォールバック（同一日付のみ）
+      const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
+      const cached =
+        await getLatestCachedTimetable<components['schemas']['Models.BusStopGroupTimetable']>(
+          selectedDepartureGroupId,
+          dateStr
+        )
+      if (cached) {
+        setTimetableData(cached)
+        setFetchError(null)
+      } else if (e instanceof TypeError && !navigator.onLine) {
+        window.location.href = '/~offline'
+        return
+      } else {
+        setTimetableData(null)
+        setFetchError('サーバーに接続できません')
+      }
+    } finally {
+      setIsLoadingTimetable(false)
     }
-    // client.GET の呼び出しでは、{ params: ... } の形にする
-    const { data, error } = await client.GET('/api/bus-stops/groups/{id}/timetable', {
-      params: paramsForGet,
-    })
-    setIsLoadingTimetable(false)
-    if (error) {
-      console.error('Failed to fetch timetable data:', error)
-      setTimetableData(null)
-      return
-    }
-    setTimetableData(data)
   }, [selectedDepartureGroupId, selectedDate])
 
   // 出発地、日付が変更されたらAPIからデータを再取得
@@ -208,12 +255,22 @@ function TimetableContent() {
       try {
         const { data, error } = await client.GET('/api/bus-stops/groups')
         if (error) {
-          setBusStopGroups([])
+          // API エラー時は Cache API にフォールバック
+          const cached =
+            await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
+              '/api/bus-stops/groups'
+            )
+          setBusStopGroups(cached ?? [])
         } else if (data) {
           setBusStopGroups(data)
         }
       } catch {
-        setBusStopGroups([])
+        // ネットワークエラー時も Cache API にフォールバック
+        const cached =
+          await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
+            '/api/bus-stops/groups'
+          )
+        setBusStopGroups(cached ?? [])
       } finally {
         setIsLoadingTimetable(false)
       }
@@ -246,8 +303,20 @@ function TimetableContent() {
     timetableData,
   ])
 
+  // マウント前はスケルトンを表示（Radix UIのhydration mismatchを防ぐ）
+  if (!now) {
+    return (
+      <div className="container mx-auto py-6 space-y-6 px-4 max-w-none xl:w-full">
+        <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
+          <div className="h-96 rounded-lg bg-muted animate-pulse" />
+          <div className="h-96 rounded-lg bg-muted animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="container mx-auto py-6 space-y-6 px-4 max-w-none xl:w-full">
+    <div className="container mx-auto py-6 space-y-6 px-4 pb-28 max-w-none xl:w-full">
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
         <div>
           <TimetableFilter
@@ -276,6 +345,7 @@ function TimetableContent() {
           timetableData={timetableData}
           busStopGroups={busStopGroups}
           isLoading={isLoadingTimetable}
+          fetchError={fetchError}
         />
       </div>
     </div>

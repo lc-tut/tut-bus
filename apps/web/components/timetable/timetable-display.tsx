@@ -5,7 +5,8 @@ import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components
 import type { components } from '@/generated/oas'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getBusStatus } from '@/lib/utils/timetable'
-import { FaArrowRight, FaClock, FaMapMarkerAlt } from 'react-icons/fa'
+import { BiWifiOff } from 'react-icons/bi'
+import { FaArrowRight, FaClock, FaMapMarkerAlt, FaRedo } from 'react-icons/fa'
 import { BusRow } from './bus-row'
 import { RouteInfoCard } from './route-info-card'
 
@@ -15,7 +16,8 @@ export interface TimetableDisplayProps {
   filteredTimetable: DisplayBusInfo[]
   now: Date | null
   timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
-  isLoading?: boolean // 追加
+  isLoading?: boolean
+  fetchError?: string | null
   busStopGroups: components['schemas']['Models.BusStopGroup'][]
 }
 
@@ -30,6 +32,7 @@ export function TimetableDisplay({
   now,
   timetableData,
   isLoading = false,
+  fetchError,
   busStopGroups,
 }: TimetableDisplayProps) {
   return (
@@ -111,6 +114,28 @@ export function TimetableDisplay({
               </TableBody>
             </Table>
           </>
+        ) : fetchError ? (
+          <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div className="rounded-full bg-yellow-100 dark:bg-yellow-900/40 p-4 mb-4">
+              <BiWifiOff className="h-8 w-8 text-yellow-500 dark:text-yellow-400" />
+            </div>
+            <h3 className="mt-2 text-base font-medium">データを取得できませんでした</h3>
+            <p className="mt-3 text-sm text-muted-foreground max-w-xs leading-relaxed">
+              インターネットに接続している状態で、
+              <br />
+              もう一度お試しください。
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground/70 max-w-xs">
+              ※ 一度開いた日付の時刻表は、圈外でも確認できます
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-5 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <FaRedo className="h-3 w-3" />
+              再読み込み
+            </button>
+          </div>
         ) : !selectedDeparture ? (
           <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
             <div className="rounded-full bg-muted p-4 mb-4">

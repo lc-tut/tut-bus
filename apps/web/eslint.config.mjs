@@ -51,6 +51,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['.next/**', 'node_modules/**', 'generated/**'],
+    ignores: ['.next/**', 'node_modules/**', 'generated/**', 'public/sw.js'],
   }
 )

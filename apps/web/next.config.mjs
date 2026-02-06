@@ -1,4 +1,23 @@
+/* eslint-disable no-undef */
 // @ts-check
+import withSerwistInit from '@serwist/next'
+import { spawnSync } from 'node:child_process'
+
+const revision =
+  spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf-8' }).stdout?.trim() ??
+  crypto.randomUUID()
+
+const withSerwist = withSerwistInit({
+  swSrc: 'app/sw.ts',
+  swDest: 'public/sw.js',
+  additionalPrecacheEntries: [
+    { url: '/~offline', revision },
+    { url: '/~offline/timetable', revision },
+    { url: '/timetable', revision },
+    { url: '/manifest.webmanifest', revision },
+  ],
+  disable: process.env.NODE_ENV !== 'production',
+})
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -34,7 +53,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self'",
+            value: "default-src 'self'; script-src 'self'; connect-src 'self'",
           },
         ],
       },
@@ -42,4 +61,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+export default withSerwist(nextConfig)

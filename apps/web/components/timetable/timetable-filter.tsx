@@ -155,7 +155,7 @@ export function TimetableFilter({
                                 )}
                             </span>
                           </DialogTrigger>
-                          <DialogContent>
+                          <DialogContent aria-describedby={undefined}>
                             <DialogHeader>
                               <DialogTitle>日付を選択</DialogTitle>
                             </DialogHeader>

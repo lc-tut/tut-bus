@@ -1,8 +1,10 @@
 'use client'
 
 import { AnnouncementBanner } from '@/components/announcement-banner'
-import Header from '@/components/header'
+import { CacheWarmer } from '@/components/cache-warmer'
+import Header from '@/components/Header'
 import NavBar from '@/components/nav-bar'
+import { OfflineBanner } from '@/components/offline-banner'
 import { cn } from '@/lib/utils'
 
 const announcementMessage = process.env.NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE
@@ -19,6 +21,8 @@ export default function AppLayout({
   return (
     <div>
       <Header />
+      <OfflineBanner />
+      <CacheWarmer />
       <div className="pt-20 md:pt-16">
         <AnnouncementBanner
           message={announcementMessage}

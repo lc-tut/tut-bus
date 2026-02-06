@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/u
 import { components, operations } from '@/generated/oas'
 import { client } from '@/lib/client'
 import { DisplayBusInfo } from '@/lib/types/timetable'
+import { getCachedResponse, getLatestCachedTimetable } from '@/lib/utils/cache'
 import { generateDisplayBuses } from '@/lib/utils/timetable'
 import { lastSlideAtom, selectedDestinationsAtom } from '@/store'
 import { format } from 'date-fns'
 import { useAtom } from 'jotai'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { FaArrowRight, FaBan, FaExclamationTriangle, FaMapMarkerAlt } from 'react-icons/fa'
 
@@ -211,7 +212,6 @@ function filterBusesByDestination(
 }
 
 function HomeContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [lastSlide, setLastSlide] = useAtom(lastSlideAtom)
   const [selectedDestinations, setSelectedDestinations] = useAtom(selectedDestinationsAtom)
@@ -235,13 +235,13 @@ function HomeContent() {
 
   const updateUrlParams = useCallback(
     (slideIndex: number) => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(window.location.search)
       params.set('s', slideIndex.toString())
-      const newUrl = params.toString() ? `?${params.toString()}` : ''
-      router.replace(newUrl, { scroll: false })
+      const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname
+      window.history.replaceState(null, '', newUrl)
       setLastSlide(slideIndex)
     },
-    [router, searchParams, setLastSlide]
+    [setLastSlide]
   )
 
   useEffect(() => {
@@ -255,13 +255,13 @@ function HomeContent() {
       setIsInitialized(true)
 
       if (!slideParam && initialSlide !== 0) {
-        const params = new URLSearchParams(searchParams.toString())
+        const params = new URLSearchParams(window.location.search)
         params.set('s', initialSlide.toString())
-        const newUrl = params.toString() ? `?${params.toString()}` : ''
-        router.replace(newUrl, { scroll: false })
+        const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname
+        window.history.replaceState(null, '', newUrl)
       }
     }
-  }, [carouselApi, busStopGroups.length, isInitialized, searchParams, lastSlide, router])
+  }, [carouselApi, busStopGroups.length, isInitialized, searchParams, lastSlide])
 
   useEffect(() => {
     if (!carouselApi) return
@@ -287,14 +287,38 @@ function HomeContent() {
         const { data, error } = await client.GET('/api/bus-stops/groups')
 
         if (error || !data) {
-          handleError(new Error(`API Error: ${error || 'No data received'}`), 'fetchBusStopGroups')
-          setBusStopGroups([])
+          // API エラー時は Cache API にフォールバック
+          const cached =
+            await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
+              '/api/bus-stops/groups'
+            )
+          if (cached && cached.length > 0) {
+            setBusStopGroups(cached)
+          } else {
+            handleError(
+              new Error(`API Error: ${error || 'No data received'}`),
+              'fetchBusStopGroups'
+            )
+            setBusStopGroups([])
+          }
         } else {
           setBusStopGroups(data)
         }
       } catch (err) {
-        handleError(err, 'fetchBusStopGroups')
-        setBusStopGroups([])
+        // ネットワークエラー時も Cache API にフォールバック
+        const cached =
+          await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
+            '/api/bus-stops/groups'
+          )
+        if (cached && cached.length > 0) {
+          setBusStopGroups(cached)
+        } else if (err instanceof TypeError && !navigator.onLine) {
+          window.location.href = '/~offline'
+          return
+        } else {
+          handleError(err, 'fetchBusStopGroups')
+          setBusStopGroups([])
+        }
       } finally {
         setLoadingDepartures(false)
       }
@@ -353,7 +377,20 @@ function HomeContent() {
 
           return result
         } else {
-          // APIエラーの場合も適切なデフォルト値を返す
+          // APIエラーの場合、Cache API からフォールバック
+          const cachedData = await getLatestCachedTimetable<
+            components['schemas']['Models.BusStopGroupTimetable']
+          >(group.id, format(currentNow, 'yyyy-MM-dd'))
+          if (cachedData) {
+            const displayBuses = generateDisplayBuses(busStopGroups, cachedData, null)
+            const timesFilteredBuses = filterBusesByDeparture(displayBuses, currentNow)
+            return {
+              raw: cachedData,
+              filtered: timesFilteredBuses,
+              allBuses: displayBuses,
+            }
+          }
+          // キャッシュもない場合はデフォルト値
           return {
             raw: {
               id: group.id,
@@ -366,9 +403,22 @@ function HomeContent() {
           }
         }
       } catch (err) {
-        // 個別グループのエラーは表示しない（サイレント処理）
+        // 個別グループのエラーは Cache API にフォールバック
         if (process.env.NODE_ENV === 'development') {
           console.warn(`Failed to fetch timetable for group ${group.name}:`, err)
+        }
+
+        const cachedData = await getLatestCachedTimetable<
+          components['schemas']['Models.BusStopGroupTimetable']
+        >(group.id, format(currentNow, 'yyyy-MM-dd'))
+        if (cachedData) {
+          const displayBuses = generateDisplayBuses(busStopGroups, cachedData, null)
+          const timesFilteredBuses = filterBusesByDeparture(displayBuses, currentNow)
+          return {
+            raw: cachedData,
+            filtered: timesFilteredBuses,
+            allBuses: displayBuses,
+          }
         }
 
         return {
@@ -466,7 +516,7 @@ function HomeContent() {
           <CarouselContent className="mx-[5vw]">
             {busStopGroups.map((group, index) => (
               <CarouselItem key={index} className="basis-[90vw] px-2 flex justify-center max-w-lg">
-                <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border-1 border-gray">
+                <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border border-gray">
                   <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
                     <div className="flex items-center w-full">
                       <Badge
