@@ -126,7 +126,7 @@ export function TimetableDisplay({
               もう一度お試しください。
             </p>
             <p className="mt-2 text-xs text-muted-foreground/70 max-w-xs">
-              ※ 一度開いた日付の時刻表は、圈外でも確認できます
+              ※ 一度開いた日付の時刻表は、圏外でも確認できます
             </p>
             <button
               onClick={() => window.location.reload()}
