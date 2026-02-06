@@ -33,13 +33,7 @@ function SignInContent() {
       {/* ヘッダー */}
       <header className="w-full flex items-center justify-between border-b h-16 shadow-sm bg-background fixed top-0 left-0 z-50">
         <div className="flex items-center gap-4 px-4">
-          <Image
-            src="/tut-logo.png"
-            alt="Logo"
-            width={40}
-            height={40}
-            priority={true}
-          />
+          <Image src="/tut-logo.png" alt="Logo" width={40} height={40} priority={true} />
           <h1 className="text-xl font-bold">スクールバス</h1>
         </div>
         <div className="px-4">
@@ -57,9 +51,7 @@ function SignInContent() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">管理者ログイン</CardTitle>
-            <CardDescription>
-              lc-tut組織のメンバーのみアクセスできます
-            </CardDescription>
+            <CardDescription>lc-tut組織のメンバーのみアクセスできます</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
@@ -70,12 +62,7 @@ function SignInContent() {
               </div>
             )}
 
-            <Button
-              onClick={handleSignIn}
-              disabled={isLoading}
-              className="w-full"
-              size="lg"
-            >
+            <Button onClick={handleSignIn} disabled={isLoading} className="w-full" size="lg">
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <svg

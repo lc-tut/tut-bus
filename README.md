@@ -97,6 +97,7 @@ terraform apply -var-file=production.tfvars
 Vercelにプロジェクトをデプロイし、`main`ブランチにプッシュすることで自動デプロイされます。
 
 環境変数：
+
 ```
 NEXT_PUBLIC_API_URL=https://tut-bus-api.hekuta.net
 ```

@@ -22,10 +22,10 @@ export async function middleware(request: NextRequest) {
   // 管理画面へのアクセスは認証が必要
   if (pathname.startsWith('/admin')) {
     // Better Auth は複数のCookie名を使う可能性がある
-    const sessionCookie = 
+    const sessionCookie =
       request.cookies.get('better-auth.session_token') ||
       request.cookies.get('__Secure-better-auth.session_token')
-    
+
     if (!sessionCookie) {
       const signInUrl = new URL('/auth/signin', request.url)
       signInUrl.searchParams.set('callbackUrl', pathname)

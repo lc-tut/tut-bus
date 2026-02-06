@@ -41,10 +41,7 @@ export const auth = betterAuth({
       create: {
         before: async (account) => {
           if (account.providerId === 'github' && account.accessToken) {
-            const isMember = await checkOrgMembership(
-              account.accessToken,
-              ALLOWED_ORG
-            )
+            const isMember = await checkOrgMembership(account.accessToken, ALLOWED_ORG)
             if (!isMember) {
               throw new APIError('FORBIDDEN', {
                 message: `${ALLOWED_ORG}組織のメンバーではありません。アクセスが拒否されました。`,
@@ -74,22 +71,16 @@ export const auth = betterAuth({
 /**
  * GitHub組織のメンバーかチェック
  */
-async function checkOrgMembership(
-  accessToken: string,
-  org: string
-): Promise<boolean> {
+async function checkOrgMembership(accessToken: string, org: string): Promise<boolean> {
   try {
     // 方法1: /user/memberships/orgs/{org} API を使用
     // これは read:org スコープがあれば非公開組織でも確認可能
-    const membershipResponse = await fetch(
-      `https://api.github.com/user/memberships/orgs/${org}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/vnd.github.v3+json',
-        },
-      }
-    )
+    const membershipResponse = await fetch(`https://api.github.com/user/memberships/orgs/${org}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    })
 
     console.log('[Auth] メンバーシップAPIレスポンス:', membershipResponse.status)
 
@@ -116,9 +107,7 @@ async function checkOrgMembership(
         '[Auth] 所属組織:',
         orgs.map((o) => o.login)
       )
-      const isMember = orgs.some(
-        (o) => o.login.toLowerCase() === org.toLowerCase()
-      )
+      const isMember = orgs.some((o) => o.login.toLowerCase() === org.toLowerCase())
       console.log(`[Auth] ${org}のメンバー:`, isMember)
       return isMember
     }

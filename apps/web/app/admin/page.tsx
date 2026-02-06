@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import Link from 'next/link'
@@ -19,9 +13,7 @@ export default async function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">ダッシュボード</h1>
-        <p className="text-sm text-muted-foreground">
-          ようこそ、{session?.user.name}さん
-        </p>
+        <p className="text-sm text-muted-foreground">ようこそ、{session?.user.name}さん</p>
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -84,9 +76,7 @@ export default async function AdminDashboard() {
               <FaMapMarkerAlt className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="font-medium">バス停を管理</p>
-                <p className="text-xs text-muted-foreground">
-                  バス停の追加・編集・削除
-                </p>
+                <p className="text-xs text-muted-foreground">バス停の追加・編集・削除</p>
               </div>
             </Link>
             <Link
@@ -96,9 +86,7 @@ export default async function AdminDashboard() {
               <FaCalendarAlt className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="font-medium">運行ダイヤを管理</p>
-                <p className="text-xs text-muted-foreground">
-                  時刻表の追加・編集・削除
-                </p>
+                <p className="text-xs text-muted-foreground">時刻表の追加・編集・削除</p>
               </div>
             </Link>
           </CardContent>
@@ -110,9 +98,7 @@ export default async function AdminDashboard() {
             <CardDescription>直近の変更履歴</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              まだ更新履歴はありません
-            </p>
+            <p className="text-sm text-muted-foreground">まだ更新履歴はありません</p>
           </CardContent>
         </Card>
       </div>

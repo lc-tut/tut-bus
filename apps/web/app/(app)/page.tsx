@@ -435,7 +435,7 @@ function HomeContent() {
 
       return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev
     })
-  }, [groupTimetables, busStopGroups])
+  }, [groupTimetables, busStopGroups, setSelectedDestinations])
 
   useEffect(() => {
     const currentDate = new Date()
