@@ -2,7 +2,7 @@
 
 import { AnnouncementBanner } from '@/components/announcement-banner'
 import { CacheWarmer } from '@/components/cache-warmer'
-import Header from '@/components/Header'
+import Header from '@/components/header'
 import NavBar from '@/components/nav-bar'
 import { OfflineBanner } from '@/components/offline-banner'
 import { cn } from '@/lib/utils'
