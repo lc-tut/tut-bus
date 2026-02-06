@@ -72,7 +72,13 @@ export function OfflineBanner() {
         className="ml-1 rounded-full p-0.5 hover:bg-yellow-300 dark:hover:bg-yellow-700/80 transition-colors"
         aria-label="閉じる"
       >
-        <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="h-3 w-3"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M3 3l6 6M9 3l-6 6" />
         </svg>
       </button>

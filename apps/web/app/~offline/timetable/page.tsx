@@ -334,12 +334,16 @@ export default function OfflineTimetablePage() {
       </AlertDialog>
 
       {/* 日付別削除確認ダイアログ */}
-      <AlertDialog open={!!clearDateTarget} onOpenChange={(open) => !open && setClearDateTarget(null)}>
+      <AlertDialog
+        open={!!clearDateTarget}
+        onOpenChange={(open) => !open && setClearDateTarget(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>データを削除</AlertDialogTitle>
             <AlertDialogDescription>
-              {clearDateTarget && formatDateLabel(clearDateTarget)}のデータを削除しますか？この操作は取り消せません。
+              {clearDateTarget && formatDateLabel(clearDateTarget)}
+              のデータを削除しますか？この操作は取り消せません。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
