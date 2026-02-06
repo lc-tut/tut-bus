@@ -142,9 +142,15 @@ variable "vercel_production_branch" {
 }
 
 variable "vercel_custom_domain" {
-  description = "カスタムドメイン名（オプション）"
+  description = "メインのカスタムドメイン名（オプション）"
   type        = string
   default     = ""
+}
+
+variable "vercel_redirect_domains" {
+  description = "メインドメインへリダイレクトするドメインのリスト"
+  type        = list(string)
+  default     = []
 }
 
 variable "vercel_dev_api_url" {

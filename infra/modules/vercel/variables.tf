@@ -33,9 +33,15 @@ variable "production_branch" {
 }
 
 variable "custom_domain" {
-  description = "カスタムドメイン名（オプション）"
+  description = "メインのカスタムドメイン名（オプション）"
   type        = string
   default     = ""
+}
+
+variable "redirect_domains" {
+  description = "メインドメインへリダイレクトするドメインのリスト"
+  type        = list(string)
+  default     = []
 }
 
 variable "api_url_production" {

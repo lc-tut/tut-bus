@@ -172,6 +172,15 @@ resource "vercel_project_domain" "vercel_app_redirect" {
   redirect_status_code = 308
 }
 
+# 追加ドメインからメインドメインへのリダイレクト
+resource "vercel_project_domain" "redirect_domains" {
+  for_each             = toset(var.redirect_domains)
+  project_id           = vercel_project.main.id
+  domain               = each.value
+  redirect             = var.custom_domain
+  redirect_status_code = 308
+}
+
 # デプロイメント保持期間（オプション）
 resource "vercel_project_deployment_retention" "main" {
   count                 = var.enable_deployment_retention ? 1 : 0
