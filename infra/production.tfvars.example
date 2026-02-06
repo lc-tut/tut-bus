@@ -39,3 +39,22 @@ github_repo                  = "tut-bus"
 vercel_project_name          = "tut-bus-web"
 vercel_production_branch     = "main"
 vercel_custom_domain         = ""
+
+# ========================================
+# Better Auth (管理画面認証)
+# ========================================
+# 本番環境のアプリURL
+app_url_production = "https://your-domain.com"
+
+# Better Auth シークレット（openssl rand -base64 32 で生成）
+better_auth_secret = "your-better-auth-secret"
+
+# GitHub OAuth App の設定
+# https://github.com/settings/developers で作成
+# Callback URL: https://your-domain.com/api/auth/callback/github
+auth_github_id     = "your-github-oauth-client-id"
+auth_github_secret = "your-github-oauth-client-secret"
+
+# 特定チームのみにアクセスを制限する場合（オプション）
+# 空の場合は lc-tut 組織のメンバー全員がアクセス可能
+auth_allowed_team  = ""

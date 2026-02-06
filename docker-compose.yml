@@ -25,7 +25,7 @@ services:
     container_name: api
     build:
       context: ./apps/api
-      dockerfile: Dockerfile
+      dockerfile: dev.Dockerfile
     ports:
       - '8000:8000'
     volumes:
