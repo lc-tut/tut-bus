@@ -32,7 +32,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     "attribute.repository_owner" = "assertion.repository_owner"
   }
 
-  attribute_condition = "assertion.repository_owner == '${var.github_org}'"
+  attribute_condition = "assertion.repository == '${var.github_org}/${var.github_repo}'"
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
@@ -50,8 +50,14 @@ resource "google_service_account_iam_member" "workload_identity_user" {
 # Terraform サービスアカウントへの IAM 権限付与
 # ========================================
 
-# NOTE: roles/resourcemanager.projectIamAdmin は権限が強すぎるため付与しない
-# IAMバインディングは個別リソース（google_project_iam_member）で管理するため不要
+# Project IAM Admin（IAM ポリシーの読み書き）
+# google_project_iam_member リソースの管理に getIamPolicy/setIamPolicy が必要
+# この権限がないと terraform plan/apply で IAM 関連リソースの refresh が失敗する
+resource "google_project_iam_member" "terraform_iam_admin" {
+  project = var.project_id
+  role    = "roles/resourcemanager.projectIamAdmin"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
 
 # Service Account Admin（サービスアカウントの管理）
 resource "google_project_iam_member" "terraform_sa_admin" {
