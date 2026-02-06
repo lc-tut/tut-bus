@@ -175,9 +175,7 @@ function TimetableContent() {
             id: selectedDepartureGroupId,
           },
         }
-      if (selectedDate) {
-        paramsForGet.query = { date: format(selectedDate, 'yyyy-MM-dd') }
-      }
+      paramsForGet.query = { date: format(selectedDate!, 'yyyy-MM-dd') }
       // client.GET の呼び出しでは、{ params: ... } の形にする
       const { data, error } = await client.GET('/api/bus-stops/groups/{id}/timetable', {
         params: paramsForGet,
