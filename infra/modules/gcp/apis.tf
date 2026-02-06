@@ -54,3 +54,24 @@ resource "google_project_service" "artifactregistry" {
 
   disable_on_destroy = false
 }
+
+resource "google_project_service" "storage" {
+  project = var.project_id
+  service = "storage.googleapis.com"
+
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "iamcredentials" {
+  project = var.project_id
+  service = "iamcredentials.googleapis.com"
+
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "appengine" {
+  project = var.project_id
+  service = "appengine.googleapis.com"
+
+  disable_on_destroy = false
+}
