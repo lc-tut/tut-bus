@@ -25,6 +25,7 @@ export default function OfflinePage() {
 
   useEffect(() => {
     // Cache API からキャッシュ済み時刻表データがあるか確認する
+    if (!('caches' in window)) return
     caches
       .open('bus-timetable-api')
       .then(async (cache) => {
