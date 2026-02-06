@@ -32,7 +32,9 @@ export default function NavBar() {
       <ul className="h-20 grid grid-cols-3 gap-4">
         {navItems.map((item) => {
           const selected =
-            item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+            item.href === '/'
+              ? pathname === '/'
+              : pathname === item.href || pathname.startsWith(item.href + '/')
           return (
             <li key={item.href} className="flex items-center justify-center">
               <Link
