@@ -68,3 +68,10 @@ resource "google_project_service" "iamcredentials" {
 
   disable_on_destroy = false
 }
+
+resource "google_project_service" "appengine" {
+  project = var.project_id
+  service = "appengine.googleapis.com"
+
+  disable_on_destroy = false
+}

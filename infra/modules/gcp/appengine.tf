@@ -5,7 +5,8 @@ resource "google_app_engine_application" "main" {
   database_type = "CLOUD_DATASTORE_COMPATIBILITY"
 
   depends_on = [
-    google_project_service.compute
+    google_project_service.compute,
+    google_project_service.appengine
   ]
 }
 
