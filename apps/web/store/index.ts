@@ -7,6 +7,10 @@ export const dataAtom = atom<UserConfig[]>([])
 // 最後に選択したスライドのインデックスをlocalStorageに保存
 export const lastSlideAtom = atomWithStorage<number>('lastSlide', 0)
 
+export const selectedDestinationsAtom = atomWithStorage<{
+  [groupId: number]: number | null
+}>('selectedDestinations', {})
+
 // ユーザー設定をlocalStorageに保存
 export const userConfigAtom = atomWithStorage<{
   username: string

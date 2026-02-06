@@ -25,19 +25,42 @@ services:
     container_name: api
     build:
       context: ./apps/api
-      dockerfile: Dockerfile
+      dockerfile: dev.Dockerfile
     ports:
       - '8000:8000'
     volumes:
       - ./apps/api:/app
     environment:
-      - ENVIRONMENT=development
+      - API_ENV=development
       - HOST=api
       - PORT=8000
     restart: always
     tty: true
     stdin_open: true
     command: ['air', '-c', '.air.toml']
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: p@ssw0rd
+      POSTGRES_DB: tut_bus
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/pg_hba.conf:/etc/postgresql/pg_hba.custom:ro
+    command: postgres
+      -c hba_file=/etc/postgresql/pg_hba.custom
+      -c ssl=off
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U postgres -d tut_bus']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   swagger:
     image: swaggerapi/swagger-ui
@@ -52,3 +75,4 @@ services:
 volumes:
   node_modules:
   next_build:
+  postgres_data:

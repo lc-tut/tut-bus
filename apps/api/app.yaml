@@ -1,0 +1,27 @@
+runtime: go124
+service: default
+
+# 環境変数
+env_variables:
+  API_ENV: 'production'
+  HOST: '0.0.0.0'
+  DB_NAME: 'tutbus'
+  DB_USER: 'postgres'
+  DB_HOST: '/cloudsql/main-vcompute:asia-northeast1:tut-bus-db-prod'
+  DB_PORT: ''
+  DB_PASSWORD: ''
+  DB_SSLMODE: 'disable'
+  DATA_PATH: './data'
+  CORS_ALLOWED_ORIGINS: 'https://tut-bus.hekuta.net,https://tut-bus.lcn.ad.jp'
+
+# インスタンス設定
+instance_class: F1
+
+# 自動スケーリング
+automatic_scaling:
+  min_instances: 1
+  max_instances: 2
+  min_idle_instances: 1
+  max_idle_instances: 1
+  target_cpu_utilization: 0.8
+  target_throughput_utilization: 0.8

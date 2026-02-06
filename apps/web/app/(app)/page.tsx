@@ -9,7 +9,7 @@ import { components, operations } from '@/generated/oas'
 import { client } from '@/lib/client'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { generateDisplayBuses } from '@/lib/utils/timetable'
-import { lastSlideAtom } from '@/store'
+import { lastSlideAtom, selectedDestinationsAtom } from '@/store'
 import { format } from 'date-fns'
 import { useAtom } from 'jotai'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -214,14 +214,12 @@ function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [lastSlide, setLastSlide] = useAtom(lastSlideAtom)
+  const [selectedDestinations, setSelectedDestinations] = useAtom(selectedDestinationsAtom)
   const [now, setNow] = useState<Date | null>(null)
   const [busStopGroups, setBusStopGroups] = useState<
     components['schemas']['Models.BusStopGroup'][]
   >([])
   const [isLoadingDepartures, setLoadingDepartures] = useState<boolean>(false)
-  const [selectedDestinations, setSelectedDestinations] = useState<{
-    [groupId: number]: number | null
-  }>({})
   const [groupTimetables, setGroupTimetables] = useState<{
     [groupId: number]: {
       filtered: DisplayBusInfo[]
@@ -326,7 +324,7 @@ function HomeContent() {
             allBuses: displayBuses,
           }
 
-          // セグメントがある場合は最初の目的地を自動選択
+          // セグメントから利用可能な目的地情報を保存（選択はuseEffectで行う）
           if (data.segments && data.segments.length > 0) {
             const uniqueDestinations = new Map<number, { stopId: number; stopName: string }>()
 
@@ -340,17 +338,15 @@ function HomeContent() {
               }
             })
 
-            const firstDestination = Array.from(uniqueDestinations.values())[0]
-            if (firstDestination) {
-              setSelectedDestinations((prev) => ({
-                ...prev,
-                [group.id]: firstDestination.stopId,
-              }))
+            // 既存の選択があればそれを使用、なければ後でuseEffectで選択される
+            const existingSelection = selectedDestinations[group.id]
+            const destinationToUse =
+              existingSelection && uniqueDestinations.has(existingSelection)
+                ? existingSelection
+                : null
 
-              const destinationFiltered = filterBusesByDestination(
-                displayBuses,
-                firstDestination.stopId
-              )
+            if (destinationToUse) {
+              const destinationFiltered = filterBusesByDestination(displayBuses, destinationToUse)
               result.filtered = filterBusesByDeparture(destinationFiltered, currentNow)
             }
           }
@@ -387,7 +383,7 @@ function HomeContent() {
         }
       }
     },
-    [busStopGroups]
+    [busStopGroups, selectedDestinations]
   )
 
   useEffect(() => {
@@ -418,6 +414,28 @@ function HomeContent() {
 
     fetchAllTimetables()
   }, [busStopGroups, now, fetchGroupTimetable, handleError])
+
+  useEffect(() => {
+    if (Object.keys(groupTimetables).length === 0) return
+
+    setSelectedDestinations((prev) => {
+      const updates: { [groupId: number]: number } = {}
+
+      busStopGroups.forEach((group) => {
+        const destinations = extractDestinations(groupTimetables[group.id])
+
+        if (destinations.length > 0) {
+          const currentSelection = prev[group.id]
+
+          if (!currentSelection || !destinations.some((d) => d.stopId === currentSelection)) {
+            updates[group.id] = destinations[0].stopId
+          }
+        }
+      })
+
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev
+    })
+  }, [groupTimetables, busStopGroups, setSelectedDestinations])
 
   useEffect(() => {
     const currentDate = new Date()
@@ -464,17 +482,6 @@ function HomeContent() {
 
                   {(() => {
                     const destinations = extractDestinations(groupTimetables[group.id])
-
-                    // 行先が1つだけの場合は自動的に選択
-                    if (
-                      destinations.length === 1 &&
-                      selectedDestinations[group.id] !== destinations[0].stopId
-                    ) {
-                      setSelectedDestinations((prev) => ({
-                        ...prev,
-                        [group.id]: destinations[0].stopId,
-                      }))
-                    }
 
                     // 行き先がない場合は選択UIを表示しない（下のメッセージで処理）
                     if (destinations.length === 0) {
@@ -549,7 +556,7 @@ function HomeContent() {
                                   <SelectItem
                                     key={idx}
                                     value={String(dest.stopId)}
-                                    className="text-sm py-2 cursor-pointer"
+                                    className="text-sm py-2"
                                   >
                                     <div className="flex items-center w-full">
                                       <span className="truncate">{dest.stopName}</span>

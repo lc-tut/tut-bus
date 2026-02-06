@@ -1,0 +1,60 @@
+# ========================================
+# Provider API Tokens
+# ========================================
+# Note: 環境変数で設定することを推奨
+# export CLOUDFLARE_API_TOKEN="your-cloudflare-token"
+# export VERCEL_API_TOKEN="your-vercel-token"
+
+cloudflare_api_token = "your-cloudflare-api-token"
+vercel_api_token     = "your-vercel-api-token"
+vercel_team_id       = null
+
+# ========================================
+# GCP
+# ========================================
+project_id       = "your-gcp-project-id"
+region           = "asia-northeast1"
+zone             = "asia-northeast1-a"
+environment      = "production"
+db_instance_name = "tut-bus-db-prod"
+db_tier          = "db-f1-micro"
+machine_type     = "e2-small"
+
+# Application Configuration
+cors_allowed_origins = "https://tut-bus-web.vercel.app"
+
+# ========================================
+# Cloudflare
+# ========================================
+cloudflare_zone_name       = "hekuta.net"
+cloudflare_api_record_name = "tut-bus-api"
+cloudflare_ssl_mode        = "strict"
+cloudflare_min_tls_version = "1.2"
+
+# ========================================
+# Vercel
+# ========================================
+github_org                   = "lc-tut"
+github_repo                  = "tut-bus"
+vercel_project_name          = "tut-bus-web"
+vercel_production_branch     = "main"
+vercel_custom_domain         = ""
+
+# ========================================
+# Better Auth (管理画面認証)
+# ========================================
+# 本番環境のアプリURL
+app_url_production = "https://your-domain.com"
+
+# Better Auth シークレット（openssl rand -base64 32 で生成）
+better_auth_secret = "your-better-auth-secret"
+
+# GitHub OAuth App の設定
+# https://github.com/settings/developers で作成
+# Callback URL: https://your-domain.com/api/auth/callback/github
+auth_github_id     = "your-github-oauth-client-id"
+auth_github_secret = "your-github-oauth-client-secret"
+
+# 特定チームのみにアクセスを制限する場合（オプション）
+# 空の場合は lc-tut 組織のメンバー全員がアクセス可能
+auth_allowed_team  = ""
