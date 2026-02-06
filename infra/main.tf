@@ -20,6 +20,10 @@ module "gcp" {
 
   # App Engine Configuration
   zone_name = var.cloudflare_zone_name
+
+  # GitHub Configuration (for Workload Identity)
+  github_org  = var.github_org
+  github_repo = var.github_repo
 }
 
 # Cloudflareモジュール
