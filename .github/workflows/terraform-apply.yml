@@ -1,0 +1,145 @@
+# ========================================
+# Terraform Apply
+# ========================================
+# 手動トリガー（workflow_dispatch）でapplyを実行
+# apply失敗時は自動でrevertPRを作成
+
+name: "Terraform Apply"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "対象環境"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+      confirm:
+        description: "applyを実行しますか？（yesと入力）"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+  issues: write
+
+defaults:
+  run:
+    working-directory: infra
+
+env:
+  TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  TF_VAR_vercel_api_token: ${{ secrets.VERCEL_API_TOKEN }}
+  TF_VAR_better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
+  TF_VAR_auth_github_id: ${{ secrets.AUTH_GITHUB_ID }}
+  TF_VAR_auth_github_secret: ${{ secrets.AUTH_GITHUB_SECRET }}
+
+jobs:
+  apply:
+    name: "Terraform Apply (${{ inputs.environment }})"
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Confirm Input
+        if: inputs.confirm != 'yes'
+        run: |
+          echo "::error::確認入力が 'yes' ではありません。applyを中止します。"
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.14"
+
+      - name: Google Cloud Auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: "projects/897661050223/locations/global/workloadIdentityPools/tut-bus-github-pool/providers/tut-bus-github-provider"
+          service_account: "tut-bus-terraform-sa@main-vcompute.iam.gserviceaccount.com"
+
+      - name: Terraform Init
+        run: terraform init -input=false
+
+      - name: Terraform Plan (pre-apply check)
+        id: plan
+        run: terraform plan -var-file=environments/production.tfvars -no-color -input=false -detailed-exitcode
+        continue-on-error: true
+
+      - name: Skip if No Changes
+        if: steps.plan.outputs.exitcode == '0'
+        run: |
+          echo "::notice::No changes detected. Skipping apply."
+          exit 0
+
+      - name: Fail on Plan Error
+        if: steps.plan.outputs.exitcode == '1'
+        run: |
+          echo "::error::Terraform plan failed."
+          exit 1
+
+      - name: Terraform Apply
+        id: apply
+        if: steps.plan.outputs.exitcode == '2'
+        run: terraform apply -var-file=environments/production.tfvars -auto-approve -input=false -no-color
+        continue-on-error: true
+
+      - name: Terraform Apply (Retry)
+        id: apply_retry
+        if: steps.apply.outcome == 'failure'
+        run: |
+          echo "::warning::1回目のapplyが失敗しました。60秒後にリトライします..."
+          sleep 60
+          terraform apply -var-file=environments/production.tfvars -auto-approve -input=false -no-color
+
+      - name: Create Revert PR on Failure
+        if: failure() && steps.apply_retry.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          BRANCH_NAME="revert/terraform-apply-$(date +%Y%m%d-%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH_NAME"
+          git revert HEAD --no-edit || true
+          git push origin "$BRANCH_NAME"
+          gh pr create \
+            --title "🚨 Revert: Terraform Apply Failed ($(date +%Y-%m-%d))" \
+            --body "## Terraform Apply がリトライ込みで失敗したため、自動 Revert PR を作成しました
+
+          **実行者**: @${{ github.actor }}
+          **環境**: ${{ inputs.environment }}
+          **ブランチ**: \`${{ github.ref_name }}\`
+          **ワークフロー実行**: [Run #${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          ### ⚠️ 注意
+          - コードと実際のインフラ state に差分が出ている可能性があります
+          - **マージ前に必ず \`terraform plan\` で差分を確認してください**
+          - 部分適用されたリソースがある場合、手動での修正が必要な場合があります
+
+          /cc @${{ github.actor }}" \
+            --base "${{ github.ref_name }}" \
+            --head "$BRANCH_NAME" \
+            --label "bug,terraform,urgent"
+
+      - name: Post Summary
+        if: always()
+        run: |
+          echo "## Terraform Apply Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ inputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered by | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Plan | ${{ steps.plan.outcome }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Apply (1st) | ${{ steps.apply.outcome || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Apply (Retry) | ${{ steps.apply_retry.outcome || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
