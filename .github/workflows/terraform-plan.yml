@@ -1,0 +1,127 @@
+# ========================================
+# Terraform Plan
+# ========================================
+# PR時に自動でplan実行、結果をPRコメントに投稿
+
+name: 'Terraform Plan'
+
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'infra/**'
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: infra
+
+env:
+  TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  TF_VAR_vercel_api_token: ${{ secrets.VERCEL_API_TOKEN }}
+  TF_VAR_better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
+  TF_VAR_auth_github_id: ${{ secrets.AUTH_GITHUB_ID }}
+  TF_VAR_auth_github_secret: ${{ secrets.AUTH_GITHUB_SECRET }}
+
+jobs:
+  plan:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '~> 1.14.2'
+
+      - name: Google Cloud Auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.TERRAFORM_SA }}
+
+      - name: Terraform Init
+        run: terraform init -input=false
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -var-file=environments/production.tfvars -no-color -input=false -detailed-exitcode
+        continue-on-error: true
+
+      - name: Determine Plan Status
+        id: plan_status
+        run: |
+          EXIT_CODE="${{ steps.plan.outputs.exitcode }}"
+          if [ "$EXIT_CODE" = "0" ]; then
+            echo "status=No changes" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          elif [ "$EXIT_CODE" = "2" ]; then
+            echo "status=Changes detected" >> $GITHUB_OUTPUT
+            echo "emoji=⚠️" >> $GITHUB_OUTPUT
+          else
+            echo "status=Error" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post Plan to PR
+        uses: actions/github-script@v8
+        env:
+          PLAN: ${{ steps.plan.outputs.stdout }}
+          PLAN_STATUS: ${{ steps.plan_status.outputs.status }}
+          PLAN_EMOJI: ${{ steps.plan_status.outputs.emoji }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('Terraform Plan')
+            );
+
+            // plan出力を65000文字以内に切り詰め
+            const plan = process.env.PLAN || 'No plan output';
+            const truncatedPlan = plan.length > 60000
+              ? plan.substring(0, 60000) + '\n\n... (truncated)'
+              : plan;
+
+            const output = `### ${process.env.PLAN_EMOJI} Terraform Plan: ${process.env.PLAN_STATUS}
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            ${truncatedPlan}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Branch: \`${{ github.head_ref }}\`*`;
+
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+            }
+
+      - name: Fail on Plan Error
+        if: steps.plan.outputs.exitcode == '1'
+        run: exit 1
