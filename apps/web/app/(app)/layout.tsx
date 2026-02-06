@@ -20,16 +20,14 @@ export default function AppLayout({
     <div>
       <Header />
       <div className="pt-20 md:pt-16">
-        <AnnouncementBanner 
+        <AnnouncementBanner
           message={announcementMessage}
           title={announcementTitle}
           type={announcementType}
           linkUrl={announcementLinkUrl}
           linkText={announcementLinkText}
         />
-        <div className={cn('p-1 min-h-screen mx-auto max-w-6xl')}>
-          {children}
-        </div>
+        <div className={cn('p-1 min-h-screen mx-auto max-w-6xl')}>{children}</div>
       </div>
       <NavBar />
     </div>

@@ -183,19 +183,19 @@
     letter-spacing: var(--tracking-normal);
   }
   button:not([disabled]),
-  [role="button"]:not([disabled]) {
+  [role='button']:not([disabled]) {
     cursor: pointer;
   }
-  
+
   button:not([disabled]) *,
-  [role="button"]:not([disabled]) * {
+  [role='button']:not([disabled]) * {
     cursor: inherit;
   }
 
   a[href] {
     cursor: pointer;
   }
-  
+
   a[href] * {
     cursor: inherit;
   }
