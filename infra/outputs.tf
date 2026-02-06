@@ -113,3 +113,8 @@ output "github_actions_workload_identity_provider" {
   description = "GitHub Actions用Workload Identity Provider（GitHub Actionsで使用）"
   value       = module.gcp.workload_identity_provider_name
 }
+
+output "terraform_state_bucket" {
+  description = "Terraform state用GCSバケット名"
+  value       = module.gcp.terraform_state_bucket
+}

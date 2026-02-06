@@ -14,6 +14,8 @@ resource "google_iam_workload_identity_pool" "github" {
   workload_identity_pool_id = "tut-bus-github-pool"
   display_name              = "TUT Bus GitHub Actions Pool"
   description               = "Workload Identity Pool for TUT Bus GitHub Actions"
+
+  depends_on = [google_project_service.iamcredentials]
 }
 
 # Workload Identity Provider (GitHub OIDC)
