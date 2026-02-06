@@ -15,7 +15,7 @@ resource "google_iam_workload_identity_pool" "github" {
   display_name              = "TUT Bus GitHub Actions Pool"
   description               = "Workload Identity Pool for TUT Bus GitHub Actions"
 
-  depends_on = [google_project_service.iamcredentials]
+  depends_on = [google_project_service.iamcredentials, google_project_service.iam]
 }
 
 # Workload Identity Provider (GitHub OIDC)
@@ -50,12 +50,8 @@ resource "google_service_account_iam_member" "workload_identity_user" {
 # Terraform サービスアカウントへの IAM 権限付与
 # ========================================
 
-# Project IAM Admin（IAMポリシーの管理）
-resource "google_project_iam_member" "terraform_iam_admin" {
-  project = var.project_id
-  role    = "roles/resourcemanager.projectIamAdmin"
-  member  = "serviceAccount:${google_service_account.terraform.email}"
-}
+# NOTE: roles/resourcemanager.projectIamAdmin は権限が強すぎるため付与しない
+# IAMバインディングは個別リソース（google_project_iam_member）で管理するため不要
 
 # Service Account Admin（サービスアカウントの管理）
 resource "google_project_iam_member" "terraform_sa_admin" {
