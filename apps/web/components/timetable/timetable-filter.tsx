@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -155,9 +156,12 @@ export function TimetableFilter({
                                 )}
                             </span>
                           </DialogTrigger>
-                          <DialogContent aria-describedby={undefined}>
+                          <DialogContent>
                             <DialogHeader>
                               <DialogTitle>日付を選択</DialogTitle>
+                              <DialogDescription className="sr-only">
+                                カレンダーから日付を選択してください
+                              </DialogDescription>
                             </DialogHeader>
                             <div className="flex items-center justify-center">
                               <Calendar

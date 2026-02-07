@@ -45,7 +45,9 @@ async function warmEssentialCaches() {
     }
 
     // 各グループの時刻表を取得（SW経由でキャッシュされる）
-    const today = new Date().toISOString().split('T')[0]
+    // UTC ではなくローカル日付を使用（JST 等で日付がずれないように）
+    const now = new Date()
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
     const timetablePromises = groups.map((group) =>
       fetch(`${API_URL}/api/bus-stops/groups/${group.id}/timetable?date=${today}`).catch(() => {
         // 個別のエラーは無視
