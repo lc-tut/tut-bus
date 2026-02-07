@@ -29,6 +29,13 @@ async function warmEssentialCaches() {
       const url = new URL(req.url)
       return url.pathname === '/api/bus-stops/groups'
     })
+    const hasTimetable = existingKeys.some((req) => {
+      const url = new URL(req.url)
+      return url.pathname.includes('/timetable')
+    })
+
+    // グループ一覧と時刻表の両方がキャッシュ済みならネットワークリクエスト不要
+    if (hasGroups && hasTimetable) return
 
     // バス停グループ一覧を取得（SW経由でキャッシュされる）
     const groupsResponse = await fetch(`${API_URL}/api/bus-stops/groups`)
@@ -37,15 +44,8 @@ async function warmEssentialCaches() {
     const groups = (await groupsResponse.json()) as { id: number; name: string }[]
     if (!groups || groups.length === 0) return
 
-    // 既にグループキャッシュがある場合、時刻表もキャッシュ済みの可能性が高いのでスキップ
-    if (hasGroups) {
-      // ただし時刻表のキャッシュがあるか確認
-      const hasTimetable = existingKeys.some((req) => {
-        const url = new URL(req.url)
-        return url.pathname.includes('/timetable')
-      })
-      if (hasTimetable) return
-    }
+    // グループ一覧はあるが時刻表がない場合、時刻表のみ取得
+    if (hasTimetable) return
 
     // 各グループの時刻表を取得（SW経由でキャッシュされる）
     // UTC ではなくローカル日付を使用（JST 等で日付がずれないように）
