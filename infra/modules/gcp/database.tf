@@ -27,6 +27,11 @@ resource "google_sql_database_instance" "main" {
       day  = 7
       hour = 4
     }
+
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = "on"
+    }
   }
 
   deletion_protection = false
