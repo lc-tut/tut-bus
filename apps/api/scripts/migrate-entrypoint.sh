@@ -72,23 +72,52 @@ case "${ACTION}" in
     echo ""
     echo "🌱 シードデータを適用中..."
 
-    # Common seeds
+    # 全シードファイルを収集
+    SEED_FILES=""
     for f in $(ls ./seeds/common/*.sql 2>/dev/null | sort); do
-      echo "  [common] $(basename "$f")"
-      env ${PSQL_AUTH_ENV} psql \
-        -h "/cloudsql/${INSTANCE_CONNECTION_NAME}" \
-        -U "${DB_USER}" -d "${DB_NAME}" \
-        -f "$f" --quiet
+      SEED_FILES="${SEED_FILES} ${f}"
+    done
+    for f in $(ls ./seeds/production/*.sql 2>/dev/null | sort); do
+      SEED_FILES="${SEED_FILES} ${f}"
     done
 
-    # Production seeds
-    for f in $(ls ./seeds/production/*.sql 2>/dev/null | sort); do
-      echo "  [production] $(basename "$f")"
-      env ${PSQL_AUTH_ENV} psql \
+    if [ -z "${SEED_FILES}" ]; then
+      echo "  シードファイルがありません"
+    else
+      # Phase 1: ドライラン（BEGIN + 実行 + ROLLBACK）
+      echo ""
+      echo "🔍 Phase 1: ドライラン（トランザクション検証）..."
+      DRY_RUN_SQL="BEGIN;"
+      for f in ${SEED_FILES}; do
+        DRY_RUN_SQL="${DRY_RUN_SQL}
+$(cat "$f")"
+      done
+      DRY_RUN_SQL="${DRY_RUN_SQL}
+ROLLBACK;"
+
+      echo "${DRY_RUN_SQL}" | env ${PSQL_AUTH_ENV} psql \
         -h "/cloudsql/${INSTANCE_CONNECTION_NAME}" \
         -U "${DB_USER}" -d "${DB_NAME}" \
-        -f "$f" --quiet
-    done
+        --quiet -v ON_ERROR_STOP=1
+
+      echo "  ✅ ドライラン成功（SQLにエラーなし）"
+
+      # Phase 2: 本番適用
+      echo ""
+      echo "🚀 Phase 2: シードデータを本番適用中..."
+      for f in ${SEED_FILES}; do
+        case "$f" in
+          ./seeds/common/*) label="common" ;;
+          ./seeds/production/*) label="production" ;;
+          *) label="unknown" ;;
+        esac
+        echo "  [${label}] $(basename "$f")"
+        env ${PSQL_AUTH_ENV} psql \
+          -h "/cloudsql/${INSTANCE_CONNECTION_NAME}" \
+          -U "${DB_USER}" -d "${DB_NAME}" \
+          -f "$f" --quiet -v ON_ERROR_STOP=1
+      done
+    fi
 
     echo "✅ シードデータ適用完了"
     ;;

@@ -17,13 +17,6 @@ on:
       - 'apps/api/db/queries/**'
       - 'apps/api/db/seeds/**'
       - 'apps/api/sqlc.yaml'
-  push:
-    branches: [main, dev]
-    paths:
-      - 'apps/api/db/migrations/**'
-      - 'apps/api/db/queries/**'
-      - 'apps/api/db/seeds/**'
-      - 'apps/api/sqlc.yaml'
 
 permissions:
   contents: read
@@ -182,24 +175,17 @@ jobs:
         run: |
           curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/${{ env.MIGRATE_VERSION }}/migrate.linux-amd64.tar.gz" | tar xz
           sudo mv migrate /usr/local/bin/migrate
-          migrate --version
 
       - name: Install sqlc
         run: |
           curl -fsSL "https://github.com/sqlc-dev/sqlc/releases/download/v${{ env.SQLC_VERSION }}/sqlc_${{ env.SQLC_VERSION }}_linux_amd64.tar.gz" | tar xz
           sudo mv sqlc /usr/local/bin/sqlc
-          sqlc version
 
       - name: Run Migrations Up
         run: |
           echo "⬆️ マイグレーションを適用中..."
           migrate -path db/migrations -database "${{ env.DB_URL }}" up
           echo "✅ マイグレーション適用完了"
-
-      - name: Verify Schema
-        run: |
-          echo "🔍 スキーマを検証中..."
-          PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -c "\dt" -c "\di"
 
       - name: sqlc Compile Check
         run: |
@@ -222,25 +208,34 @@ jobs:
           migrate -path db/migrations -database "${{ env.DB_URL }}" up
           echo "✅ マイグレーション再適用成功"
 
-      - name: Test Common Seeds
+      # Phase 1: ドライラン - トランザクション内で実行してROLLBACKすることで、
+      # SQLが実際のスキーマに対してエラーなく実行できるか検証
+      - name: Dry-run Seeds (Transaction Validation)
         run: |
-          echo "🌱 共通シードデータのテスト..."
-          for seed_file in db/seeds/common/*.sql; do
+          echo "🔍 シードドライラン（BEGIN + ROLLBACK）..."
+          DRY_RUN_SQL="BEGIN;"
+          for seed_file in db/seeds/common/*.sql db/seeds/production/*.sql; do
             [ -e "$seed_file" ] || continue
-            echo "  適用中: $(basename "$seed_file")"
-            PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -f "$seed_file"
+            echo "  検証中: $(basename "$seed_file")"
+            DRY_RUN_SQL="${DRY_RUN_SQL}
+          $(cat "$seed_file")"
           done
-          echo "✅ 共通シードデータ適用テスト完了"
+          DRY_RUN_SQL="${DRY_RUN_SQL}
+          ROLLBACK;"
 
-      - name: Test Production Seeds
+          echo "$DRY_RUN_SQL" | PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -v ON_ERROR_STOP=1 --quiet
+          echo "✅ ドライラン成功（SQLにエラーなし）"
+
+      # Phase 2: 実際に適用
+      - name: Apply Seeds (common + production)
         run: |
-          echo "🌱 本番シードデータのテスト..."
-          for seed_file in db/seeds/production/*.sql; do
+          echo "🌱 シードデータの適用..."
+          for seed_file in db/seeds/common/*.sql db/seeds/production/*.sql; do
             [ -e "$seed_file" ] || continue
             echo "  適用中: $(basename "$seed_file")"
-            PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -f "$seed_file"
+            PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -v ON_ERROR_STOP=1 -f "$seed_file"
           done
-          echo "✅ 本番シードデータ適用テスト完了"
+          echo "✅ シードデータ適用完了"
 
       - name: Test Seed Idempotency (common + production)
         run: |
@@ -304,9 +299,6 @@ jobs:
             exit 1
           fi
           echo "✅ シード冪等性テスト完了"
-
-      - name: Go Download Dependencies
-        run: go mod download
 
       - name: Go Build Check
         run: CGO_ENABLED=0 go build -o /dev/null .
