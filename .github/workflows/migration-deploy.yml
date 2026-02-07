@@ -6,9 +6,12 @@
 #
 # 仕組み:
 #   1. マイグレーション用Dockerイメージをビルド → Artifact Registryにpush
-#   2. Cloud Run Job を作成（--add-cloudsql-instances でプロキシ内蔵）
+#   2. Cloud Run Job を作成/更新（--add-cloudsql-instances でプロキシ内蔵）
 #   3. Job を実行し、完了を待機
-#   4. Job を削除（クリーンアップ）
+#
+# Job は固定名で使い回すため、GCPコンソールから過去の
+# Execution ログをいつでも確認できます。
+# Job 定義の存在自体に課金は発生しません。
 #
 # Cloud SQLへのパブリックIP公開は不要です。
 # IAM認証を使用するためパスワード管理も不要です。
@@ -46,6 +49,7 @@ env:
   AR_REGISTRY: asia-northeast1-docker.pkg.dev
   AR_REPO: tut-bus
   IMAGE_NAME: migration
+  JOB_NAME: tut-bus-migration
   DB_INSTANCE: 'main-vcompute:asia-northeast1:tut-bus-db-prod'
   DB_NAME: 'tutbus'
   # IAM認証ユーザー（SA名から .gserviceaccount.com を除いたもの）
@@ -83,7 +87,7 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.AR_REGISTRY }} --quiet
 
-      - name: Build Migration Image
+      - name: Build & Push Migration Image
         working-directory: apps/api
         run: |
           IMAGE="${{ env.AR_REGISTRY }}/${{ vars.GCP_PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:gh-${{ github.run_number }}"
@@ -94,37 +98,41 @@ jobs:
             -t "${IMAGE}" \
             .
 
-          echo "✅ イメージビルド完了: ${IMAGE}"
-
-      - name: Push Migration Image
-        run: |
           docker push "${IMAGE}"
-          echo "✅ イメージpush完了"
+          echo "✅ イメージビルド & push完了: ${IMAGE}"
 
-      - name: Create Cloud Run Job
+      - name: Deploy Cloud Run Job
         run: |
-          JOB_NAME="tut-bus-migration-${{ github.run_number }}"
-          echo "JOB_NAME=${JOB_NAME}" >> "$GITHUB_ENV"
-
-          gcloud run jobs create "${JOB_NAME}" \
-            --image="${IMAGE}" \
-            --region="${{ env.REGION }}" \
-            --project="${{ vars.GCP_PROJECT_ID }}" \
-            --set-cloudsql-instances="${{ env.DB_INSTANCE }}" \
-            --service-account="${{ env.APP_SA }}" \
-            --set-env-vars="MIGRATE_ACTION=${{ inputs.action }},DB_USER=${{ env.DB_USER }},DB_NAME=${{ env.DB_NAME }},INSTANCE_CONNECTION_NAME=${{ env.DB_INSTANCE }},USE_IAM_AUTH=true" \
+          JOB_ARGS="\
+            --image=${IMAGE} \
+            --region=${{ env.REGION }} \
+            --project=${{ vars.GCP_PROJECT_ID }} \
+            --set-cloudsql-instances=${{ env.DB_INSTANCE }} \
+            --service-account=${{ env.APP_SA }} \
+            --set-env-vars=MIGRATE_ACTION=${{ inputs.action }},DB_USER=${{ env.DB_USER }},DB_NAME=${{ env.DB_NAME }},INSTANCE_CONNECTION_NAME=${{ env.DB_INSTANCE }},USE_IAM_AUTH=true \
             --max-retries=0 \
             --task-timeout=300s \
             --memory=512Mi \
             --cpu=1 \
-            --quiet
+            --quiet"
 
-          echo "✅ Cloud Run Job '${JOB_NAME}' 作成完了"
+          # Job が既に存在すれば update、なければ create
+          if gcloud run jobs describe "${{ env.JOB_NAME }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" &>/dev/null; then
+            echo "🔄 既存の Cloud Run Job を更新中..."
+            gcloud run jobs update "${{ env.JOB_NAME }}" ${JOB_ARGS}
+          else
+            echo "🆕 Cloud Run Job を新規作成中..."
+            gcloud run jobs create "${{ env.JOB_NAME }}" ${JOB_ARGS}
+          fi
+
+          echo "✅ Cloud Run Job '${{ env.JOB_NAME }}' デプロイ完了"
 
       - name: Execute Cloud Run Job
         run: |
           echo "🚀 Cloud Run Job を実行中..."
-          gcloud run jobs execute "${JOB_NAME}" \
+          gcloud run jobs execute "${{ env.JOB_NAME }}" \
             --region="${{ env.REGION }}" \
             --project="${{ vars.GCP_PROJECT_ID }}" \
             --wait \
@@ -132,28 +140,12 @@ jobs:
 
           echo "✅ Cloud Run Job 実行完了"
 
+      # Job は固定名で残すため、GCPコンソールから過去のExecutionログも確認可能
       - name: Show Job Logs
         if: always()
         run: |
           echo "📋 Cloud Run Job ログ:"
-          gcloud logging read \
-            "resource.type=cloud_run_job AND resource.labels.job_name=${JOB_NAME}" \
-            --project="${{ vars.GCP_PROJECT_ID }}" \
-            --limit=50 \
-            --format="table(timestamp, textPayload)" \
-            --freshness=10m \
-            2>/dev/null || echo "(ログ取得に失敗しました)"
-
-      - name: Cleanup Cloud Run Job
-        if: always()
-        run: |
-          echo "🧹 Cloud Run Job をクリーンアップ中..."
-          gcloud run jobs delete "${JOB_NAME}" \
-            --region="${{ env.REGION }}" \
-            --project="${{ vars.GCP_PROJECT_ID }}" \
-            --quiet \
-            2>/dev/null || echo "  (クリーンアップスキップ)"
-          echo "✅ クリーンアップ完了"
+          echo "  GCPコンソール: https://console.cloud.google.com/run/jobs/details/${{ env.REGION }}/${{ env.JOB_NAME }}/executions?project=${{ vars.GCP_PROJECT_ID }}"
 
       - name: Cleanup Old Migration Images
         if: always()
@@ -186,6 +178,6 @@ jobs:
           echo "| Instance | \`${{ env.DB_INSTANCE }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Database | \`${{ env.DB_NAME }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Image | \`${IMAGE}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Cloud Run Job | \`${JOB_NAME}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Cloud Run Job | \`${{ env.JOB_NAME }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Trigger | @${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Status | \`${{ job.status }}\` |" >> "$GITHUB_STEP_SUMMARY"
