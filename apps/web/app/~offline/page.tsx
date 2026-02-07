@@ -106,7 +106,7 @@ export default function OfflinePage() {
           )}
 
           <Button
-            onClick={() => (isBackOnline ? (window.location.href = '/') : window.location.reload())}
+            onClick={() => (window.location.href = '/')}
             variant={isBackOnline ? 'default' : 'outline'}
             className="w-full"
           >
