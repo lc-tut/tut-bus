@@ -42,20 +42,28 @@ echo ""
 echo "📋 現在のマイグレーションバージョン:"
 migrate -path ./migrations -database "${DB_URL}" version 2>&1 || echo "  (バージョン未設定)"
 
-case "${ACTION}" in
-  "version")
-    echo ""
-    echo "🔧 postgres ユーザーへの権限付与..."
-    env ${PSQL_AUTH_ENV} psql \
-      -h "/cloudsql/${INSTANCE_CONNECTION_NAME}" \
-      -U "${DB_USER}" -d "${DB_NAME}" \
-      --quiet -v ON_ERROR_STOP=1 <<'GRANT_SQL'
+# postgres ユーザーへの権限付与
+# Cloud SQL の postgres は cloudsqlsuperuser だが真の superuser ではないため、
+# IAM SA が作成したテーブルを Cloud SQL Studio で閲覧・管理するには
+# テーブルオーナー（IAM SA）から明示的に GRANT が必要
+grant_to_postgres() {
+  echo ""
+  echo "🔧 postgres ユーザーへの権限付与..."
+  env ${PSQL_AUTH_ENV} psql \
+    -h "/cloudsql/${INSTANCE_CONNECTION_NAME}" \
+    -U "${DB_USER}" -d "${DB_NAME}" \
+    --quiet -v ON_ERROR_STOP=1 <<'GRANT_SQL'
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
 GRANT_SQL
-    echo "✅ 権限付与完了"
+  echo "✅ 権限付与完了"
+}
+
+case "${ACTION}" in
+  "version")
+    # 上で表示済み
     ;;
 
   "up")
@@ -63,6 +71,7 @@ GRANT_SQL
     echo "⬆️ 全ペンディングマイグレーションを適用中..."
     migrate -path ./migrations -database "${DB_URL}" up
     echo "✅ マイグレーション適用完了"
+    grant_to_postgres
     ;;
 
   "up-1")
@@ -70,6 +79,7 @@ GRANT_SQL
     echo "⬆️ 1つマイグレーションを適用中..."
     migrate -path ./migrations -database "${DB_URL}" up 1
     echo "✅ マイグレーション適用完了"
+    grant_to_postgres
     ;;
 
   "down-1")
