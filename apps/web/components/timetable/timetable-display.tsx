@@ -15,7 +15,7 @@ export interface TimetableDisplayProps {
   filteredTimetable: DisplayBusInfo[]
   now: Date | null
   timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
-  isLoading?: boolean // 追加
+  isLoading?: boolean
   busStopGroups: components['schemas']['Models.BusStopGroup'][]
 }
 

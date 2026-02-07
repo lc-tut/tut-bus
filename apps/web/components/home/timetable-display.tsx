@@ -3,7 +3,9 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerFooter,
+  DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -89,7 +91,13 @@ export function TimetableDisplay({
               })}
             </TableBody>
           </Table>
-          <Drawer>
+          <Drawer
+            onOpenChange={(open) => {
+              // Drawer 開閉時にトリガーからフォーカスを外し、
+              // aria-hidden と focused element の競合警告を防ぐ
+              if (open) (document.activeElement as HTMLElement)?.blur()
+            }}
+          >
             <DrawerTrigger asChild>
               <Button
                 className="mt-2 mx-4"
@@ -100,6 +108,10 @@ export function TimetableDisplay({
               </Button>
             </DrawerTrigger>
             <DrawerContent className="min-h-[400px] max-h-[60vh]">
+              <DrawerTitle className="sr-only">時刻表一覧</DrawerTitle>
+              <DrawerDescription className="sr-only">
+                すべての時刻表データを表示します
+              </DrawerDescription>
               <Table>
                 <TableHeader>
                   <TableRow>
