@@ -750,6 +750,14 @@ function HomeContent() {
                   )
                 : []
             }
+            allBuses={
+              groupTimetables[group.id]?.allBuses
+                ? BusFilters.byDestination(
+                    groupTimetables[group.id].allBuses,
+                    selectedDestinations[group.id] || null
+                  )
+                : []
+            }
             arriveTimetable={groupTimetables[group.id]?.filtered || []}
             now={now}
             busStopGroups={busStopGroups}
