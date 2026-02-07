@@ -1,5 +1,6 @@
 'use client'
 
+import { LinuxClubBanner, SurveyBanner } from '@/components/ad-banners'
 import { AnnouncementBanner } from '@/components/announcement-banner'
 import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Badge } from '@/components/ui/badge'
@@ -549,8 +550,10 @@ function HomeContent() {
                 ))}
               </CarouselContent>
             </Carousel>
-            <div className="mx-[6vw] mt-4">
+            <div className="mx-[6vw] mt-4 space-y-3">
               <AnnouncementBanner dismissible={false} className="mx-auto" />
+              <SurveyBanner />
+              <LinuxClubBanner />
             </div>
           </div>
           {/* PC/タブレット: グリッド + サイドバナー */}
@@ -564,8 +567,10 @@ function HomeContent() {
               </div>
               {/* サイドバナー (md以上) */}
               <aside className="hidden md:block w-80 xl:w-96 shrink-0">
-                <div className="sticky top-24">
+                <div className="sticky top-24 space-y-4">
                   <AnnouncementBanner dismissible={false} />
+                  <SurveyBanner />
+                  <LinuxClubBanner />
                 </div>
               </aside>
             </div>
