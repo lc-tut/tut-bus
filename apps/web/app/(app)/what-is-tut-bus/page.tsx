@@ -1,3 +1,4 @@
+import { PwaInstallButton } from '@/components/pwa-install-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -91,7 +92,7 @@ export default function WhatIsTutBusPage() {
     <div className="px-4 py-8 max-w-4xl mx-auto space-y-16">
       {/* ヒーローセクション */}
       <section className="text-center space-y-6">
-        <div className="flex justify-center">
+        <Link href="/" className="flex justify-center">
           <Image
             src="/tut-logo.png"
             alt="バスNavi"
@@ -99,7 +100,7 @@ export default function WhatIsTutBusPage() {
             height={80}
             className="rounded-2xl"
           />
-        </div>
+        </Link>
         <div className="space-y-3">
           <Badge variant="secondary" className="text-xs">
             東京工科大学 非公式アプリ
@@ -114,11 +115,12 @@ export default function WhatIsTutBusPage() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <PwaInstallButton />
           <Button asChild size="lg" className="font-semibold">
-            <Link href="/">ホームに戻る</Link>
+            <Link href="/">最新の時刻表</Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="font-semibold">
-            <Link href="/timetable">時刻表を見る</Link>
+            <Link href="/timetable">時刻表を検索する</Link>
           </Button>
         </div>
       </section>

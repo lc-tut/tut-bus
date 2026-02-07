@@ -16,7 +16,7 @@ const pcNavItems = [
 const Header: React.FC = () => {
   return (
     <header className="w-full flex items-center justify-between border-b h-20 shadow-sm bg-background fixed top-0 left-0 z-50 md:h-16">
-      <div className="flex items-center gap-4 px-4">
+      <Link href="/" className="flex items-center gap-4 px-4">
         <Image
           src="/tut-logo.png"
           alt="Logo"
@@ -26,7 +26,7 @@ const Header: React.FC = () => {
           className="md:w-10 md:h-10 w-[60px] h-[60px]"
         />
         <h1 className="text-2xl font-bold">スクールバス</h1>
-      </div>
+      </Link>
       <PCNav />
     </header>
   )
