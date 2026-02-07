@@ -1,6 +1,6 @@
 'use client'
 
-import { LinuxClubBanner, SurveyBanner } from '@/components/ad-banners'
+import { LinuxClubBanner, PwaInstallBanner, SurveyBanner } from '@/components/ad-banners'
 import { AnnouncementBanner } from '@/components/announcement-banner'
 import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Badge } from '@/components/ui/badge'
@@ -550,8 +550,9 @@ function HomeContent() {
                 ))}
               </CarouselContent>
             </Carousel>
-            <div className="mx-[6vw] mt-4 space-y-3">
+            <div className="mx-[6vw] mt-4 space-y-3 pb-24">
               <AnnouncementBanner dismissible={false} className="mx-auto" />
+              <PwaInstallBanner />
               <SurveyBanner />
               <LinuxClubBanner />
             </div>

@@ -2,9 +2,11 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { usePwaInstall } from '@/lib/hooks/use-pwa-install'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
+import { FaDownload, FaMobileAlt } from 'react-icons/fa'
 
 interface AdBannerProps {
   className?: string
@@ -43,6 +45,38 @@ export function LinuxClubBanner({ className }: AdBannerProps) {
           <Link href="https://x.com/lc_tut" target="_blank" rel="noopener noreferrer">
             外部リンク（x.com / @lc_tut)
           </Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}
+
+export function PwaInstallBanner({ className }: AdBannerProps) {
+  const { canInstall, isInstalled, install } = usePwaInstall()
+
+  if (isInstalled || !canInstall) {
+    return null
+  }
+
+  return (
+    <Card className={cn('overflow-hidden py-0 gap-0', className)}>
+      <CardContent className="p-4 pb-0">
+        <div className="flex items-start gap-3">
+          <div className="shrink-0 rounded-lg p-2 bg-purple-100 dark:bg-purple-900/40">
+            <FaMobileAlt className="size-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-bold text-base leading-tight">ホーム画面に追加</h3>
+            <p className="text-xs mt-1 text-muted-foreground leading-relaxed">
+              ホーム画面に追加すると、アプリのようにすぐ起動できます。インターネットがない環境でも使えるようになります。
+            </p>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="px-4 pt-2 pb-4">
+        <Button size="sm" className="w-full text-xs font-semibold" onClick={install}>
+          <FaDownload className="mr-1.5 size-3" />
+          インストール
         </Button>
       </CardFooter>
     </Card>
