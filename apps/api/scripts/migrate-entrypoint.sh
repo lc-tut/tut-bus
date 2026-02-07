@@ -44,7 +44,18 @@ migrate -path ./migrations -database "${DB_URL}" version 2>&1 || echo "  (バー
 
 case "${ACTION}" in
   "version")
-    # 上で表示済み
+    echo ""
+    echo "🔧 postgres ユーザーへの権限付与..."
+    env ${PSQL_AUTH_ENV} psql \
+      -h "/cloudsql/${INSTANCE_CONNECTION_NAME}" \
+      -U "${DB_USER}" -d "${DB_NAME}" \
+      --quiet -v ON_ERROR_STOP=1 <<'GRANT_SQL'
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
+GRANT_SQL
+    echo "✅ 権限付与完了"
     ;;
 
   "up")
