@@ -19,22 +19,23 @@ import {
 
 export const metadata: Metadata = {
   title: 'バスNaviとは？ - 東京工科大学',
-  description:
-    '東京工科大学のスクールバス時刻表アプリ「バスNavi」の特徴や使い方をご紹介します。',
+  description: '東京工科大学のスクールバス時刻表アプリ「バスNavi」の特徴や使い方をご紹介します。',
 }
 
 const features = [
   {
     icon: FaClock,
     title: 'リアルタイム時刻表',
-    description: '今日のスクールバスの時刻表をリアルタイムで確認。出発までの残り時間もひと目でわかります。',
+    description:
+      '今日のスクールバスの時刻表をリアルタイムで確認。出発までの残り時間もひと目でわかります。',
     color: 'text-blue-600 dark:text-blue-400',
     bg: 'bg-blue-100 dark:bg-blue-900/40',
   },
   {
     icon: FaBolt,
     title: '高速表示',
-    description: '一度開いた時刻表は自動で保存されるので、2回目以降はサクサク表示。通信量も節約できます。',
+    description:
+      '一度開いた時刻表は自動で保存されるので、2回目以降はサクサク表示。通信量も節約できます。',
     color: 'text-amber-600 dark:text-amber-400',
     bg: 'bg-amber-100 dark:bg-amber-900/40',
   },
@@ -48,7 +49,8 @@ const features = [
   {
     icon: FaMobileAlt,
     title: 'ホーム画面に追加できる',
-    description: 'スマホのホーム画面に追加すれば、普通のアプリのように使えます。アプリストアからのインストールは不要です。',
+    description:
+      'スマホのホーム画面に追加すれば、普通のアプリのように使えます。アプリストアからのインストールは不要です。',
     color: 'text-purple-600 dark:text-purple-400',
     bg: 'bg-purple-100 dark:bg-purple-900/40',
   },
@@ -62,7 +64,8 @@ const features = [
   {
     icon: FaBell,
     title: 'お知らせ機能',
-    description: '臨時ダイヤや運休情報など、重要なお知らせをアプリ内でお届けする機能を今後追加予定です。',
+    description:
+      '臨時ダイヤや運休情報など、重要なお知らせをアプリ内でお届けする機能を今後追加予定です。',
     color: 'text-orange-600 dark:text-orange-400',
     bg: 'bg-orange-100 dark:bg-orange-900/40',
   },
@@ -105,9 +108,7 @@ export default function WhatIsTutBusPage() {
           <Badge variant="secondary" className="text-xs">
             東京工科大学 非公式アプリ
           </Badge>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            バスNavi
-          </h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">バスNavi</h1>
           <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
             東京工科大学のスクールバス時刻表を、
             <br className="sm:hidden" />
@@ -131,9 +132,7 @@ export default function WhatIsTutBusPage() {
       <section className="space-y-8">
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">特徴</h2>
-          <p className="text-muted-foreground text-sm">
-            使いやすさを追求したスクールバスアプリ
-          </p>
+          <p className="text-muted-foreground text-sm">使いやすさを追求したスクールバスアプリ</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {features.map((feature) => (
@@ -162,16 +161,11 @@ export default function WhatIsTutBusPage() {
       <section className="space-y-8">
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">画面イメージ</h2>
-          <p className="text-muted-foreground text-sm">
-            シンプルで直感的なデザイン
-          </p>
+          <p className="text-muted-foreground text-sm">シンプルで直感的なデザイン</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="rounded-xl overflow-hidden border shadow-sm"
-            >
+            <div key={i} className="rounded-xl overflow-hidden border shadow-sm">
               <Image
                 src={`/screenshot-${i}.png`}
                 alt={`スクリーンショット ${i}`}
@@ -199,9 +193,7 @@ export default function WhatIsTutBusPage() {
                   <FaRegQuestionCircle className="size-4 text-primary shrink-0 mt-0.5" />
                   <div>
                     <h3 className="font-bold text-sm">{faq.q}</h3>
-                    <p className="text-xs mt-1.5 text-muted-foreground leading-relaxed">
-                      {faq.a}
-                    </p>
+                    <p className="text-xs mt-1.5 text-muted-foreground leading-relaxed">{faq.a}</p>
                   </div>
                 </div>
               </CardContent>
@@ -238,12 +230,22 @@ export default function WhatIsTutBusPage() {
                 このアプリもLinuxClubメンバーによって開発・運営されています。
               </p>
               <div className="flex gap-3 w-full">
-                <Button variant="outline" size="sm" className="flex-1 text-xs font-semibold" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-xs font-semibold"
+                  asChild
+                >
                   <Link href="https://x.com/lc_tut" target="_blank" rel="noopener noreferrer">
                     X : @lc_tut
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1 text-xs font-semibold" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-xs font-semibold"
+                  asChild
+                >
                   <Link href="https://github.com/lc-tut" target="_blank" rel="noopener noreferrer">
                     <FaGithub className="mr-1" />
                     GitHub
@@ -257,12 +259,14 @@ export default function WhatIsTutBusPage() {
 
       {/* フッターCTA */}
       <section className="text-center space-y-4 pb-8">
-        <p className="text-muted-foreground text-sm">
-          ご意見・ご要望をお聞かせください
-        </p>
+        <p className="text-muted-foreground text-sm">ご意見・ご要望をお聞かせください</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild variant="outline" size="lg" className="font-semibold">
-            <Link href="https://forms.gle/WYDo7gdCdWfX7D6n6" target="_blank" rel="noopener noreferrer">
+            <Link
+              href="https://forms.gle/WYDo7gdCdWfX7D6n6"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               アンケートに答える
             </Link>
           </Button>

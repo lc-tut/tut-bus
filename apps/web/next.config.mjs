@@ -5,9 +5,7 @@ import { randomUUID } from 'node:crypto'
 
 const gitResult = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf-8' })
 const revision =
-  gitResult.status === 0 && gitResult.stdout?.trim()
-    ? gitResult.stdout.trim()
-    : randomUUID()
+  gitResult.status === 0 && gitResult.stdout?.trim() ? gitResult.stdout.trim() : randomUUID()
 
 const withSerwist = withSerwistInit({
   swSrc: 'app/sw.ts',

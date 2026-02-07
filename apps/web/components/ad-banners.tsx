@@ -33,9 +33,7 @@ export function LinuxClubBanner({ className }: AdBannerProps) {
               <br />
               気軽にXのDMから参加申請をお待ちしています。
               <br />
-              <span className="font-semibold">
-                （このアプリもメンバーが開発・運営しています）
-              </span>
+              <span className="font-semibold">（このアプリもメンバーが開発・運営しています）</span>
             </p>
           </div>
         </div>
@@ -98,7 +96,11 @@ export function SurveyBanner({ className }: AdBannerProps) {
       </CardContent>
       <CardFooter className="px-4 pt-2 pb-4">
         <Button variant="outline" size="sm" className="w-full text-xs font-semibold" asChild>
-          <Link href="https://forms.gle/WYDo7gdCdWfX7D6n6" target="_blank" rel="noopener noreferrer">
+          <Link
+            href="https://forms.gle/WYDo7gdCdWfX7D6n6"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             アンケートに答える
           </Link>
         </Button>

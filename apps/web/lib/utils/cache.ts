@@ -73,10 +73,7 @@ export async function hasCachedBusData(): Promise<boolean> {
     const keys = await cache.keys()
     for (const req of keys) {
       const url = new URL(req.url)
-      if (
-        !url.pathname.includes('/api/bus-stops/groups/') ||
-        !url.pathname.includes('/timetable')
-      )
+      if (!url.pathname.includes('/api/bus-stops/groups/') || !url.pathname.includes('/timetable'))
         continue
       const resp = await cache.match(req)
       if (!resp || !resp.ok) continue

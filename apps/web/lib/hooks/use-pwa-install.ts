@@ -13,8 +13,7 @@ function getIsStandalone() {
 }
 
 export function usePwaInstall() {
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstalled, setIsInstalled] = useState(getIsStandalone)
 
   useEffect(() => {

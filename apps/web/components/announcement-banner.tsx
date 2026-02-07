@@ -37,7 +37,9 @@ export function AnnouncementBanner({
   const message = messageProp ?? process.env.NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE
   const title = titleProp ?? process.env.NEXT_PUBLIC_ANNOUNCEMENT_TITLE ?? 'お知らせ'
   const type =
-    typeProp ?? (process.env.NEXT_PUBLIC_ANNOUNCEMENT_TYPE as 'info' | 'warning' | undefined) ?? 'info'
+    typeProp ??
+    (process.env.NEXT_PUBLIC_ANNOUNCEMENT_TYPE as 'info' | 'warning' | undefined) ??
+    'info'
   const linkUrl = linkUrlProp ?? process.env.NEXT_PUBLIC_ANNOUNCEMENT_LINK_URL
   const linkText = linkTextProp ?? process.env.NEXT_PUBLIC_ANNOUNCEMENT_LINK_TEXT ?? '詳細はこちら'
 

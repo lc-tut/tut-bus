@@ -9,11 +9,7 @@ export function PwaInstallButton() {
 
   if (isInstalled) {
     return (
-      <Button
-        size="lg"
-        className="font-semibold"
-        onClick={() => window.open('/', '_blank')}
-      >
+      <Button size="lg" className="font-semibold" onClick={() => window.open('/', '_blank')}>
         <FaExternalLinkAlt className="mr-2 size-3.5" />
         アプリを開く
       </Button>

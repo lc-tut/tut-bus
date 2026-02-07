@@ -667,7 +667,11 @@ function HomeContent() {
                         行先を選択してください（{destinations.length}件）
                       </div>
                       {destinations.map((dest) => (
-                        <SelectItem key={dest.stopId} value={String(dest.stopId)} className="text-sm py-2">
+                        <SelectItem
+                          key={dest.stopId}
+                          value={String(dest.stopId)}
+                          className="text-sm py-2"
+                        >
                           <div className="flex items-center w-full">
                             <span className="truncate">{dest.stopName}</span>
                           </div>
