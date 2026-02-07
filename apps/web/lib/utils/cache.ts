@@ -19,7 +19,9 @@ export async function getCachedResponse<T>(pathname: string): Promise<T | null> 
     console.log('[DEBUG:cache] getCachedResponse', {
       pathname,
       totalCacheKeys: keys.length,
-      matchingUrls: keys.map((k) => new URL(k.url).pathname).filter((p) => p === pathname || p.endsWith(pathname)),
+      matchingUrls: keys
+        .map((k) => new URL(k.url).pathname)
+        .filter((p) => p === pathname || p.endsWith(pathname)),
     })
     const match = keys.find((req) => {
       const url = new URL(req.url)

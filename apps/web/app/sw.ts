@@ -173,11 +173,7 @@ const serwist = new Serwist({
 // 旧バージョンの SW が作成した stale ランタイムキャッシュを削除
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    Promise.all([
-      caches.delete('pages-cache'),
-      caches.delete('pages'),
-      caches.delete('others'),
-    ])
+    Promise.all([caches.delete('pages-cache'), caches.delete('pages'), caches.delete('others')])
   )
 })
 

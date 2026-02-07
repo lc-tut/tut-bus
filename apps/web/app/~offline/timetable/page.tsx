@@ -672,7 +672,9 @@ function OfflineTimetableTable({
           </DrawerTrigger>
           <DrawerContent className="min-h-[400px] max-h-[60vh]">
             <DrawerTitle className="sr-only">時刻表一覧</DrawerTitle>
-            <DrawerDescription className="sr-only">すべての時刻表データを表示します</DrawerDescription>
+            <DrawerDescription className="sr-only">
+              すべての時刻表データを表示します
+            </DrawerDescription>
             <Table>
               <TableHeader>
                 <TableRow>
