@@ -405,7 +405,6 @@ function TimetableContent() {
           timetableData={timetableData}
           busStopGroups={busStopGroups}
           isLoading={isLoadingTimetable}
-          fetchError={null}
         />
       </div>
     </div>
