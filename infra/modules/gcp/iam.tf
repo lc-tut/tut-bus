@@ -11,6 +11,13 @@ resource "google_project_iam_member" "sql_client" {
   member  = "serviceAccount:${google_service_account.main.email}"
 }
 
+# Cloud SQL IAM認証権限（IAM Database Userとしてログインするために必要）
+resource "google_project_iam_member" "sql_instance_user" {
+  project = var.project_id
+  role    = "roles/cloudsql.instanceUser"
+  member  = "serviceAccount:${google_service_account.main.email}"
+}
+
 # Storage Viewer権限
 resource "google_project_iam_member" "storage_viewer" {
   project = var.project_id

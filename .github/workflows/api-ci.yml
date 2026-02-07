@@ -1,0 +1,117 @@
+# ========================================
+# API CI - Lint / Build / Test
+# ========================================
+# PR時にGoコードのフォーマット・静的解析・ビルド・テストを実行
+
+name: 'API CI'
+
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'apps/api/**'
+  push:
+    branches: [main, dev]
+    paths:
+      - 'apps/api/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: apps/api
+
+jobs:
+  ci:
+    name: 'Lint & Build & Test'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Go Format Check
+        id: fmt
+        run: |
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "::error::以下のファイルがフォーマットされていません:"
+            echo "$UNFORMATTED"
+            exit 1
+          fi
+
+      - name: Go Vet
+        id: vet
+        run: go vet ./...
+
+      - name: Build
+        id: build
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /dev/null .
+
+      - name: Test
+        id: test
+        run: go test -v -race -coverprofile=coverage.out ./...
+        continue-on-error: true
+
+      - name: Post PR Comment
+        uses: actions/github-script@v8
+        if: github.event_name == 'pull_request'
+        env:
+          FMT_OUTCOME: ${{ steps.fmt.outcome }}
+          VET_OUTCOME: ${{ steps.vet.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          TEST_OUTCOME: ${{ steps.test.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('API CI Results')
+            );
+
+            const icon = (outcome) => outcome === 'success' ? '✅' : '❌';
+
+            const output = `### API CI Results
+            | Check | Status |
+            |-------|--------|
+            | Format | ${icon(process.env.FMT_OUTCOME)} \`${process.env.FMT_OUTCOME}\` |
+            | Vet | ${icon(process.env.VET_OUTCOME)} \`${process.env.VET_OUTCOME}\` |
+            | Build | ${icon(process.env.BUILD_OUTCOME)} \`${process.env.BUILD_OUTCOME}\` |
+            | Test | ${icon(process.env.TEST_OUTCOME)} \`${process.env.TEST_OUTCOME}\` |
+
+            *Pushed by: @${context.actor}, Action: \`${context.eventName}\`*`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: output,
+              });
+            }
+
+      - name: Fail if Test Failed
+        if: steps.test.outcome == 'failure'
+        run: exit 1
