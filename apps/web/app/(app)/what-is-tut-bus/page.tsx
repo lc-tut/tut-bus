@@ -14,6 +14,7 @@ import {
   FaGithub,
   FaMobileAlt,
   FaRegQuestionCircle,
+  FaSearch,
   FaWifi,
 } from 'react-icons/fa'
 
@@ -118,10 +119,16 @@ export default function WhatIsTutBusPage() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <PwaInstallButton />
           <Button asChild size="lg" className="font-semibold">
-            <Link href="/">最新の時刻表</Link>
+            <Link href="/">
+              <FaBus className="mr-1.5 size-4" />
+              いますぐ確認する
+            </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="font-semibold">
-            <Link href="/timetable">時刻表を検索する</Link>
+            <Link href="/timetable">
+              <FaSearch className="mr-1.5 size-3.5" />
+              時刻表から探す
+            </Link>
           </Button>
         </div>
       </section>
@@ -258,7 +265,7 @@ export default function WhatIsTutBusPage() {
       </section>
 
       {/* フッターCTA */}
-      <section className="text-center space-y-4 pb-8">
+      <section className="text-center space-y-4 pb-24 sm:pb-8">
         <p className="text-muted-foreground text-sm">ご意見・ご要望をお聞かせください</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild variant="outline" size="lg" className="font-semibold">

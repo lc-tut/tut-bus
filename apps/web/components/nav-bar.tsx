@@ -1,20 +1,20 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BiBus, BiCog, BiHome, BiSolidBus, BiSolidCog, BiSolidHome } from 'react-icons/bi'
+import { BiBus, BiCog, BiSearch, BiSolidBus, BiSolidCog, BiSolidSearch } from 'react-icons/bi'
 
 const navItems = [
   {
-    label: 'ホーム',
+    label: '直近の便',
     href: '/',
-    icon: <BiHome />,
-    selectedIcon: <BiSolidHome />,
-  },
-  {
-    label: '時刻表',
-    href: '/timetable',
     icon: <BiBus />,
     selectedIcon: <BiSolidBus />,
+  },
+  {
+    label: '検索',
+    href: '/timetable',
+    icon: <BiSearch />,
+    selectedIcon: <BiSolidSearch />,
   },
   {
     label: '設定',
@@ -26,6 +26,10 @@ const navItems = [
 
 export default function NavBar() {
   const pathname = usePathname()
+
+  if (pathname === '/what-is-tut-bus') {
+    return null
+  }
 
   return (
     <nav className="w-full fixed bottom-0 left-0 shadow-xs border-t bg-background y sm:hidden">

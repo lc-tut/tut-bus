@@ -21,9 +21,9 @@ export function PwaInstallButton() {
   }
 
   return (
-    <Button size="lg" className="font-semibold" onClick={install}>
+    <Button size="lg" className="font-semibold bg-purple-600 hover:bg-purple-700 text-white" onClick={install}>
       <FaDownload className="mr-2 size-4" />
-      ホーム画面に追加
+      インストール
     </Button>
   )
 }
