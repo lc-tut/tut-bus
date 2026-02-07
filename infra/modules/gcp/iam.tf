@@ -40,10 +40,13 @@ resource "google_project_iam_member" "monitoring_writer" {
 }
 
 # Compute Network User権限（Cloud Run Job の Direct VPC Egress に必要）
-resource "google_project_iam_member" "compute_network_user" {
-  project = var.project_id
-  role    = "roles/compute.networkUser"
-  member  = "serviceAccount:${google_service_account.main.email}"
+# プロジェクトレベルではなくサブネットに限定し最小権限を遵守
+resource "google_compute_subnetwork_iam_member" "cloud_run_network_user" {
+  project    = var.project_id
+  region     = var.region
+  subnetwork = google_compute_subnetwork.main.name
+  role       = "roles/compute.networkUser"
+  member     = "serviceAccount:${google_service_account.main.email}"
 }
 
 # Container Registry Reader権限
