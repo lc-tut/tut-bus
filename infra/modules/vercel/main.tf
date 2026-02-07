@@ -2,6 +2,7 @@
 resource "vercel_project" "main" {
   name      = var.project_name
   framework = var.framework
+  team_id   = var.team_id
 
   git_repository = {
     type              = "github"
@@ -15,6 +16,9 @@ resource "vercel_project" "main" {
   output_directory   = var.output_directory
   root_directory     = var.root_directory
   build_machine_type = "enhanced"
+
+  # Production デプロイ時にカスタムドメインを自動割り当て
+  auto_assign_custom_domains = true
 }
 
 # 環境変数 - Production
