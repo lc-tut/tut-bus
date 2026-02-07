@@ -28,10 +28,11 @@ import { BusRow } from './bus-row'
 import { ShortBusRow } from './short-bus-row'
 
 function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches
+  )
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 640px)')
-    setIsDesktop(mq.matches)
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
@@ -90,9 +91,15 @@ export function TimetableDisplay({
       <table className="w-full caption-bottom text-sm">
         <thead className="bg-background sticky top-0 z-10 shadow-[inset_0_-1px_0_var(--color-border)]">
           <tr className="transition-colors">
-            <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs pl-4 md:pl-6">目的地</th>
-            <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs">出発時刻</th>
-            <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs hidden md:table-cell">到着時刻</th>
+            <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs pl-4 md:pl-6">
+              目的地
+            </th>
+            <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs">
+              出発時刻
+            </th>
+            <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs hidden md:table-cell">
+              到着時刻
+            </th>
             <th className="text-foreground h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-xs"></th>
           </tr>
         </thead>
@@ -190,9 +197,11 @@ export function TimetableDisplay({
                           行先
                         </Badge>
                         <span className="font-bold text-sm">
-                          {desktopBuses.find(
-                            (bus) => parseInt(bus.destination.stopId, 10) === effectiveDestination
-                          )?.destination.stopName}
+                          {
+                            desktopBuses.find(
+                              (bus) => parseInt(bus.destination.stopId, 10) === effectiveDestination
+                            )?.destination.stopName
+                          }
                         </span>
                       </div>
                     )}
@@ -201,9 +210,7 @@ export function TimetableDisplay({
                     {now ? `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日` : ''}
                   </DialogDescription>
                 </DialogHeader>
-                <div className="overflow-y-auto min-h-0">
-                  {makeFullTable(desktopBuses)}
-                </div>
+                <div className="overflow-y-auto min-h-0">{makeFullTable(desktopBuses)}</div>
               </DialogContent>
             </Dialog>
           ) : (
