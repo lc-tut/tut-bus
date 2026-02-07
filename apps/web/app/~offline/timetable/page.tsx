@@ -589,8 +589,8 @@ function TimetableCardWithData({
                   <div className="px-2 py-1.5 text-xs text-muted-foreground border-b">
                     行先を選択してください（{destinations.length}件）
                   </div>
-                  {destinations.map((dest, idx) => (
-                    <SelectItem key={idx} value={String(dest.stopId)} className="text-sm py-2">
+                  {destinations.map((dest) => (
+                    <SelectItem key={dest.stopId} value={String(dest.stopId)} className="text-sm py-2">
                       <div className="flex items-center w-full">
                         <span className="truncate">{dest.stopName}</span>
                       </div>
