@@ -44,19 +44,20 @@ export function OfflineBanner() {
 
   // 実際のネットワーク到達性を定期チェック（navigator.onLine が信頼できない場合の補完）
   const checkConnectivity = useCallback(async () => {
+    const controller = new AbortController()
+    const tid = setTimeout(() => controller.abort(), 5000)
     try {
-      const controller = new AbortController()
-      const tid = setTimeout(() => controller.abort(), 5000)
       // HEAD リクエストは SW の GET ルートにマッチしないため、実際のネットワークを経由する
       await fetch(window.location.origin, {
         method: 'HEAD',
         cache: 'no-store',
         signal: controller.signal,
       })
-      clearTimeout(tid)
       setSwDetectedOffline(false)
     } catch {
       setSwDetectedOffline(true)
+    } finally {
+      clearTimeout(tid)
     }
   }, [])
 

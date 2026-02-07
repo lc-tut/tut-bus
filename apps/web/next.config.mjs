@@ -1,13 +1,13 @@
-/* eslint-disable no-undef */
 // @ts-check
 import withSerwistInit from '@serwist/next'
 import { spawnSync } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
 
 const gitResult = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf-8' })
 const revision =
   gitResult.status === 0 && gitResult.stdout?.trim()
     ? gitResult.stdout.trim()
-    : crypto.randomUUID()
+    : randomUUID()
 
 const withSerwist = withSerwistInit({
   swSrc: 'app/sw.ts',

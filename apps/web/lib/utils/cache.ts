@@ -41,6 +41,7 @@ export async function getLatestCachedTimetable<T>(
   date?: string
 ): Promise<T | null> {
   try {
+    if (!('caches' in window)) return null
     const cache = await caches.open(CACHE_NAME)
     const keys = await cache.keys()
     const timetableKeys = keys.filter((req) => {

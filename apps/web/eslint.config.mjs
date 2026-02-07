@@ -50,6 +50,15 @@ export default tseslint.config(
       },
     },
   },
+  // Node.js で実行される ESM 設定ファイル用
+  {
+    files: ['*.config.mjs', '*.config.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
   {
     ignores: ['.next/**', 'node_modules/**', 'generated/**', 'public/sw.js'],
   }
