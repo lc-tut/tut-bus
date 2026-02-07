@@ -49,10 +49,19 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
       {
+        src: '/logo-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
         src: '/logo-1024x1024.png',
         sizes: '1024x1024',
         type: 'image/png',
       },
     ],
+    launch_handler: {
+      client_mode: 'navigate-existing',
+    },
   }
 }
