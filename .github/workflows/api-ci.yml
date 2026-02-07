@@ -2,6 +2,7 @@
 # API CI - Lint / Build / Test
 # ========================================
 # PR時にGoコードのフォーマット・静的解析・ビルド・テストを実行
+# DB/seed/script変更はmigration-ciが担当するため除外
 
 name: 'API CI'
 
@@ -10,10 +11,10 @@ on:
     branches: [main, dev]
     paths:
       - 'apps/api/**'
-  push:
-    branches: [main, dev]
-    paths:
-      - 'apps/api/**'
+      - '!apps/api/db/**'
+      - '!apps/api/data/**'
+      - '!apps/api/scripts/**'
+      - '!apps/api/tools/**'
 
 permissions:
   contents: read
