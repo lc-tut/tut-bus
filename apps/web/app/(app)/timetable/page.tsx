@@ -10,31 +10,7 @@ import { canSwapStations, filterTimetable } from '@/lib/utils/timetable'
 import { format, parseISO } from 'date-fns'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
-import { BiWifiOff } from 'react-icons/bi'
-
-// データ取得失敗時の自動リダイレクトコンポーネント
-function AutoRedirect() {
-  useEffect(() => {
-    console.error('[AutoRedirect:timetable] No data available, redirecting to /~offline')
-    window.location.href = '/~offline'
-  }, [])
-
-  return (
-    <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
-      <BiWifiOff className="h-10 w-10 text-muted-foreground mb-4" />
-      <h3 className="text-base font-medium">データを取得できません</h3>
-      <p className="mt-2 text-xs text-muted-foreground max-w-xs mb-6">
-        オフラインページに移動しています...
-      </p>
-      <a
-        href="/~offline"
-        className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors"
-      >
-        オフラインページへ
-      </a>
-    </div>
-  )
-}
+import { FaBan } from 'react-icons/fa'
 
 export default function TimetablePage() {
   return (
@@ -370,9 +346,20 @@ function TimetableContent() {
     )
   }
 
-  // ローディング完了後にデータが空 → /~offline にリダイレクト
+  // ローディング完了後にデータが空 → 運行なし状態を表示
+  // API が空配列を返した場合（正当な状態）
   if (!isLoadingGroups && busStopGroups.length === 0) {
-    return <AutoRedirect />
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+        <div className="rounded-full bg-muted p-4 mb-4">
+          <FaBan className="h-8 w-8 text-orange-500" />
+        </div>
+        <h3 className="text-base font-medium">本日の運行予定はありません</h3>
+        <p className="mt-2 text-xs text-muted-foreground max-w-xs">
+          必ずしも正しいとは限らないため、公式サイトの運行スケジュールをご確認ください
+        </p>
+      </div>
+    )
   }
 
   return (

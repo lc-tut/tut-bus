@@ -1,5 +1,6 @@
 'use client'
 
+import { hasCachedBusData } from '@/lib/utils/cache'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { BiWifiOff } from 'react-icons/bi'
 import { FaBus } from 'react-icons/fa'
@@ -95,39 +96,7 @@ export function OfflineBanner() {
   // キャッシュ済み時刻表データがあるか確認（実際にバス便があるもののみ）
   useEffect(() => {
     if (!effectivelyOffline) return
-    if (!('caches' in window)) return
-    caches
-      .open('bus-timetable-api')
-      .then(async (cache) => {
-        const keys = await cache.keys()
-        for (const req of keys) {
-          const url = new URL(req.url)
-          if (
-            !url.pathname.includes('/api/bus-stops/groups/') ||
-            !url.pathname.includes('/timetable')
-          )
-            continue
-          const resp = await cache.match(req)
-          if (!resp || !resp.ok) continue
-          try {
-            const data = await resp.clone().json()
-            if (data?.segments) {
-              let busCount = 0
-              for (const seg of data.segments) {
-                busCount += seg.segmentType === 'fixed' ? (seg.times?.length ?? 0) : 1
-              }
-              if (busCount > 0) {
-                setHasCachedData(true)
-                return
-              }
-            }
-          } catch {
-            continue
-          }
-        }
-        setHasCachedData(false)
-      })
-      .catch(() => {})
+    hasCachedBusData().then(setHasCachedData).catch(() => {})
   }, [effectivelyOffline])
 
   if (!effectivelyOffline || dismissed) return null

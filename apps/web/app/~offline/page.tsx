@@ -2,6 +2,7 @@
 
 import Header from '@/components/header'
 import { Button } from '@/components/ui/button'
+import { hasCachedBusData } from '@/lib/utils/cache'
 import { useEffect, useState } from 'react'
 import { BiWifi, BiWifiOff } from 'react-icons/bi'
 import { FaBus } from 'react-icons/fa'
@@ -25,39 +26,7 @@ export default function OfflinePage() {
 
   useEffect(() => {
     // Cache API からキャッシュ済み時刻表データがあるか確認する
-    // 0便のレスポンスもキャッシュされるため、実際にバス便があるか中身まで確認する
-    if (!('caches' in window)) return
-    caches
-      .open('bus-timetable-api')
-      .then(async (cache) => {
-        const keys = await cache.keys()
-        for (const req of keys) {
-          const url = new URL(req.url)
-          if (
-            !url.pathname.includes('/api/bus-stops/groups/') ||
-            !url.pathname.includes('/timetable')
-          )
-            continue
-          const resp = await cache.match(req)
-          if (!resp || !resp.ok) continue
-          try {
-            const data = await resp.clone().json()
-            if (data?.segments) {
-              let busCount = 0
-              for (const seg of data.segments) {
-                busCount += seg.segmentType === 'fixed' ? (seg.times?.length ?? 0) : 1
-              }
-              if (busCount > 0) {
-                setHasCachedData(true)
-                return
-              }
-            }
-          } catch {
-            continue
-          }
-        }
-      })
-      .catch(() => {})
+    hasCachedBusData().then(setHasCachedData).catch(() => {})
   }, [])
 
   return (

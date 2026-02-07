@@ -15,7 +15,6 @@ import { format } from 'date-fns'
 import { useAtom } from 'jotai'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
-import { BiWifiOff } from 'react-icons/bi'
 import { FaArrowRight, FaBan, FaExclamationTriangle, FaMapMarkerAlt } from 'react-icons/fa'
 
 // エラー情報の型定義
@@ -23,32 +22,6 @@ interface AppError {
   type: 'network' | 'api' | 'unknown'
   message: string
   details?: string
-}
-
-// データ取得失敗時の自動リダイレクトコンポーネント
-// useEffect のリダイレクトが旧SW/JSキャッシュ等で失敗した場合のフォールバック
-function AutoRedirect() {
-  useEffect(() => {
-    console.error('[AutoRedirect] No data available, redirecting to /~offline')
-    window.location.href = '/~offline'
-  }, [])
-
-  return (
-    <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
-      <BiWifiOff className="h-10 w-10 text-muted-foreground mb-4" />
-      <h3 className="text-base font-medium">データを取得できません</h3>
-      <p className="mt-2 text-xs text-muted-foreground max-w-xs mb-6">
-        オフラインページに移動しています...
-      </p>
-      {/* JS リダイレクトが失敗した場合のフォールバック */}
-      <a
-        href="/~offline"
-        className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors"
-      >
-        オフラインページへ
-      </a>
-    </div>
-  )
 }
 
 // エラーメッセージコンポーネント
@@ -519,32 +492,6 @@ function HomeContent() {
     })
   }, [groupTimetables, busStopGroups, setSelectedDestinations])
 
-  // オフライン時にデータが表示できない場合は /~offline にリダイレクト
-  // ケース1: busStopGroups の取得自体が失敗（キャッシュ空）
-  // ケース2: 全グループの時刻表が0便（SW が0便レスポンスをキャッシュ）
-  useEffect(() => {
-    if (isLoadingDepartures) return
-
-    // ケース1: グループデータが取得できなかった
-    if (busStopGroups.length === 0) {
-      window.location.href = '/~offline'
-      return
-    }
-
-    // ケース2: 全グループの時刻表データが揃うまで待ち、全て0便ならリダイレクト
-    const allLoaded = busStopGroups.every((g) => groupTimetables[g.id])
-    if (!allLoaded) return
-
-    const allEmpty = busStopGroups.every((group) => {
-      const tt = groupTimetables[group.id]
-      return !tt || tt.allBuses.length === 0
-    })
-
-    if (allEmpty) {
-      window.location.href = '/~offline'
-    }
-  }, [groupTimetables, busStopGroups, isLoadingDepartures])
-
   useEffect(() => {
     const currentDate = new Date()
     setNow(currentDate)
@@ -556,10 +503,20 @@ function HomeContent() {
     return () => clearInterval(intervalId)
   }, [])
 
-  // ローディング完了後にデータが空 → /~offline にリダイレクト
-  // useEffect でのリダイレクトが失敗する場合（旧SWキャッシュ等）のフォールバック
+  // ローディング完了後にデータが空 → 運行なし状態を表示
+  // API が空配列を返した場合（正当な状態）
   if (!isLoadingDepartures && busStopGroups.length === 0 && !error) {
-    return <AutoRedirect />
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+        <div className="rounded-full bg-muted p-4 mb-4">
+          <FaBan className="h-8 w-8 text-orange-500" />
+        </div>
+        <h3 className="text-base font-medium">本日の運行予定はありません</h3>
+        <p className="mt-2 text-xs text-muted-foreground max-w-xs">
+          必ずしも正しいとは限らないため、公式サイトの運行スケジュールをご確認ください
+        </p>
+      </div>
+    )
   }
 
   return (

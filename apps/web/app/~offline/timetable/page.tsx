@@ -2,38 +2,39 @@
 
 import Header from '@/components/header'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerTitle,
-  DrawerTrigger,
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerTitle,
+    DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+import { CACHE_NAME, getCachedResponse } from '@/lib/utils/cache'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BiWifiOff } from 'react-icons/bi'
 import { FaArrowLeft, FaArrowRight, FaBus, FaClock, FaMapMarkerAlt, FaTrash } from 'react-icons/fa'
@@ -797,7 +798,7 @@ async function findCachedDates(): Promise<CachedDateEntry[]> {
   const dateMap = new Map<string, { groupIds: Set<string>; totalBuses: number }>()
 
   try {
-    const cache = await caches.open('bus-timetable-api')
+    const cache = await caches.open(CACHE_NAME)
     const keys = await cache.keys()
 
     for (const req of keys) {
@@ -867,12 +868,13 @@ async function findCachedEntriesForDate(date: string): Promise<CachedGroupEntry[
   const entries: CachedGroupEntry[] = []
   const seen = new Set<string>()
 
-  const allGroups = await getAllCachedGroups()
+  const allGroups =
+    (await getCachedResponse<{ id: number; name: string }[]>('/api/bus-stops/groups')) ?? []
 
   const foundGroupIds = new Set<string>()
 
   try {
-    const cache = await caches.open('bus-timetable-api')
+    const cache = await caches.open(CACHE_NAME)
     const keys = await cache.keys()
 
     for (const req of keys) {
@@ -944,49 +946,24 @@ async function findCachedEntriesForDate(date: string): Promise<CachedGroupEntry[
   })
 }
 
-async function getAllCachedGroups(): Promise<{ id: number; name: string }[]> {
-  try {
-    const cache = await caches.open('bus-timetable-api')
-    const keys = await cache.keys()
-    const groupsKey = keys.find((req) => {
-      const url = new URL(req.url)
-      return (
-        url.pathname === '/api/bus-stops/groups' || url.pathname.endsWith('/api/bus-stops/groups')
-      )
-    })
-    if (groupsKey) {
-      const res = await cache.match(groupsKey)
-      if (res && res.ok) {
-        return (await res.json()) as { id: number; name: string }[]
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return []
-}
-
 /** 時刻表関連のキャッシュをすべて削除 */
 async function clearTimetableCache(): Promise<void> {
   // bus-timetable-api キャッシュを丸ごと削除
-  await caches.delete('bus-timetable-api')
+  await caches.delete(CACHE_NAME)
 }
 
-/** 特定日付のキャッシュエントリのみ削除 */
+/** 特定日付のキャッシュエントリのみ削除（bus-timetable-api キャッシュのみ対象） */
 async function clearCacheForDate(date: string): Promise<void> {
-  const cacheNames = await caches.keys()
-  for (const name of cacheNames) {
-    const cache = await caches.open(name)
-    const keys = await cache.keys()
-    for (const req of keys) {
-      const url = new URL(req.url)
-      if (
-        url.pathname.startsWith('/api/bus-stops/groups/') &&
-        url.pathname.includes('/timetable') &&
-        url.searchParams.get('date') === date
-      ) {
-        await cache.delete(req)
-      }
+  const cache = await caches.open(CACHE_NAME)
+  const keys = await cache.keys()
+  for (const req of keys) {
+    const url = new URL(req.url)
+    if (
+      url.pathname.startsWith('/api/bus-stops/groups/') &&
+      url.pathname.includes('/timetable') &&
+      url.searchParams.get('date') === date
+    ) {
+      await cache.delete(req)
     }
   }
 }

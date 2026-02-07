@@ -1,5 +1,6 @@
 'use client'
 
+import { CACHE_NAME, getCachedResponse } from '@/lib/utils/cache'
 import { useEffect } from 'react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -23,7 +24,7 @@ async function warmEssentialCaches() {
     if (!('caches' in window)) return
 
     // まずキャッシュ済みか確認（SWキャッシュに有効なデータがあればスキップ）
-    const cache = await caches.open('bus-timetable-api')
+    const cache = await caches.open(CACHE_NAME)
     const existingKeys = await cache.keys()
     const hasGroups = existingKeys.some((req) => {
       const url = new URL(req.url)
@@ -37,14 +38,20 @@ async function warmEssentialCaches() {
     // グループ一覧と時刻表の両方がキャッシュ済みならネットワークリクエスト不要
     if (hasGroups && hasTimetable) return
 
-    // バス停グループ一覧を取得（SW経由でキャッシュされる）
-    const groupsResponse = await fetch(`${API_URL}/api/bus-stops/groups`)
-    if (!groupsResponse.ok) return
+    // グループ一覧を取得（キャッシュ済みならキャッシュから、なければネットワークから）
+    let groups: { id: number; name: string }[]
+    if (hasGroups) {
+      const cached = await getCachedResponse<{ id: number; name: string }[]>('/api/bus-stops/groups')
+      if (!cached || cached.length === 0) return
+      groups = cached
+    } else {
+      const groupsResponse = await fetch(`${API_URL}/api/bus-stops/groups`)
+      if (!groupsResponse.ok) return
+      groups = (await groupsResponse.json()) as { id: number; name: string }[]
+      if (!groups || groups.length === 0) return
+    }
 
-    const groups = (await groupsResponse.json()) as { id: number; name: string }[]
-    if (!groups || groups.length === 0) return
-
-    // グループ一覧はあるが時刻表がない場合、時刻表のみ取得
+    // 時刻表がキャッシュ済みならスキップ
     if (hasTimetable) return
 
     // 各グループの時刻表を取得（SW経由でキャッシュされる）
