@@ -96,7 +96,9 @@ export function OfflineBanner() {
   // キャッシュ済み時刻表データがあるか確認（実際にバス便があるもののみ）
   useEffect(() => {
     if (!effectivelyOffline) return
-    hasCachedBusData().then(setHasCachedData).catch(() => {})
+    hasCachedBusData()
+      .then(setHasCachedData)
+      .catch(() => {})
   }, [effectivelyOffline])
 
   if (!effectivelyOffline || dismissed) return null

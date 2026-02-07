@@ -26,7 +26,9 @@ export default function OfflinePage() {
 
   useEffect(() => {
     // Cache API からキャッシュ済み時刻表データがあるか確認する
-    hasCachedBusData().then(setHasCachedData).catch(() => {})
+    hasCachedBusData()
+      .then(setHasCachedData)
+      .catch(() => {})
   }, [])
 
   return (

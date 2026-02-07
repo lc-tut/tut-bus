@@ -41,7 +41,8 @@ async function warmEssentialCaches() {
     // グループ一覧を取得（キャッシュ済みならキャッシュから、なければネットワークから）
     let groups: { id: number; name: string }[]
     if (hasGroups) {
-      const cached = await getCachedResponse<{ id: number; name: string }[]>('/api/bus-stops/groups')
+      const cached =
+        await getCachedResponse<{ id: number; name: string }[]>('/api/bus-stops/groups')
       if (!cached || cached.length === 0) return
       groups = cached
     } else {

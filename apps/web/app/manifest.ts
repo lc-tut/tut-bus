@@ -60,5 +60,8 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
+    launch_handler: {
+      client_mode: 'navigate-existing',
+    },
   }
 }

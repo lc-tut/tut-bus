@@ -1,5 +1,7 @@
 'use client'
 
+import { LinuxClubBanner, PwaInstallBanner, SurveyBanner } from '@/components/ad-banners'
+import { AnnouncementBanner } from '@/components/announcement-banner'
 import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -548,12 +550,31 @@ function HomeContent() {
                 ))}
               </CarouselContent>
             </Carousel>
+            <div className="mx-[6vw] mt-4 space-y-3 pb-24">
+              <AnnouncementBanner dismissible={false} className="mx-auto" />
+              <PwaInstallBanner />
+              <SurveyBanner />
+              <LinuxClubBanner />
+            </div>
           </div>
-          {/* PC: グリッド */}
-          <div className="hidden sm:grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 px-4 py-2">
-            {busStopGroups.map((group, index) => (
-              <div key={index}>{renderGroupCard(group, index)}</div>
-            ))}
+          {/* PC/タブレット: グリッド + サイドバナー */}
+          <div className="hidden sm:block px-4 py-2">
+            <div className="sm:grid sm:grid-cols-[1fr_auto] sm:gap-6">
+              {/* バス停カード */}
+              <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4">
+                {busStopGroups.map((group, index) => (
+                  <div key={index}>{renderGroupCard(group, index)}</div>
+                ))}
+              </div>
+              {/* サイドバナー (sm以上) */}
+              <aside className="hidden sm:block w-80 xl:w-96 shrink-0">
+                <div className="sticky top-24 space-y-4">
+                  <AnnouncementBanner dismissible={false} />
+                  <SurveyBanner />
+                  <LinuxClubBanner />
+                </div>
+              </aside>
+            </div>
           </div>
         </>
       )}
@@ -646,7 +667,11 @@ function HomeContent() {
                         行先を選択してください（{destinations.length}件）
                       </div>
                       {destinations.map((dest) => (
-                        <SelectItem key={dest.stopId} value={String(dest.stopId)} className="text-sm py-2">
+                        <SelectItem
+                          key={dest.stopId}
+                          value={String(dest.stopId)}
+                          className="text-sm py-2"
+                        >
                           <div className="flex items-center w-full">
                             <span className="truncate">{dest.stopName}</span>
                           </div>
@@ -722,6 +747,14 @@ function HomeContent() {
                     groupTimetables[group.id].allBuses,
                     selectedDestinations[group.id] || null,
                     now
+                  )
+                : []
+            }
+            allBuses={
+              groupTimetables[group.id]?.allBuses
+                ? BusFilters.byDestination(
+                    groupTimetables[group.id].allBuses,
+                    selectedDestinations[group.id] || null
                   )
                 : []
             }
