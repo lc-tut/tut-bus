@@ -15,6 +15,7 @@ import { format } from 'date-fns'
 import { useAtom } from 'jotai'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
+import { BiWifiOff } from 'react-icons/bi'
 import { FaArrowRight, FaBan, FaExclamationTriangle, FaMapMarkerAlt } from 'react-icons/fa'
 
 // エラー情報の型定義
@@ -22,6 +23,32 @@ interface AppError {
   type: 'network' | 'api' | 'unknown'
   message: string
   details?: string
+}
+
+// データ取得失敗時の自動リダイレクトコンポーネント
+// useEffect のリダイレクトが旧SW/JSキャッシュ等で失敗した場合のフォールバック
+function AutoRedirect() {
+  useEffect(() => {
+    console.error('[AutoRedirect] No data available, redirecting to /~offline')
+    window.location.href = '/~offline'
+  }, [])
+
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+      <BiWifiOff className="h-10 w-10 text-muted-foreground mb-4" />
+      <h3 className="text-base font-medium">データを取得できません</h3>
+      <p className="mt-2 text-xs text-muted-foreground max-w-xs mb-6">
+        オフラインページに移動しています...
+      </p>
+      {/* JS リダイレクトが失敗した場合のフォールバック */}
+      <a
+        href="/~offline"
+        className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors"
+      >
+        オフラインページへ
+      </a>
+    </div>
+  )
 }
 
 // エラーメッセージコンポーネント
@@ -35,14 +62,22 @@ function ErrorMessage({ error, onRetry }: { error: AppError; onRetry?: () => voi
         {error.type === 'network' ? 'ネットワークエラー' : 'データの取得に失敗しました'}
       </h3>
       <p className="mt-2 text-xs text-muted-foreground max-w-xs">{error.message}</p>
-      {onRetry && (
-        <button
-          onClick={onRetry}
-          className="mt-4 px-4 py-2 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors"
+      <div className="flex gap-3 mt-4">
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="px-4 py-2 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors"
+          >
+            再試行
+          </button>
+        )}
+        <a
+          href="/~offline"
+          className="px-4 py-2 text-xs bg-muted hover:bg-muted/80 rounded-md transition-colors"
         >
-          再試行
-        </button>
-      )}
+          オフラインページ
+        </a>
+      </div>
     </div>
   )
 }
@@ -219,7 +254,7 @@ function HomeContent() {
   const [busStopGroups, setBusStopGroups] = useState<
     components['schemas']['Models.BusStopGroup'][]
   >([])
-  const [isLoadingDepartures, setLoadingDepartures] = useState<boolean>(false)
+  const [isLoadingDepartures, setLoadingDepartures] = useState<boolean>(true)
   const [groupTimetables, setGroupTimetables] = useState<{
     [groupId: number]: {
       filtered: DisplayBusInfo[]
@@ -283,8 +318,17 @@ function HomeContent() {
       setLoadingDepartures(true)
       clearError() // エラーをクリア
 
+      console.log('[DEBUG:fetchGroups] start', { onLine: navigator.onLine })
+
       try {
         const { data, error } = await client.GET('/api/bus-stops/groups')
+
+        console.log('[DEBUG:fetchGroups] response', {
+          hasData: !!data,
+          dataLength: data?.length,
+          error: error,
+          onLine: navigator.onLine,
+        })
 
         if (error || !data) {
           // API エラー時は Cache API にフォールバック
@@ -292,35 +336,51 @@ function HomeContent() {
             await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
               '/api/bus-stops/groups'
             )
+          console.log('[DEBUG:fetchGroups] error branch, cache fallback', {
+            hasCached: !!cached,
+            cachedLength: cached?.length,
+            onLine: navigator.onLine,
+          })
           if (cached && cached.length > 0) {
             setBusStopGroups(cached)
           } else {
-            handleError(
-              new Error(`API Error: ${error || 'No data received'}`),
-              'fetchBusStopGroups'
-            )
-            setBusStopGroups([])
+            // API到達不能 + キャッシュなし → 表示データが0なのでリダイレクト
+            // navigator.onLine はSW配信環境で信頼できないため使わない
+            console.log('[DEBUG:fetchGroups] → REDIRECT to /~offline (error+no cache)')
+            window.location.href = '/~offline'
+            return
           }
         } else {
+          console.log('[DEBUG:fetchGroups] success, groups:', data.length)
           setBusStopGroups(data)
         }
       } catch (err) {
+        console.log('[DEBUG:fetchGroups] catch block', {
+          err,
+          errType: err?.constructor?.name,
+          isTypeError: err instanceof TypeError,
+          onLine: navigator.onLine,
+        })
         // ネットワークエラー時も Cache API にフォールバック
         const cached =
           await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
             '/api/bus-stops/groups'
           )
+        console.log('[DEBUG:fetchGroups] catch cache fallback', {
+          hasCached: !!cached,
+          cachedLength: cached?.length,
+        })
         if (cached && cached.length > 0) {
           setBusStopGroups(cached)
-        } else if (err instanceof TypeError && !navigator.onLine) {
+        } else {
+          // ネットワークエラー + キャッシュなし → リダイレクト
+          console.log('[DEBUG:fetchGroups] → REDIRECT to /~offline (catch+no cache)')
           window.location.href = '/~offline'
           return
-        } else {
-          handleError(err, 'fetchBusStopGroups')
-          setBusStopGroups([])
         }
       } finally {
         setLoadingDepartures(false)
+        console.log('[DEBUG:fetchGroups] done, setLoadingDepartures(false)')
       }
     }
 
@@ -487,6 +547,46 @@ function HomeContent() {
     })
   }, [groupTimetables, busStopGroups, setSelectedDestinations])
 
+  // オフライン時にデータが表示できない場合は /~offline にリダイレクト
+  // ケース1: busStopGroups の取得自体が失敗（キャッシュ空）
+  // ケース2: 全グループの時刻表が0便（SW が0便レスポンスをキャッシュ）
+  useEffect(() => {
+    console.log('[DEBUG:redirectEffect] fired', {
+      onLine: navigator.onLine,
+      isLoadingDepartures,
+      busStopGroupsLength: busStopGroups.length,
+      groupTimetablesKeys: Object.keys(groupTimetables),
+    })
+
+    if (isLoadingDepartures) {
+      console.log('[DEBUG:redirectEffect] skipped: still loading')
+      return
+    }
+
+    // ケース1: グループデータが取得できなかった
+    if (busStopGroups.length === 0) {
+      console.log('[DEBUG:redirectEffect] → REDIRECT (case 1: no groups)')
+      window.location.href = '/~offline'
+      return
+    }
+
+    // ケース2: 全グループの時刻表データが揃うまで待ち、全て0便ならリダイレクト
+    const allLoaded = busStopGroups.every((g) => groupTimetables[g.id])
+    console.log('[DEBUG:redirectEffect] case 2 check', { allLoaded })
+    if (!allLoaded) return
+
+    const allEmpty = busStopGroups.every((group) => {
+      const tt = groupTimetables[group.id]
+      return !tt || tt.allBuses.length === 0
+    })
+
+    console.log('[DEBUG:redirectEffect] allEmpty:', allEmpty)
+    if (allEmpty) {
+      console.log('[DEBUG:redirectEffect] → REDIRECT (case 2: all empty timetables)')
+      window.location.href = '/~offline'
+    }
+  }, [groupTimetables, busStopGroups, isLoadingDepartures])
+
   useEffect(() => {
     const currentDate = new Date()
     setNow(currentDate)
@@ -497,6 +597,12 @@ function HomeContent() {
 
     return () => clearInterval(intervalId)
   }, [])
+
+  // ローディング完了後にデータが空 → /~offline にリダイレクト
+  // useEffect でのリダイレクトが失敗する場合（旧SWキャッシュ等）のフォールバック
+  if (!isLoadingDepartures && busStopGroups.length === 0 && !error) {
+    return <AutoRedirect />
+  }
 
   return (
     <div className="my-5">

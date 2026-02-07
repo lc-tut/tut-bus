@@ -2,7 +2,7 @@
 /// <reference lib="webworker" />
 import { defaultCache } from '@serwist/next/worker'
 import type { PrecacheEntry, SerwistGlobalConfig } from 'serwist'
-import { ExpirationPlugin, NetworkFirst, Serwist, StaleWhileRevalidate } from 'serwist'
+import { ExpirationPlugin, NetworkFirst, NetworkOnly, Serwist, StaleWhileRevalidate } from 'serwist'
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -36,18 +36,13 @@ const serwist = new Serwist({
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
-    // ページナビゲーション: キャッシュしてオフラインでも表示可能にする
+    // ページナビゲーション: NetworkOnly でオフライン時は fallback(/~offline) を表示
+    // NetworkFirst だとランタイムキャッシュ(pages-cache)にヒットして壊れたHTMLが表示されてしまう
+    // プリキャッシュ済みページ(/~offline 等)は precache route が先にマッチするため影響なし
     {
       matcher: ({ request }) => request.mode === 'navigate',
-      handler: new NetworkFirst({
-        cacheName: 'pages-cache',
+      handler: new NetworkOnly({
         networkTimeoutSeconds: 3,
-        plugins: [
-          new ExpirationPlugin({
-            maxEntries: 32,
-            maxAgeSeconds: 24 * 60 * 60,
-          }),
-        ],
       }),
     },
     // RSC (React Server Components) ペイロード: Next.jsのクライアントサイドナビゲーション用
@@ -126,6 +121,23 @@ const serwist = new Serwist({
             handlerDidError: async () =>
               new Response(TRANSPARENT_GIF, {
                 headers: { 'Content-Type': 'image/gif' },
+              }),
+          },
+        ],
+      }),
+    },
+    // Auth API: NetworkOnly + オフライン時は空セッションを返す（no-response エラー抑制）
+    // defaultCache の auth ルール（NetworkOnly, handlerDidError なし）より先にマッチさせる
+    {
+      matcher: ({ url }) => url.pathname.startsWith('/api/auth/'),
+      handler: new NetworkOnly({
+        networkTimeoutSeconds: 10,
+        plugins: [
+          {
+            handlerDidError: async () =>
+              new Response(JSON.stringify({ session: null, user: null }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
               }),
           },
         ],

@@ -10,19 +10,36 @@ const CACHE_NAME = 'bus-timetable-api'
  */
 export async function getCachedResponse<T>(pathname: string): Promise<T | null> {
   try {
+    if (!('caches' in window)) {
+      console.log('[DEBUG:cache] Cache API not available')
+      return null
+    }
     const cache = await caches.open(CACHE_NAME)
     const keys = await cache.keys()
+    console.log('[DEBUG:cache] getCachedResponse', {
+      pathname,
+      totalCacheKeys: keys.length,
+      matchingUrls: keys.map((k) => new URL(k.url).pathname).filter((p) => p === pathname || p.endsWith(pathname)),
+    })
     const match = keys.find((req) => {
       const url = new URL(req.url)
       return url.pathname === pathname || url.pathname.endsWith(pathname)
     })
     if (match) {
       const response = await cache.match(match)
+      console.log('[DEBUG:cache] found match', {
+        url: match.url,
+        responseOk: response?.ok,
+        responseStatus: response?.status,
+      })
       if (response && response.ok) {
         return response.json() as Promise<T>
       }
+    } else {
+      console.log('[DEBUG:cache] no match found for', pathname)
     }
-  } catch {
+  } catch (e) {
+    console.log('[DEBUG:cache] error:', e)
     // Cache API が使えない環境では無視
   }
   return null

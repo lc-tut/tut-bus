@@ -13,12 +13,31 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [
     { url: '/~offline', revision },
     { url: '/~offline/timetable', revision },
-    { url: '/', revision },
-    { url: '/timetable', revision },
     { url: '/manifest.webmanifest', revision },
   ],
   disable: process.env.NODE_ENV !== 'production',
 })
+
+// SW の CSP で許可する connect-src オリジンを構築
+const swConnectSrc = ["'self'"]
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+if (apiUrl) {
+  try {
+    swConnectSrc.push(new URL(apiUrl).origin)
+  } catch {
+    // invalid URL
+  }
+}
+const appUrl = process.env.NEXT_PUBLIC_APP_URL
+if (appUrl) {
+  try {
+    swConnectSrc.push(new URL(appUrl).origin)
+  } catch {
+    // invalid URL
+  }
+}
+// Google Analytics
+swConnectSrc.push('https://www.googletagmanager.com', 'https://www.google-analytics.com')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -55,7 +74,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self'; connect-src 'self'",
+            value: `default-src 'self'; script-src 'self'; connect-src ${swConnectSrc.join(' ')}`,
           },
         ],
       },

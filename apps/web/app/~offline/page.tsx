@@ -25,26 +25,35 @@ export default function OfflinePage() {
 
   useEffect(() => {
     // Cache API からキャッシュ済み時刻表データがあるか確認する
+    // 0便のレスポンスもキャッシュされるため、実際にバス便があるか中身まで確認する
     if (!('caches' in window)) return
     caches
       .open('bus-timetable-api')
       .then(async (cache) => {
         const keys = await cache.keys()
-        // 時刻表データのキャッシュエントリを探す
-        const timetableEntries = keys.filter((req) => {
+        for (const req of keys) {
           const url = new URL(req.url)
-          return (
-            url.pathname.includes('/api/bus-stops/groups/') && url.pathname.includes('/timetable')
+          if (
+            !url.pathname.includes('/api/bus-stops/groups/') ||
+            !url.pathname.includes('/timetable')
           )
-        })
-        if (timetableEntries.length === 0) return
-
-        // 有効な（200 OK）キャッシュエントリが1つでもあれば表示
-        for (const entry of timetableEntries) {
-          const resp = await cache.match(entry)
-          if (resp && resp.ok) {
-            setHasCachedData(true)
-            return
+            continue
+          const resp = await cache.match(req)
+          if (!resp || !resp.ok) continue
+          try {
+            const data = await resp.clone().json()
+            if (data?.segments) {
+              let busCount = 0
+              for (const seg of data.segments) {
+                busCount += seg.segmentType === 'fixed' ? (seg.times?.length ?? 0) : 1
+              }
+              if (busCount > 0) {
+                setHasCachedData(true)
+                return
+              }
+            }
+          } catch {
+            continue
           }
         }
       })

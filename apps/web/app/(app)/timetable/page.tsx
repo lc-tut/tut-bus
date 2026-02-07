@@ -10,6 +10,31 @@ import { canSwapStations, filterTimetable } from '@/lib/utils/timetable'
 import { format, parseISO } from 'date-fns'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { BiWifiOff } from 'react-icons/bi'
+
+// データ取得失敗時の自動リダイレクトコンポーネント
+function AutoRedirect() {
+  useEffect(() => {
+    console.error('[AutoRedirect:timetable] No data available, redirecting to /~offline')
+    window.location.href = '/~offline'
+  }, [])
+
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+      <BiWifiOff className="h-10 w-10 text-muted-foreground mb-4" />
+      <h3 className="text-base font-medium">データを取得できません</h3>
+      <p className="mt-2 text-xs text-muted-foreground max-w-xs mb-6">
+        オフラインページに移動しています...
+      </p>
+      <a
+        href="/~offline"
+        className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors"
+      >
+        オフラインページへ
+      </a>
+    </div>
+  )
+}
 
 export default function TimetablePage() {
   return (
@@ -192,8 +217,9 @@ function TimetableContent() {
           setTimetableData(cached)
           setFetchError(null)
         } else {
-          setTimetableData(null)
-          setFetchError('時刻表データの取得に失敗しました')
+          // API到達不能 + キャッシュなし → リダイレクト
+          window.location.href = '/~offline'
+          return
         }
         return
       }
@@ -208,12 +234,10 @@ function TimetableContent() {
       if (cached) {
         setTimetableData(cached)
         setFetchError(null)
-      } else if (e instanceof TypeError && !navigator.onLine) {
+      } else {
+        // ネットワークエラー + キャッシュなし → リダイレクト
         window.location.href = '/~offline'
         return
-      } else {
-        setTimetableData(null)
-        setFetchError('サーバーに接続できません')
       }
     } finally {
       setIsLoadingTimetable(false)
@@ -226,6 +250,26 @@ function TimetableContent() {
       fetchTimetableData()
     }
   }, [selectedDepartureGroupId, selectedDate, fetchTimetableData])
+
+  // オフライン時に時刻表データが0便なら /~offline にリダイレクト
+  // SWがキャッシュした0便レスポンスで通常ページが表示されるのを防ぐ
+  useEffect(() => {
+    if (isLoadingTimetable || selectedDepartureGroupId == null) return
+    if (!timetableData) return
+
+    let busCount = 0
+    for (const seg of timetableData.segments ?? []) {
+      if (seg.segmentType === 'fixed') {
+        busCount += seg.times.length
+      } else {
+        busCount += 1
+      }
+    }
+
+    if (busCount === 0) {
+      window.location.href = '/~offline'
+    }
+  }, [timetableData, isLoadingTimetable, selectedDepartureGroupId])
 
   // 出発地と目的地を入れ替える
   const swapStations = useCallback(() => {
@@ -243,6 +287,7 @@ function TimetableContent() {
   const [busStopGroups, setBusStopGroups] = useState<
     components['schemas']['Models.BusStopGroup'][]
   >([])
+  const [isLoadingGroups, setIsLoadingGroups] = useState(true)
 
   // バス停グループ一覧を取得
   useEffect(() => {
@@ -255,7 +300,13 @@ function TimetableContent() {
             await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
               '/api/bus-stops/groups'
             )
-          setBusStopGroups(cached ?? [])
+          if (cached && cached.length > 0) {
+            setBusStopGroups(cached)
+          } else {
+            // API到達不能 + キャッシュなし → リダイレクト
+            window.location.href = '/~offline'
+            return
+          }
         } else if (data) {
           setBusStopGroups(data)
         }
@@ -265,11 +316,26 @@ function TimetableContent() {
           await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
             '/api/bus-stops/groups'
           )
-        setBusStopGroups(cached ?? [])
+        if (cached && cached.length > 0) {
+          setBusStopGroups(cached)
+        } else {
+          window.location.href = '/~offline'
+          return
+        }
+      } finally {
+        setIsLoadingGroups(false)
       }
     }
     fetchBusStopGroups()
   }, [])
+
+  // グループデータが取得できなかった場合リダイレクト
+  useEffect(() => {
+    if (isLoadingGroups) return
+    if (busStopGroups.length === 0) {
+      window.location.href = '/~offline'
+    }
+  }, [busStopGroups, isLoadingGroups])
 
   // フィルタリングされた時刻表データ
   const filteredTimetable = useMemo(() => {
@@ -306,6 +372,11 @@ function TimetableContent() {
         </div>
       </div>
     )
+  }
+
+  // ローディング完了後にデータが空 → /~offline にリダイレクト
+  if (!isLoadingGroups && busStopGroups.length === 0) {
+    return <AutoRedirect />
   }
 
   return (

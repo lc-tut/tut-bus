@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { BiWifiOff } from 'react-icons/bi'
 import { FaBus } from 'react-icons/fa'
@@ -34,20 +33,40 @@ export function OfflineBanner() {
     return () => window.removeEventListener('offline', handleOffline)
   }, [])
 
-  // キャッシュ済み時刻表データがあるか確認
+  // キャッシュ済み時刻表データがあるか確認（実際にバス便があるもののみ）
   useEffect(() => {
     if (isOnline) return
+    if (!('caches' in window)) return
     caches
       .open('bus-timetable-api')
       .then(async (cache) => {
         const keys = await cache.keys()
-        const hasTimetable = keys.some((req) => {
+        for (const req of keys) {
           const url = new URL(req.url)
-          return (
-            url.pathname.includes('/api/bus-stops/groups/') && url.pathname.includes('/timetable')
+          if (
+            !url.pathname.includes('/api/bus-stops/groups/') ||
+            !url.pathname.includes('/timetable')
           )
-        })
-        setHasCachedData(hasTimetable)
+            continue
+          const resp = await cache.match(req)
+          if (!resp || !resp.ok) continue
+          try {
+            const data = await resp.clone().json()
+            if (data?.segments) {
+              let busCount = 0
+              for (const seg of data.segments) {
+                busCount += seg.segmentType === 'fixed' ? (seg.times?.length ?? 0) : 1
+              }
+              if (busCount > 0) {
+                setHasCachedData(true)
+                return
+              }
+            }
+          } catch {
+            continue
+          }
+        }
+        setHasCachedData(false)
       })
       .catch(() => {})
   }, [isOnline])
@@ -59,13 +78,13 @@ export function OfflineBanner() {
       <BiWifiOff className="h-3 w-3 shrink-0" />
       <span>オフラインです</span>
       {hasCachedData && (
-        <Link
+        <a
           href="/~offline/timetable"
           className="inline-flex items-center gap-1 rounded-full bg-yellow-200 dark:bg-yellow-800/80 px-2.5 py-0.5 font-medium hover:bg-yellow-300 dark:hover:bg-yellow-700/80 transition-colors"
         >
           <FaBus className="h-2.5 w-2.5" />
           保存済み時刻表
-        </Link>
+        </a>
       )}
       <button
         onClick={() => setDismissed(true)}
