@@ -1,20 +1,20 @@
 'use client'
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerTitle,
-    DrawerTrigger,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerTitle,
+  DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { components } from '@/generated/oas'
@@ -88,8 +88,8 @@ export function TimetableDisplay({
   const makeFullTable = (buses: DisplayBusInfo[]) => (
     <div className="relative w-full">
       <table className="w-full caption-bottom text-sm">
-        <thead className="[&_tr]:border-b bg-background sticky top-0 z-10">
-          <tr className="hover:bg-muted/50 border-b transition-colors">
+        <thead className="bg-background sticky top-0 z-10 shadow-[inset_0_-1px_0_var(--color-border)]">
+          <tr className="transition-colors">
             <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs pl-4 md:pl-6">目的地</th>
             <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs">出発時刻</th>
             <th className="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-xs hidden md:table-cell">到着時刻</th>

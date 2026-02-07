@@ -14,7 +14,7 @@ interface AdBannerProps {
 
 export function LinuxClubBanner({ className }: AdBannerProps) {
   return (
-    <Card className={cn('overflow-hidden py-0 gap-0', className)}>
+    <Card className={cn('overflow-hidden py-0 gap-0 shadow-none', className)}>
       <CardContent className="p-4 pb-0">
         <div className="flex items-start gap-3">
           <div className="shrink-0 rounded-lg overflow-hidden border border-blue-200 dark:border-blue-800">
@@ -57,7 +57,7 @@ export function PwaInstallBanner({ className }: AdBannerProps) {
   }
 
   return (
-    <Card className={cn('overflow-hidden py-0 gap-0', className)}>
+    <Card className={cn('overflow-hidden py-0 gap-0 shadow-none', className)}>
       <CardContent className="p-4 pb-0">
         <div className="flex items-start gap-3">
           <div className="shrink-0 rounded-lg p-2 bg-purple-100 dark:bg-purple-900/40">
@@ -83,7 +83,7 @@ export function PwaInstallBanner({ className }: AdBannerProps) {
 
 export function SurveyBanner({ className }: AdBannerProps) {
   return (
-    <Card className={cn('overflow-hidden py-0 gap-0', className)}>
+    <Card className={cn('overflow-hidden py-0 gap-0 shadow-none', className)}>
       <CardContent className="p-4 pb-0">
         <div className="min-w-0">
           <h3 className="font-bold text-base leading-tight">アンケート協力のお願い</h3>
