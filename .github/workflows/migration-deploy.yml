@@ -109,6 +109,9 @@ jobs:
             --project=${{ vars.GCP_PROJECT_ID }} \
             --set-cloudsql-instances=${{ env.DB_INSTANCE }} \
             --service-account=${{ env.APP_SA }} \
+            --network=tut-bus-network \
+            --subnet=tut-bus-subnet \
+            --vpc-egress=private-ranges-only \
             --set-env-vars=MIGRATE_ACTION=${{ inputs.action }},DB_USER=${{ env.DB_USER }},DB_NAME=${{ env.DB_NAME }},INSTANCE_CONNECTION_NAME=${{ env.DB_INSTANCE }},USE_IAM_AUTH=true \
             --max-retries=0 \
             --task-timeout=300s \

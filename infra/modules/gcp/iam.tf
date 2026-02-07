@@ -39,6 +39,13 @@ resource "google_project_iam_member" "monitoring_writer" {
   member  = "serviceAccount:${google_service_account.main.email}"
 }
 
+# Compute Network User権限（Cloud Run Job の Direct VPC Egress に必要）
+resource "google_project_iam_member" "compute_network_user" {
+  project = var.project_id
+  role    = "roles/compute.networkUser"
+  member  = "serviceAccount:${google_service_account.main.email}"
+}
+
 # Container Registry Reader権限
 resource "google_project_iam_member" "artifact_reader" {
   project = var.project_id
