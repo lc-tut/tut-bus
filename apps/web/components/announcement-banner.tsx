@@ -50,7 +50,7 @@ export function AnnouncementBanner({
 
   return (
     <div className={cn(className)}>
-      <Alert variant={variant} className="relative rounded-lg border">
+      <Alert variant={variant} className="relative rounded-xl border">
         <Icon className="h-4 w-4" />
         <AlertTitle className={cn(dismissible && 'pr-6')}>{title}</AlertTitle>
         <AlertDescription
