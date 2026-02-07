@@ -60,7 +60,6 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-    // @ts-expect-error -- launch_handler is not yet in Next.js types
     launch_handler: {
       client_mode: 'navigate-existing',
     },
