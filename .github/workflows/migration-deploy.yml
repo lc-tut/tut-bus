@@ -1,0 +1,191 @@
+# ========================================
+# Migration Deploy - Production (Cloud Run Job)
+# ========================================
+# Cloud Run Job を使用してプライベートIPのCloud SQLに
+# マイグレーションを適用する。
+#
+# 仕組み:
+#   1. マイグレーション用Dockerイメージをビルド → Artifact Registryにpush
+#   2. Cloud Run Job を作成（--add-cloudsql-instances でプロキシ内蔵）
+#   3. Job を実行し、完了を待機
+#   4. Job を削除（クリーンアップ）
+#
+# Cloud SQLへのパブリックIP公開は不要です。
+# IAM認証を使用するためパスワード管理も不要です。
+#
+# 必要なGitHub設定:
+#   Vars: WIF_PROVIDER, TERRAFORM_SA, GCP_PROJECT_ID
+
+name: 'Migration Deploy'
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: '実行するアクション'
+        required: true
+        type: choice
+        options:
+          - 'up'
+          - 'up-1'
+          - 'down-1'
+          - 'version'
+          - 'seed'
+        default: 'version'
+      confirm:
+        description: '本番DBに適用します。実行する場合は "yes" と入力'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: asia-northeast1
+  AR_REGISTRY: asia-northeast1-docker.pkg.dev
+  AR_REPO: tut-bus
+  IMAGE_NAME: migration
+  DB_INSTANCE: 'main-vcompute:asia-northeast1:tut-bus-db-prod'
+  DB_NAME: 'tutbus'
+  # IAM認証ユーザー（SA名から .gserviceaccount.com を除いたもの）
+  DB_USER: 'tut-bus-app-sa@main-vcompute.iam'
+  # App SA（Cloud SQLクライアント + IAM認証権限を持つ）
+  APP_SA: 'tut-bus-app-sa@main-vcompute.iam.gserviceaccount.com'
+
+jobs:
+  migrate:
+    name: 'Run Migration (${{ inputs.action }})'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Confirm Input
+        if: inputs.action != 'version' && inputs.confirm != 'yes'
+        run: |
+          echo "::error::確認入力が 'yes' ではありません。処理を中止します。"
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Google Cloud Auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.TERRAFORM_SA }}
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.AR_REGISTRY }} --quiet
+
+      - name: Build Migration Image
+        working-directory: apps/api
+        run: |
+          IMAGE="${{ env.AR_REGISTRY }}/${{ vars.GCP_PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:gh-${{ github.run_number }}"
+          echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
+
+          docker build \
+            -f migration.Dockerfile \
+            -t "${IMAGE}" \
+            .
+
+          echo "✅ イメージビルド完了: ${IMAGE}"
+
+      - name: Push Migration Image
+        run: |
+          docker push "${IMAGE}"
+          echo "✅ イメージpush完了"
+
+      - name: Create Cloud Run Job
+        run: |
+          JOB_NAME="tut-bus-migration-${{ github.run_number }}"
+          echo "JOB_NAME=${JOB_NAME}" >> "$GITHUB_ENV"
+
+          gcloud run jobs create "${JOB_NAME}" \
+            --image="${IMAGE}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --set-cloudsql-instances="${{ env.DB_INSTANCE }}" \
+            --service-account="${{ env.APP_SA }}" \
+            --set-env-vars="MIGRATE_ACTION=${{ inputs.action }},DB_USER=${{ env.DB_USER }},DB_NAME=${{ env.DB_NAME }},INSTANCE_CONNECTION_NAME=${{ env.DB_INSTANCE }},USE_IAM_AUTH=true" \
+            --max-retries=0 \
+            --task-timeout=300s \
+            --memory=512Mi \
+            --cpu=1 \
+            --quiet
+
+          echo "✅ Cloud Run Job '${JOB_NAME}' 作成完了"
+
+      - name: Execute Cloud Run Job
+        run: |
+          echo "🚀 Cloud Run Job を実行中..."
+          gcloud run jobs execute "${JOB_NAME}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --wait \
+            --quiet
+
+          echo "✅ Cloud Run Job 実行完了"
+
+      - name: Show Job Logs
+        if: always()
+        run: |
+          echo "📋 Cloud Run Job ログ:"
+          gcloud logging read \
+            "resource.type=cloud_run_job AND resource.labels.job_name=${JOB_NAME}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --limit=50 \
+            --format="table(timestamp, textPayload)" \
+            --freshness=10m \
+            2>/dev/null || echo "(ログ取得に失敗しました)"
+
+      - name: Cleanup Cloud Run Job
+        if: always()
+        run: |
+          echo "🧹 Cloud Run Job をクリーンアップ中..."
+          gcloud run jobs delete "${JOB_NAME}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --quiet \
+            2>/dev/null || echo "  (クリーンアップスキップ)"
+          echo "✅ クリーンアップ完了"
+
+      - name: Cleanup Old Migration Images
+        if: always()
+        run: |
+          echo "🧹 古いマイグレーションイメージをクリーンアップ中..."
+          # 最新5つ以外のイメージタグを削除
+          OLD_TAGS=$(gcloud artifacts docker tags list \
+            "${{ env.AR_REGISTRY }}/${{ vars.GCP_PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}" \
+            --format='value(tag)' \
+            --sort-by='~tag' \
+            2>/dev/null | tail -n +6)
+
+          if [ -n "$OLD_TAGS" ]; then
+            for tag in $OLD_TAGS; do
+              gcloud artifacts docker images delete \
+                "${{ env.AR_REGISTRY }}/${{ vars.GCP_PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${tag}" \
+                --quiet --delete-tags 2>/dev/null || true
+            done
+          fi
+          echo "✅ イメージクリーンアップ完了"
+
+      - name: Migration Summary
+        if: always()
+        run: |
+          echo "### Migration Deploy Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Action | \`${{ inputs.action }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Instance | \`${{ env.DB_INSTANCE }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Database | \`${{ env.DB_NAME }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Image | \`${IMAGE}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Cloud Run Job | \`${JOB_NAME}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Trigger | @${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Status | \`${{ job.status }}\` |" >> "$GITHUB_STEP_SUMMARY"
