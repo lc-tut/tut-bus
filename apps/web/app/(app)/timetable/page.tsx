@@ -263,7 +263,15 @@ function TimetableContent() {
     }
 
     if (busCount === 0) {
-      window.location.href = '/~offline'
+      // 実際にオフラインの場合のみ /~offline にリダイレクトする
+      if (
+        typeof window !== 'undefined' &&
+        typeof navigator !== 'undefined' &&
+        navigator &&
+        navigator.onLine === false
+      ) {
+        window.location.href = '/~offline'
+      }
     }
   }, [timetableData, isLoadingTimetable, selectedDepartureGroupId])
 
