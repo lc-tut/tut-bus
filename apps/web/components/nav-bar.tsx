@@ -44,7 +44,7 @@ export default function NavBar() {
               <Link
                 href={item.href}
                 className={`text-xs font-medium transition-colors flex flex-col items-center ${
-                  selected ? 'text-primary' : 'active:text-primary hover:text-primary'
+                  selected ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <span className="text-3xl mb-1">{selected ? item.selectedIcon : item.icon}</span>
