@@ -19,6 +19,9 @@ async function warmEssentialCaches() {
   cacheWarmingStarted = true
 
   try {
+    // Cache API が利用できない環境ではスキップ
+    if (!('caches' in window)) return
+
     // まずキャッシュ済みか確認（SWキャッシュに有効なデータがあればスキップ）
     const cache = await caches.open('bus-timetable-api')
     const existingKeys = await cache.keys()
@@ -56,7 +59,8 @@ async function warmEssentialCaches() {
     await Promise.allSettled(timetablePromises)
   } catch {
     // キャッシュウォーミングの失敗は静かに無視
-    // 次回のオンライン時に再試行される
+    // フラグをリセットして次回のオンライン時に再試行可能にする
+    cacheWarmingStarted = false
   }
 }
 
