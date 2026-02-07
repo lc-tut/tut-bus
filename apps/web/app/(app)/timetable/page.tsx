@@ -56,7 +56,6 @@ function TimetableContent() {
   const [startTime, setStartTime] = useState<string>('10:00')
   const [endTime, setEndTime] = useState<string>('10:00')
   const [isLoadingTimetable, setIsLoadingTimetable] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
   // APIからの時刻表データを保持するstate (型を修正)
   const [timetableData, setTimetableData] = useState<
     components['schemas']['Models.BusStopGroupTimetable'] | null
@@ -192,7 +191,6 @@ function TimetableContent() {
   const fetchTimetableData = useCallback(async () => {
     if (selectedDepartureGroupId == null || !selectedDate) return
     setIsLoadingTimetable(true)
-    setFetchError(null)
     try {
       // client.GET の期待する型に合わせて修正
       const paramsForGet: operations['BusStopGroupsService_getBusStopGroupsTimetable']['parameters'] =
@@ -209,13 +207,12 @@ function TimetableContent() {
       if (error) {
         console.error('Failed to fetch timetable data:', error)
         // API エラー時は Cache API にフォールバック（同一日付のみ）
-        const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
+        const dateStr = format(selectedDate, 'yyyy-MM-dd')
         const cached = await getLatestCachedTimetable<
           components['schemas']['Models.BusStopGroupTimetable']
         >(selectedDepartureGroupId, dateStr)
         if (cached) {
           setTimetableData(cached)
-          setFetchError(null)
         } else {
           // API到達不能 + キャッシュなし → リダイレクト
           window.location.href = '/~offline'
@@ -227,13 +224,12 @@ function TimetableContent() {
     } catch (e) {
       console.error('Network error fetching timetable:', e)
       // ネットワークエラー時は Cache API にフォールバック（同一日付のみ）
-      const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
+      const dateStr = format(selectedDate, 'yyyy-MM-dd')
       const cached = await getLatestCachedTimetable<
         components['schemas']['Models.BusStopGroupTimetable']
       >(selectedDepartureGroupId, dateStr)
       if (cached) {
         setTimetableData(cached)
-        setFetchError(null)
       } else {
         // ネットワークエラー + キャッシュなし → リダイレクト
         window.location.href = '/~offline'
@@ -409,7 +405,7 @@ function TimetableContent() {
           timetableData={timetableData}
           busStopGroups={busStopGroups}
           isLoading={isLoadingTimetable}
-          fetchError={fetchError}
+          fetchError={null}
         />
       </div>
     </div>

@@ -795,10 +795,9 @@ function formatDateLabel(dateStr: string): string {
 /** キャッシュから保存済みの日付一覧を取得（0便の日付は除外） */
 async function findCachedDates(): Promise<CachedDateEntry[]> {
   const dateMap = new Map<string, { groupIds: Set<string>; totalBuses: number }>()
-  const cacheNames = await caches.keys()
 
-  for (const name of cacheNames) {
-    const cache = await caches.open(name)
+  try {
+    const cache = await caches.open('bus-timetable-api')
     const keys = await cache.keys()
 
     for (const req of keys) {
@@ -845,6 +844,8 @@ async function findCachedDates(): Promise<CachedDateEntry[]> {
       }
       entry.totalBuses += busCount
     }
+  } catch {
+    // Cache API が使えない環境では無視
   }
 
   return (
@@ -868,11 +869,10 @@ async function findCachedEntriesForDate(date: string): Promise<CachedGroupEntry[
 
   const allGroups = await getAllCachedGroups()
 
-  const cacheNames = await caches.keys()
   const foundGroupIds = new Set<string>()
 
-  for (const name of cacheNames) {
-    const cache = await caches.open(name)
+  try {
+    const cache = await caches.open('bus-timetable-api')
     const keys = await cache.keys()
 
     for (const req of keys) {
@@ -920,6 +920,8 @@ async function findCachedEntriesForDate(date: string): Promise<CachedGroupEntry[
       foundGroupIds.add(groupId)
       entries.push({ groupId, groupName, busCount, savedAt, timetable })
     }
+  } catch {
+    // Cache API が使えない環境では無視
   }
 
   // キャッシュされていないグループを「データなし」として追加

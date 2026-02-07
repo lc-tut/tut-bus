@@ -318,17 +318,8 @@ function HomeContent() {
       setLoadingDepartures(true)
       clearError() // エラーをクリア
 
-      console.log('[DEBUG:fetchGroups] start', { onLine: navigator.onLine })
-
       try {
         const { data, error } = await client.GET('/api/bus-stops/groups')
-
-        console.log('[DEBUG:fetchGroups] response', {
-          hasData: !!data,
-          dataLength: data?.length,
-          error: error,
-          onLine: navigator.onLine,
-        })
 
         if (error || !data) {
           // API エラー時は Cache API にフォールバック
@@ -336,51 +327,32 @@ function HomeContent() {
             await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
               '/api/bus-stops/groups'
             )
-          console.log('[DEBUG:fetchGroups] error branch, cache fallback', {
-            hasCached: !!cached,
-            cachedLength: cached?.length,
-            onLine: navigator.onLine,
-          })
           if (cached && cached.length > 0) {
             setBusStopGroups(cached)
           } else {
             // API到達不能 + キャッシュなし → 表示データが0なのでリダイレクト
             // navigator.onLine はSW配信環境で信頼できないため使わない
-            console.log('[DEBUG:fetchGroups] → REDIRECT to /~offline (error+no cache)')
             window.location.href = '/~offline'
             return
           }
         } else {
-          console.log('[DEBUG:fetchGroups] success, groups:', data.length)
           setBusStopGroups(data)
         }
-      } catch (err) {
-        console.log('[DEBUG:fetchGroups] catch block', {
-          err,
-          errType: err?.constructor?.name,
-          isTypeError: err instanceof TypeError,
-          onLine: navigator.onLine,
-        })
+      } catch {
         // ネットワークエラー時も Cache API にフォールバック
         const cached =
           await getCachedResponse<components['schemas']['Models.BusStopGroup'][]>(
             '/api/bus-stops/groups'
           )
-        console.log('[DEBUG:fetchGroups] catch cache fallback', {
-          hasCached: !!cached,
-          cachedLength: cached?.length,
-        })
         if (cached && cached.length > 0) {
           setBusStopGroups(cached)
         } else {
           // ネットワークエラー + キャッシュなし → リダイレクト
-          console.log('[DEBUG:fetchGroups] → REDIRECT to /~offline (catch+no cache)')
           window.location.href = '/~offline'
           return
         }
       } finally {
         setLoadingDepartures(false)
-        console.log('[DEBUG:fetchGroups] done, setLoadingDepartures(false)')
       }
     }
 
@@ -551,28 +523,16 @@ function HomeContent() {
   // ケース1: busStopGroups の取得自体が失敗（キャッシュ空）
   // ケース2: 全グループの時刻表が0便（SW が0便レスポンスをキャッシュ）
   useEffect(() => {
-    console.log('[DEBUG:redirectEffect] fired', {
-      onLine: navigator.onLine,
-      isLoadingDepartures,
-      busStopGroupsLength: busStopGroups.length,
-      groupTimetablesKeys: Object.keys(groupTimetables),
-    })
-
-    if (isLoadingDepartures) {
-      console.log('[DEBUG:redirectEffect] skipped: still loading')
-      return
-    }
+    if (isLoadingDepartures) return
 
     // ケース1: グループデータが取得できなかった
     if (busStopGroups.length === 0) {
-      console.log('[DEBUG:redirectEffect] → REDIRECT (case 1: no groups)')
       window.location.href = '/~offline'
       return
     }
 
     // ケース2: 全グループの時刻表データが揃うまで待ち、全て0便ならリダイレクト
     const allLoaded = busStopGroups.every((g) => groupTimetables[g.id])
-    console.log('[DEBUG:redirectEffect] case 2 check', { allLoaded })
     if (!allLoaded) return
 
     const allEmpty = busStopGroups.every((group) => {
@@ -580,9 +540,7 @@ function HomeContent() {
       return !tt || tt.allBuses.length === 0
     })
 
-    console.log('[DEBUG:redirectEffect] allEmpty:', allEmpty)
     if (allEmpty) {
-      console.log('[DEBUG:redirectEffect] → REDIRECT (case 2: all empty timetables)')
       window.location.href = '/~offline'
     }
   }, [groupTimetables, busStopGroups, isLoadingDepartures])
