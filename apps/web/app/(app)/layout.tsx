@@ -18,7 +18,7 @@ export default function AppLayout({
       <OfflineBanner />
       <CacheWarmer />
       <div className="pt-20 md:pt-16">
-        <AnnouncementBanner className="max-w-6xl mx-auto px-4 mt-6" />
+        <AnnouncementBanner className="max-w-6xl mx-auto px-4 mt-6 hidden sm:block md:hidden" />
         <div className={cn('p-1 min-h-screen mx-auto max-w-6xl')}>{children}</div>
       </div>
       <NavBar />

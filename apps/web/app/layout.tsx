@@ -2,14 +2,12 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata, Viewport } from 'next'
-import { Noto_Sans_JP } from 'next/font/google'
+import localFont from 'next/font/local'
 import FaviconSwitcher from './favicon-switcher'
 import './globals.css'
 
-const notoSansJp = Noto_Sans_JP({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  preload: false,
+const notoSansJp = localFont({
+  src: './fonts/NotoSansJP-Variable.woff2',
   variable: '--font-noto-sans-jp',
   display: 'swap',
   fallback: ['Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'sans-serif'],

@@ -1,7 +1,7 @@
 # check=skip=JSONArgsRecommended
 # syntax=docker.io/docker/dockerfile:1
 
-FROM node:22.17-slim
+FROM node:22-alpine
 
 WORKDIR /works
 
@@ -12,7 +12,8 @@ RUN corepack prepare pnpm@10.11.0 --activate
 
 RUN set -eux; \
   arch=$(uname -m); \
-  libc=$(ldd --version | grep -q musl && echo "musl" || echo "gnu"); \
+  libc=""; \
+  if [ -f /etc/alpine-release ]; then libc="musl"; else libc="gnu"; fi; \
   pkg=""; \
   if [ "$arch" = "aarch64" ]; then \
   pkg="@parcel/css-linux-arm64-$libc"; \
