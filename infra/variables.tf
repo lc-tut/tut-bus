@@ -183,6 +183,12 @@ variable "vercel_enable_deployment_retention" {
   default     = true
 }
 
+variable "vercel_skew_protection" {
+  description = "Skew Protection の有効期間（例: '1h', '12h', '1d'）。null で無効化"
+  type        = string
+  default     = null
+}
+
 # ========================================
 # Vercel Announcement Banner Variables
 # ========================================

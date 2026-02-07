@@ -74,6 +74,9 @@ module "vercel" {
   # Deployment Retention
   enable_deployment_retention = var.vercel_enable_deployment_retention
 
+  # Skew Protection
+  skew_protection = var.vercel_skew_protection
+
   # Announcement Banner
   announcement_message   = var.vercel_announcement_message
   announcement_title     = var.vercel_announcement_title
