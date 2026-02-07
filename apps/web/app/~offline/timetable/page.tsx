@@ -474,7 +474,7 @@ function TimetableCard({
 }) {
   if (!entry.timetable) {
     return (
-      <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border border-gray">
+      <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border">
         <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
           <div className="flex items-center w-full">
             <Badge
