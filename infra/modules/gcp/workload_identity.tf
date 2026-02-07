@@ -101,6 +101,20 @@ resource "google_project_iam_member" "terraform_appengine_admin" {
   member  = "serviceAccount:${google_service_account.terraform.email}"
 }
 
+# App Engineデプロイ権限（gcloud app deploy に必要）
+resource "google_project_iam_member" "terraform_appengine_deployer" {
+  project = var.project_id
+  role    = "roles/appengine.deployer"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
+# Cloud Build権限（App Engine Standardのデプロイで内部的に使用）
+resource "google_project_iam_member" "terraform_cloudbuild_builder" {
+  project = var.project_id
+  role    = "roles/cloudbuild.builds.editor"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
 # Storage Admin（GCSバケットの管理 - Terraform state用）
 resource "google_project_iam_member" "terraform_storage_admin" {
   project = var.project_id
@@ -119,5 +133,12 @@ resource "google_project_iam_member" "terraform_service_usage" {
 resource "google_project_iam_member" "terraform_artifact_admin" {
   project = var.project_id
   role    = "roles/artifactregistry.admin"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
+# Cloud Run Admin—Cloud Run Job の作成・実行に必要
+resource "google_project_iam_member" "terraform_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
   member  = "serviceAccount:${google_service_account.terraform.email}"
 }
