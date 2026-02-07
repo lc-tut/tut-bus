@@ -90,6 +90,12 @@ variable "enable_deployment_retention" {
   default     = true
 }
 
+variable "skew_protection" {
+  description = "Skew Protection の有効期間（例: '1h', '12h', '1d'）。null で無効化。有効時は Production デプロイが Staged になり手動 Promote が必要"
+  type        = string
+  default     = null
+}
+
 # ========================================
 # Announcement Banner Variables
 # ========================================
