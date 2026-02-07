@@ -4,7 +4,9 @@ services:
     build:
       context: ./apps/web
       dockerfile: dev.Dockerfile
-
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     env_file:
       - ./apps/web/.env
     volumes:
@@ -25,7 +27,7 @@ services:
     container_name: api
     build:
       context: ./apps/api
-      dockerfile: Dockerfile
+      dockerfile: dev.Dockerfile
     ports:
       - '8000:8000'
     volumes:

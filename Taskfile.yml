@@ -81,6 +81,14 @@ tasks:
       - task: gen:clients
       - task: api:sqlc:generate
 
+  fmt:
+    desc: '全プロダクトのフォーマットを実行'
+    cmds:
+      - pnpm run fix
+      - task: api:fmt
+      - task: spec:fix
+      - task: tf:fmt
+
   lint:
     desc: '全プロジェクトのLint実行'
     cmd: pnpm run lint
@@ -121,6 +129,43 @@ tasks:
   db:reset:
     desc: 'データベースをリセット'
     cmd: task api:db:reset
+
+  # ========================================
+  # Preview (production build) Tasks
+  # Service Worker / PWA 動作確認用
+  # ========================================
+  preview:up:
+    desc: 'PWA/SW テスト用の production preview を起動 (localhost:3001)'
+    cmds:
+      - |
+        docker run -d --rm \
+          --name web-preview \
+          --network tut-bus_default \
+          --env-file ./apps/web/.env \
+          -e NODE_ENV=production \
+          -v {{.ROOT_DIR}}/apps/web:/works \
+          -p 3001:3000 \
+          --entrypoint sh \
+          $(docker build -q ./apps/web -f ./apps/web/dev.Dockerfile) \
+          -c "corepack enable && corepack prepare pnpm@10.11.0 --activate && pnpm i && pnpm build && pnpm start"
+      - echo "✅ preview 起動中... ビルド完了まで 1-2 分かかります"
+      - echo "📡 http://localhost:3001"
+
+  preview:down:
+    desc: 'preview コンテナを停止・削除'
+    cmds:
+      - docker rm -f web-preview 2>/dev/null || true
+      - echo "✅ preview 停止"
+
+  preview:logs:
+    desc: 'preview コンテナのログを表示'
+    cmd: docker logs -f web-preview
+
+  preview:rebuild:
+    desc: 'preview を再ビルドして起動'
+    cmds:
+      - task: preview:down
+      - task: preview:up
 
   default:
     desc: '利用可能なタスク一覧を表示'

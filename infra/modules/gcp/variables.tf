@@ -45,3 +45,14 @@ variable "cors_allowed_origins" {
   description = "CORSで許可するオリジン（Vercelのドメイン）"
   type        = string
 }
+
+# GitHub Configuration for Workload Identity
+variable "github_org" {
+  description = "GitHubの組織名またはユーザー名"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "GitHubリポジトリ名"
+  type        = string
+}

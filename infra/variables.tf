@@ -142,9 +142,15 @@ variable "vercel_production_branch" {
 }
 
 variable "vercel_custom_domain" {
-  description = "カスタムドメイン名（オプション）"
+  description = "メインのカスタムドメイン名（オプション）"
   type        = string
   default     = ""
+}
+
+variable "vercel_redirect_domains" {
+  description = "メインドメインへリダイレクトするドメインのリスト"
+  type        = list(string)
+  default     = []
 }
 
 variable "vercel_dev_api_url" {
@@ -175,6 +181,12 @@ variable "vercel_enable_deployment_retention" {
   description = "デプロイメント保持を有効化"
   type        = bool
   default     = true
+}
+
+variable "vercel_skew_protection" {
+  description = "Skew Protection の有効期間（例: '1h', '12h', '1d'）。null で無効化"
+  type        = string
+  default     = null
 }
 
 # ========================================
@@ -213,6 +225,44 @@ variable "vercel_announcement_link_text" {
 
 variable "vercel_ga_id" {
   description = "Google Analytics ID"
+  type        = string
+  default     = ""
+}
+
+# ========================================
+# Better Auth Variables (管理画面認証)
+# ========================================
+
+variable "app_url_production" {
+  description = "本番環境のアプリURL（Better Auth用）"
+  type        = string
+}
+
+variable "app_url_preview" {
+  description = "プレビュー環境のアプリURL（Better Auth用）"
+  type        = string
+  default     = ""
+}
+
+variable "better_auth_secret" {
+  description = "Better Auth セッション暗号化シークレット"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_github_id" {
+  description = "GitHub OAuth App Client ID"
+  type        = string
+}
+
+variable "auth_github_secret" {
+  description = "GitHub OAuth App Client Secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_allowed_team" {
+  description = "アクセスを許可するGitHubチーム（オプション）"
   type        = string
   default     = ""
 }

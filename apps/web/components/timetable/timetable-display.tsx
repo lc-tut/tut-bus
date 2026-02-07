@@ -15,7 +15,7 @@ export interface TimetableDisplayProps {
   filteredTimetable: DisplayBusInfo[]
   now: Date | null
   timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
-  isLoading?: boolean // 追加
+  isLoading?: boolean
   busStopGroups: components['schemas']['Models.BusStopGroup'][]
 }
 
@@ -78,7 +78,17 @@ export function TimetableDisplay({
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {isLoading ? (
+        {!selectedDeparture ? (
+          <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <FaMapMarkerAlt className="h-8 w-8 text-blue-400" />
+            </div>
+            <h3 className="mt-2 text-base font-medium">出発地を選択してください</h3>
+            <p className="mt-2 text-xs text-muted-foreground max-w-xs">
+              出発地を選択すると、利用可能な時刻表が表示されます。
+            </p>
+          </div>
+        ) : isLoading ? (
           <>
             <Table>
               <TableHeader>
@@ -111,16 +121,6 @@ export function TimetableDisplay({
               </TableBody>
             </Table>
           </>
-        ) : !selectedDeparture ? (
-          <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
-            <div className="rounded-full bg-muted p-4 mb-4">
-              <FaMapMarkerAlt className="h-8 w-8 text-blue-400" />
-            </div>
-            <h3 className="mt-2 text-base font-medium">出発地を選択してください</h3>
-            <p className="mt-2 text-xs text-muted-foreground max-w-xs">
-              出発地を選択すると、利用可能な時刻表が表示されます。
-            </p>
-          </div>
         ) : filteredTimetable.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-5 text-center">
             <div className="rounded-full bg-muted p-4 mb-4">

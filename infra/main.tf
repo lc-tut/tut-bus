@@ -20,6 +20,10 @@ module "gcp" {
 
   # App Engine Configuration
   zone_name = var.cloudflare_zone_name
+
+  # GitHub Configuration (for Workload Identity)
+  github_org  = var.github_org
+  github_repo = var.github_repo
 }
 
 # Cloudflareモジュール
@@ -54,6 +58,7 @@ module "vercel" {
   # Deployment Configuration
   production_branch = var.vercel_production_branch
   custom_domain     = var.vercel_custom_domain
+  redirect_domains  = var.vercel_redirect_domains
   root_directory    = "apps/web"
 
   # API URLs
@@ -69,6 +74,9 @@ module "vercel" {
   # Deployment Retention
   enable_deployment_retention = var.vercel_enable_deployment_retention
 
+  # Skew Protection
+  skew_protection = var.vercel_skew_protection
+
   # Announcement Banner
   announcement_message   = var.vercel_announcement_message
   announcement_title     = var.vercel_announcement_title
@@ -78,6 +86,14 @@ module "vercel" {
 
   # Google Analytics
   ga_id = var.vercel_ga_id
+
+  # Better Auth Configuration
+  app_url_production = var.app_url_production
+  app_url_preview    = var.app_url_preview
+  better_auth_secret = var.better_auth_secret
+  auth_github_id     = var.auth_github_id
+  auth_github_secret = var.auth_github_secret
+  auth_allowed_team  = var.auth_allowed_team
 
   depends_on = [module.cloudflare]
 }

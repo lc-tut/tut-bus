@@ -1,0 +1,127 @@
+# ========================================
+# Terraform CI - Lint / Format / Validate
+# ========================================
+# PR時にterraformのフォーマット・バリデーションチェックを実行
+
+name: 'Terraform CI'
+
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'infra/**'
+  push:
+    branches: [main, dev]
+    paths:
+      - 'infra/**'
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: infra
+
+jobs:
+  lint:
+    name: 'Lint & Validate'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '~> 1.14.2'
+          terraform_wrapper: false
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive -diff
+        continue-on-error: true
+
+      - name: Google Cloud Auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.TERRAFORM_SA }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          VALIDATE_OUTPUT=$(terraform validate -no-color 2>&1)
+          VALIDATE_EXITCODE=$?
+          echo "$VALIDATE_OUTPUT"
+          {
+            echo "stdout<<__TF_VALIDATE_EOF__"
+            echo "$VALIDATE_OUTPUT"
+            echo "__TF_VALIDATE_EOF__"
+          } >> "$GITHUB_OUTPUT"
+          exit $VALIDATE_EXITCODE
+
+      - name: Post PR Comment
+        uses: actions/github-script@v8
+        if: github.event_name == 'pull_request'
+        env:
+          FMT_OUTCOME: ${{ steps.fmt.outcome }}
+          INIT_OUTCOME: ${{ steps.init.outcome }}
+          VALIDATE_OUTCOME: ${{ steps.validate.outcome }}
+          VALIDATE_STDOUT: ${{ steps.validate.outputs.stdout }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('Terraform CI Results')
+            );
+
+            const output = `### Terraform CI Results
+            | Check | Status |
+            |-------|--------|
+            | Format | \`${process.env.FMT_OUTCOME}\` |
+            | Init | \`${process.env.INIT_OUTCOME}\` |
+            | Validate | \`${process.env.VALIDATE_OUTCOME}\` |
+
+            <details><summary>Validation Output</summary>
+
+            \`\`\`
+            ${process.env.VALIDATE_STDOUT}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+            }
+
+      - name: Fail if format check failed
+        if: steps.fmt.outcome == 'failure'
+        run: |
+          echo "::error::Terraform files are not properly formatted. Run 'terraform fmt -recursive' to fix."
+          exit 1

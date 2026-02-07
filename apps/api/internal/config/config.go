@@ -59,6 +59,8 @@ func LoadConfig() (*Config, error) {
 			// nextjs in development
 			"http://web:3000",
 			"http://localhost:3000",
+			// nextjs preview (production build)
+			"http://localhost:3001",
 			// swagger ui in development
 			"http://swagger:8080",
 			"http://localhost:8080",

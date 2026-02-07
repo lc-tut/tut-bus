@@ -2,6 +2,7 @@
 resource "vercel_project" "main" {
   name      = var.project_name
   framework = var.framework
+  team_id   = var.team_id
 
   git_repository = {
     type              = "github"
@@ -15,6 +16,16 @@ resource "vercel_project" "main" {
   output_directory   = var.output_directory
   root_directory     = var.root_directory
   build_machine_type = "enhanced"
+
+  # Production デプロイ時にカスタムドメインを自動割り当て
+  auto_assign_custom_domains = true
+
+  # Production ビルドを Preview より優先
+  prioritise_production_builds = true
+
+  # Skew Protection（有効にすると Production デプロイが Staged になり Promote が必要）
+  # 不要な場合は null（未設定）にする
+  skew_protection = var.skew_protection
 }
 
 # 環境変数 - Production
@@ -102,6 +113,62 @@ resource "vercel_project_environment_variable" "ga_id" {
   value      = var.ga_id
 }
 
+# ========================================
+# Better Auth Environment Variables
+# ========================================
+
+# アプリURL - Production
+resource "vercel_project_environment_variable" "app_url_production" {
+  project_id = vercel_project.main.id
+  target     = ["production"]
+  key        = "NEXT_PUBLIC_APP_URL"
+  value      = var.app_url_production
+}
+
+# アプリURL - Preview
+resource "vercel_project_environment_variable" "app_url_preview" {
+  count      = var.app_url_preview != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["preview"]
+  key        = "NEXT_PUBLIC_APP_URL"
+  value      = var.app_url_preview
+}
+
+# Better Auth Secret
+resource "vercel_project_environment_variable" "better_auth_secret" {
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "BETTER_AUTH_SECRET"
+  value      = var.better_auth_secret
+  sensitive  = true
+}
+
+# GitHub OAuth - Client ID
+resource "vercel_project_environment_variable" "auth_github_id" {
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "AUTH_GITHUB_ID"
+  value      = var.auth_github_id
+}
+
+# GitHub OAuth - Client Secret
+resource "vercel_project_environment_variable" "auth_github_secret" {
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "AUTH_GITHUB_SECRET"
+  value      = var.auth_github_secret
+  sensitive  = true
+}
+
+# Allowed Team（オプション）
+resource "vercel_project_environment_variable" "auth_allowed_team" {
+  count      = var.auth_allowed_team != "" ? 1 : 0
+  project_id = vercel_project.main.id
+  target     = ["production", "preview"]
+  key        = "AUTH_ALLOWED_TEAM"
+  value      = var.auth_allowed_team
+}
+
 # カスタムドメイン（オプション）
 resource "vercel_project_domain" "custom_domain" {
   count      = var.custom_domain != "" ? 1 : 0
@@ -114,6 +181,15 @@ resource "vercel_project_domain" "vercel_app_redirect" {
   count                = var.custom_domain != "" ? 1 : 0
   project_id           = vercel_project.main.id
   domain               = "${var.project_name}.vercel.app"
+  redirect             = var.custom_domain
+  redirect_status_code = 308
+}
+
+# 追加ドメインからメインドメインへのリダイレクト
+resource "vercel_project_domain" "redirect_domains" {
+  for_each             = toset(var.redirect_domains)
+  project_id           = vercel_project.main.id
+  domain               = each.value
   redirect             = var.custom_domain
   redirect_status_code = 308
 }

@@ -33,9 +33,15 @@ variable "production_branch" {
 }
 
 variable "custom_domain" {
-  description = "カスタムドメイン名（オプション）"
+  description = "メインのカスタムドメイン名（オプション）"
   type        = string
   default     = ""
+}
+
+variable "redirect_domains" {
+  description = "メインドメインへリダイレクトするドメインのリスト"
+  type        = list(string)
+  default     = []
 }
 
 variable "api_url_production" {
@@ -84,6 +90,12 @@ variable "enable_deployment_retention" {
   default     = true
 }
 
+variable "skew_protection" {
+  description = "Skew Protection の有効期間（例: '1h', '12h', '1d'）。null で無効化。有効時は Production デプロイが Staged になり手動 Promote が必要"
+  type        = string
+  default     = null
+}
+
 # ========================================
 # Announcement Banner Variables
 # ========================================
@@ -120,6 +132,44 @@ variable "announcement_link_text" {
 
 variable "ga_id" {
   description = "Google Analytics ID"
+  type        = string
+  default     = ""
+}
+
+# ========================================
+# Better Auth Environment Variables
+# ========================================
+
+variable "app_url_production" {
+  description = "本番環境のアプリURL（Better Auth用）"
+  type        = string
+}
+
+variable "app_url_preview" {
+  description = "プレビュー環境のアプリURL（Better Auth用）"
+  type        = string
+  default     = ""
+}
+
+variable "better_auth_secret" {
+  description = "Better Auth セッション暗号化シークレット"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_github_id" {
+  description = "GitHub OAuth App Client ID"
+  type        = string
+}
+
+variable "auth_github_secret" {
+  description = "GitHub OAuth App Client Secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_allowed_team" {
+  description = "アクセスを許可するGitHubチーム（オプション、空の場合は組織メンバー全員を許可）"
   type        = string
   default     = ""
 }
