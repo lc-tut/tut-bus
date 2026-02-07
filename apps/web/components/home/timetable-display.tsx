@@ -1,11 +1,12 @@
 'use client'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerFooter,
-  DrawerTitle,
-  DrawerTrigger,
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerTitle,
+    DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { components } from '@/generated/oas'
@@ -106,8 +107,9 @@ export function TimetableDisplay({
                 以降の時刻表を表示
               </Button>
             </DrawerTrigger>
-            <DrawerContent className="min-h-[400px] max-h-[60vh]" aria-describedby={undefined}>
+            <DrawerContent className="min-h-[400px] max-h-[60vh]">
               <DrawerTitle className="sr-only">時刻表一覧</DrawerTitle>
+              <DrawerDescription className="sr-only">すべての時刻表データを表示します</DrawerDescription>
               <Table>
                 <TableHeader>
                   <TableRow>

@@ -19,6 +19,7 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerFooter,
   DrawerTitle,
   DrawerTrigger,
@@ -669,8 +670,9 @@ function OfflineTimetableTable({
               以降の時刻表を表示
             </Button>
           </DrawerTrigger>
-          <DrawerContent className="min-h-[400px] max-h-[60vh]" aria-describedby={undefined}>
+          <DrawerContent className="min-h-[400px] max-h-[60vh]">
             <DrawerTitle className="sr-only">時刻表一覧</DrawerTitle>
+            <DrawerDescription className="sr-only">すべての時刻表データを表示します</DrawerDescription>
             <Table>
               <TableHeader>
                 <TableRow>

@@ -71,7 +71,8 @@ function TimetableContent() {
     // URLを更新（履歴を残さない）
     // window.history.replaceState を使用: router.replace だとRSCフェッチが発生し、
     // オフライン時に失敗→ブラウザフォールバック→リロード→ループの原因になる
-    window.history.replaceState(null, '', `/timetable?${newSearch}`)
+    const newUrl = newSearch ? `/timetable?${newSearch}` : '/timetable'
+    window.history.replaceState(null, '', newUrl)
   }, [
     selectedDepartureGroupId,
     selectedDestinationGroupId,

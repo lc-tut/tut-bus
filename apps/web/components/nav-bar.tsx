@@ -2,9 +2,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BiBus, BiCog, BiHome, BiSolidBus, BiSolidCog, BiSolidHome } from 'react-icons/bi'
-import { RiShieldUserFill, RiShieldUserLine } from 'react-icons/ri'
-
-import { useSession } from '@/lib/auth-client'
 
 const navItems = [
   {
@@ -29,24 +26,11 @@ const navItems = [
 
 export default function NavBar() {
   const pathname = usePathname()
-  const { data: session } = useSession()
-
-  const allNavItems = session
-    ? [
-        ...navItems,
-        {
-          label: '管理画面',
-          href: '/admin',
-          icon: <RiShieldUserLine />,
-          selectedIcon: <RiShieldUserFill />,
-        },
-      ]
-    : navItems
 
   return (
     <nav className="w-full fixed bottom-0 left-0 shadow-xs border-t bg-background y sm:hidden">
-      <ul className={`h-20 grid gap-4 ${session ? 'grid-cols-4' : 'grid-cols-3'}`}>
-        {allNavItems.map((item) => {
+      <ul className="h-20 grid grid-cols-3 gap-4">
+        {navItems.map((item) => {
           const selected =
             item.href === '/'
               ? pathname === '/'
