@@ -9,7 +9,17 @@ interface BeforeInstallPromptEvent extends Event {
 
 function getIsStandalone() {
   if (typeof window === 'undefined') return false
-  return window.matchMedia('(display-mode: standalone)').matches
+
+  const isStandaloneDisplayMode =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(display-mode: standalone)').matches
+
+  const isIosStandalone =
+    typeof window.navigator !== 'undefined' &&
+    // iOS Safari exposes this when running as an installed PWA
+    (window.navigator as any).standalone === true
+
+  return isStandaloneDisplayMode || isIosStandalone
 }
 
 export function usePwaInstall() {
