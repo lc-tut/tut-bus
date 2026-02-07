@@ -2,36 +2,36 @@
 
 import Header from '@/components/header'
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerTitle,
-    DrawerTrigger,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerTitle,
+  DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import { CACHE_NAME, getCachedResponse } from '@/lib/utils/cache'
@@ -475,7 +475,7 @@ function TimetableCard({
 }) {
   if (!entry.timetable) {
     return (
-      <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border border-gray">
+      <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border">
         <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
           <div className="flex items-center w-full">
             <Badge
@@ -538,7 +538,7 @@ function TimetableCardWithData({
   }, [flatEntries, selectedDest])
 
   return (
-    <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border border-gray">
+    <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border">
       {/* 出発地ヘッダー */}
       <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
         <div className="flex items-center w-full">
