@@ -558,15 +558,15 @@ function HomeContent() {
           </div>
           {/* PC/タブレット: グリッド + サイドバナー */}
           <div className="hidden sm:block px-4 py-2">
-            <div className="md:grid md:grid-cols-[1fr_auto] md:gap-6">
+            <div className="sm:grid sm:grid-cols-[1fr_auto] sm:gap-6">
               {/* バス停カード */}
               <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4">
                 {busStopGroups.map((group, index) => (
                   <div key={index}>{renderGroupCard(group, index)}</div>
                 ))}
               </div>
-              {/* サイドバナー (md以上) */}
-              <aside className="hidden md:block w-80 xl:w-96 shrink-0">
+              {/* サイドバナー (sm以上) */}
+              <aside className="hidden sm:block w-80 xl:w-96 shrink-0">
                 <div className="sticky top-24 space-y-4">
                   <AnnouncementBanner dismissible={false} />
                   <SurveyBanner />

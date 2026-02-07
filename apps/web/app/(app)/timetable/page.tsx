@@ -373,7 +373,7 @@ function TimetableContent() {
 
   return (
     <div className="container mx-auto py-6 space-y-6 px-4 pb-28 max-w-none xl:w-full">
-      <AnnouncementBanner dismissible={false} className="sm:hidden md:block" />
+      <AnnouncementBanner dismissible={false} className="sm:hidden" />
       <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
         <div>
           <TimetableFilter
