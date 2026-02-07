@@ -7,7 +7,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
@@ -142,45 +141,20 @@ export function TimetableFilter({
                         </span>
                       )}
                       {tab.value === 'custom' && (
-                        <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
-                          <DialogTrigger asChild>
-                            <span className="flex items-center gap-1.5 cursor-pointer data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90">
-                              <FaCalendarAlt className="h-3 w-3" />
-                              {tab.label}
-                              {selectedDate &&
-                                now &&
-                                format(selectedDate, 'yyyy-MM-dd') !== format(now, 'yyyy-MM-dd') &&
-                                format(selectedDate, 'yyyy-MM-dd') !==
-                                  format(addDays(now, 1), 'yyyy-MM-dd') && (
-                                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full" />
-                                )}
-                            </span>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>日付を選択</DialogTitle>
-                              <DialogDescription className="sr-only">
-                                カレンダーから日付を選択してください
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="flex items-center justify-center">
-                              <Calendar
-                                mode="single"
-                                selected={selectedDate ?? undefined}
-                                onSelect={(date: Date | undefined) => {
-                                  if (date) {
-                                    setSelectedDate(date)
-                                    // 日付選択後にダイアログを閉じる
-                                    setCalendarOpen(false)
-                                  }
-                                }}
-                                initialFocus
-                                locale={ja}
-                                className="mx-auto"
-                              />
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                        <span
+                          className="flex items-center gap-1.5 cursor-pointer data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90"
+                          onClick={() => setCalendarOpen(true)}
+                        >
+                          <FaCalendarAlt className="h-3 w-3" />
+                          {tab.label}
+                          {selectedDate &&
+                            now &&
+                            format(selectedDate, 'yyyy-MM-dd') !== format(now, 'yyyy-MM-dd') &&
+                            format(selectedDate, 'yyyy-MM-dd') !==
+                              format(addDays(now, 1), 'yyyy-MM-dd') && (
+                              <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full" />
+                            )}
+                        </span>
                       )}
                     </TabsTrigger>
                   ))}
@@ -189,6 +163,7 @@ export function TimetableFilter({
 
               {selectedDate && now && (
                 <div
+                  onClick={() => setCalendarOpen(true)}
                   className={cn(
                     'px-4 py-3 text-sm font-medium rounded-md flex items-center justify-center cursor-pointer',
                     format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
@@ -216,6 +191,33 @@ export function TimetableFilter({
                       : format(selectedDate, 'yyyy年M月d日(E)', { locale: ja })}
                 </div>
               )}
+
+              {/* カレンダーダイアログ */}
+              <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>日付を選択</DialogTitle>
+                    <DialogDescription className="sr-only">
+                      カレンダーから日付を選択してください
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex items-center justify-center">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate ?? undefined}
+                      onSelect={(date: Date | undefined) => {
+                        if (date) {
+                          setSelectedDate(date)
+                          setCalendarOpen(false)
+                        }
+                      }}
+                      autoFocus
+                      locale={ja}
+                      className="mx-auto"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           {/* 区切り線 */}
