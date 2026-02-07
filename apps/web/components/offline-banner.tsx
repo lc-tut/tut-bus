@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { BiWifiOff } from 'react-icons/bi'
 import { FaBus } from 'react-icons/fa'
 
@@ -25,17 +25,75 @@ export function OfflineBanner() {
   const isOnline = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
   const [hasCachedData, setHasCachedData] = useState(false)
   const [dismissed, setDismissed] = useState(false)
+  // SW からのオフライン通知 or fetch ベースの接続チェック
+  const [swDetectedOffline, setSwDetectedOffline] = useState(false)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // オフラインになったら dismissed をリセット（外部イベントのコールバック内でsetState）
+  // SW からの SW_OFFLINE メッセージを受信
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === 'SW_OFFLINE') {
+        setSwDetectedOffline(true)
+        setDismissed(false)
+      }
+    }
+    navigator.serviceWorker.addEventListener('message', handler)
+    return () => navigator.serviceWorker.removeEventListener('message', handler)
+  }, [])
+
+  // 実際のネットワーク到達性を定期チェック（navigator.onLine が信頼できない場合の補完）
+  const checkConnectivity = useCallback(async () => {
+    try {
+      const controller = new AbortController()
+      const tid = setTimeout(() => controller.abort(), 5000)
+      // HEAD リクエストは SW の GET ルートにマッチしないため、実際のネットワークを経由する
+      await fetch(window.location.origin, {
+        method: 'HEAD',
+        cache: 'no-store',
+        signal: controller.signal,
+      })
+      clearTimeout(tid)
+      setSwDetectedOffline(false)
+    } catch {
+      setSwDetectedOffline(true)
+    }
+  }, [])
+
+  // navigator.onLine が true でも実際にはオフラインの場合があるため、定期チェックを実施
+  useEffect(() => {
+    if (!isOnline) {
+      // ブラウザがオフラインを検知済みなら fetch チェック不要
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return
+    }
+    // オンライン復帰時: SW_OFFLINE 状態をリセットするためにチェック（初回は遅延実行）
+    const initialCheck = setTimeout(checkConnectivity, 100)
+    intervalRef.current = setInterval(checkConnectivity, 30000)
+    return () => {
+      clearTimeout(initialCheck)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [isOnline, checkConnectivity])
+
+  // オフラインになったら dismissed をリセット
   useEffect(() => {
     const handleOffline = () => setDismissed(false)
     window.addEventListener('offline', handleOffline)
     return () => window.removeEventListener('offline', handleOffline)
   }, [])
 
+  const effectivelyOffline = !isOnline || swDetectedOffline
+
   // キャッシュ済み時刻表データがあるか確認（実際にバス便があるもののみ）
   useEffect(() => {
-    if (isOnline) return
+    if (!effectivelyOffline) return
     if (!('caches' in window)) return
     caches
       .open('bus-timetable-api')
@@ -69,9 +127,9 @@ export function OfflineBanner() {
         setHasCachedData(false)
       })
       .catch(() => {})
-  }, [isOnline])
+  }, [effectivelyOffline])
 
-  if (isOnline || dismissed) return null
+  if (!effectivelyOffline || dismissed) return null
 
   return (
     <div className="fixed top-20 md:top-16 left-0 right-0 z-40 bg-yellow-100 dark:bg-yellow-900/60 text-yellow-800 dark:text-yellow-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-2">

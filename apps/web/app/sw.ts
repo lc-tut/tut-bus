@@ -43,6 +43,18 @@ const serwist = new Serwist({
       matcher: ({ request }) => request.mode === 'navigate',
       handler: new NetworkOnly({
         networkTimeoutSeconds: 3,
+        plugins: [
+          {
+            // ナビゲーション失敗時にクライアントへオフライン通知を送信
+            // fetchDidFail は handlerDidError と異なりフォールバックプラグインを阻害しない
+            fetchDidFail: async () => {
+              const clients = await self.clients.matchAll({ type: 'window' })
+              for (const client of clients) {
+                client.postMessage({ type: 'SW_OFFLINE' })
+              }
+            },
+          },
+        ],
       }),
     },
     // RSC (React Server Components) ペイロード: Next.jsのクライアントサイドナビゲーション用
@@ -156,6 +168,17 @@ const serwist = new Serwist({
       },
     ],
   },
+})
+
+// 旧バージョンの SW が作成した stale ランタイムキャッシュを削除
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    Promise.all([
+      caches.delete('pages-cache'),
+      caches.delete('pages'),
+      caches.delete('others'),
+    ])
+  )
 })
 
 serwist.addEventListeners()
