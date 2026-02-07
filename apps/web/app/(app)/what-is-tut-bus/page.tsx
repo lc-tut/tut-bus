@@ -121,7 +121,7 @@ export default function WhatIsTutBusPage() {
           <Button asChild size="lg" className="font-semibold">
             <Link href="/">
               <FaBus className="mr-1.5 size-4" />
-              いますぐ確認する
+              すぐ乗れる便
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="font-semibold">
