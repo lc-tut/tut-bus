@@ -7,6 +7,8 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
 import {
@@ -429,6 +431,10 @@ export function TimetableFilter({
                 検索
               </Button>
             </DrawerTrigger>
+            <DrawerHeader>
+              <DrawerTitle className="text-lg font-semibold flex items-center">
+              </DrawerTitle>
+            </DrawerHeader>
             <DrawerContent>
             <TimetableDisplay
               selectedDeparture={selectedDeparture}
