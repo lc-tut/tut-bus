@@ -182,6 +182,16 @@ tasks:
     desc: 'APIコンテナのログを表示'
     cmd: docker logs -f api
 
+  generate:service:
+    desc: 'PDFからサービスJSONを生成 (usage: task generate:service -- --pdf path/to/timetable.pdf)'
+    dir: tools/service-generator
+    cmd: go run main.go {{.CLI_ARGS}}
+
+  generate:service:setup:
+    desc: 'サービスジェネレーターの依存パッケージをインストール'
+    dir: tools/service-generator
+    cmd: go mod tidy
+
   default:
     desc: '利用可能なタスク一覧を表示'
     cmds:
