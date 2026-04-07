@@ -1,0 +1,177 @@
+# ========================================
+# API Deploy - App Engine
+# ========================================
+# mainブランチへのGoソース変更push時、または手動トリガーで
+# App Engineにデプロイ（DB/seed/script変更では発火しない）
+
+name: 'API Deploy'
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - '!apps/api/db/**'
+      - '!apps/api/data/**'
+      - '!apps/api/scripts/**'
+      - '!apps/api/tools/**'
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'デプロイを実行しますか？（yesと入力）'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  deployments: write
+
+defaults:
+  run:
+    working-directory: apps/api
+
+jobs:
+  # ========================================
+  # CI Checks（デプロイ前の品質チェック）
+  # ========================================
+  ci:
+    name: 'Pre-deploy Checks'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Go Format Check
+        run: |
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "::error::フォーマットされていないファイルがあります"
+            echo "$UNFORMATTED"
+            exit 1
+          fi
+
+      - name: Go Vet
+        run: go vet ./...
+
+      - name: Build Check
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /dev/null .
+
+      - name: Test
+        run: go test -v -race ./...
+
+  # ========================================
+  # Deploy to App Engine
+  # ========================================
+  deploy:
+    name: 'Deploy to App Engine'
+    runs-on: ubuntu-latest
+    needs: ci
+    environment: production
+
+    steps:
+      - name: Confirm Input (manual trigger)
+        if: github.event_name == 'workflow_dispatch' && inputs.confirm != 'yes'
+        run: |
+          echo "::error::確認入力が 'yes' ではありません。デプロイを中止します。"
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Google Cloud Auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.TERRAFORM_SA }}
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: Deploy to App Engine
+        id: deploy
+        run: |
+          gcloud app deploy app.yaml \
+            --project=${{ vars.GCP_PROJECT_ID }} \
+            --quiet \
+            --no-promote \
+            --version="gh-${{ github.run_number }}"
+
+      - name: Verify Deployment
+        id: verify
+        run: |
+          VERSION="gh-${{ github.run_number }}"
+          echo "Deployed version: $VERSION"
+
+          # デプロイされたバージョンのヘルスチェック（最大5回リトライ）
+          DEPLOY_URL="https://${VERSION}-dot-${{ vars.GCP_PROJECT_ID }}.appspot.com"
+          echo "deploy_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+
+          for i in $(seq 1 5); do
+            echo "Health check attempt $i/5..."
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL" || true)
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "404" ] || [ "$STATUS" = "301" ]; then
+              echo "✅ Version $VERSION is responding (HTTP $STATUS)"
+              break
+            fi
+            if [ "$i" -eq 5 ]; then
+              echo "::warning::ヘルスチェックがタイムアウトしました（HTTP $STATUS）。手動で確認してください。"
+            fi
+            sleep 10
+          done
+
+      - name: Promote to Production
+        run: |
+          VERSION="gh-${{ github.run_number }}"
+          gcloud app services set-traffic default \
+            --splits="$VERSION=1" \
+            --project=${{ vars.GCP_PROJECT_ID }} \
+            --quiet
+
+          echo "✅ Version $VERSION is now serving 100% traffic"
+
+      - name: Cleanup Old Versions
+        if: success()
+        run: |
+          # 最新5バージョン以外を削除
+          OLD_VERSIONS=$(gcloud app versions list \
+            --service=default \
+            --project=${{ vars.GCP_PROJECT_ID }} \
+            --sort-by='~version.createTime' \
+            --format='value(version.id)' | tail -n +6)
+
+          if [ -n "$OLD_VERSIONS" ]; then
+            echo "Cleaning up old versions..."
+            echo "$OLD_VERSIONS" | xargs -I {} gcloud app versions delete {} \
+              --service=default \
+              --project=${{ vars.GCP_PROJECT_ID }} \
+              --quiet || true
+          else
+            echo "No old versions to clean up."
+          fi
+
+      - name: Deploy Summary
+        if: always()
+        run: |
+          echo "### Deploy Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Version | \`gh-${{ github.run_number }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Project | \`${{ vars.GCP_PROJECT_ID }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Trigger | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Actor | @${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Status | \`${{ job.status }}\` |" >> "$GITHUB_STEP_SUMMARY"

@@ -17,7 +17,8 @@ function getIsStandalone() {
   const isIosStandalone =
     typeof window.navigator !== 'undefined' &&
     // iOS Safari exposes this when running as an installed PWA
-    (window.navigator as any).standalone === true
+    'standalone' in window.navigator &&
+    (window.navigator as Navigator & { standalone: boolean }).standalone === true
 
   return isStandaloneDisplayMode || isIosStandalone
 }

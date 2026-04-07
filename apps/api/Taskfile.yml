@@ -9,6 +9,9 @@ vars:
   DB_URL: 'postgres://{{.DB_USER}}:{{.DB_PASSWORD}}@{{.DB_HOST}}:{{.DB_PORT}}/{{.DB_NAME}}?sslmode=disable'
   MIGRATIONS_DIR: db/migrations
   QUERIES_DIR: db/queries
+  SEEDS_COMMON_DIR: db/seeds/common
+  SEEDS_PROD_DIR: db/seeds/production
+  SEEDS_DEV_DIR: db/seeds/development
 
 tasks:
   run:
@@ -97,9 +100,56 @@ tasks:
       - task: migrate:down:all
       - task: migrate:up
 
+  db:reset:seed:
+    desc: 'データベースをリセットしてシードデータも投入'
+    cmds:
+      - task: db:reset
+      - task: db:seed:all
+
+  db:seed:common:
+    desc: '共通シードデータを投入（全環境共通）'
+    cmds:
+      - |
+        echo "🌱 共通シードデータを適用中..."
+        for f in $(ls db/seeds/common/*.sql 2>/dev/null | sort); do
+          echo "  適用中: $(basename $f)"
+          PGPASSWORD={{.DB_PASSWORD}} psql -h {{.DB_HOST}} -p {{.DB_PORT}} -U {{.DB_USER}} -d {{.DB_NAME}} -f "$f"
+        done
+        echo "✅ 共通シードデータ適用完了"
+
+  db:seed:prod:
+    desc: '本番用シードデータを投入'
+    cmds:
+      - |
+        echo "🌱 本番シードデータを適用中..."
+        for f in $(ls db/seeds/production/*.sql 2>/dev/null | sort); do
+          echo "  適用中: $(basename $f)"
+          PGPASSWORD={{.DB_PASSWORD}} psql -h {{.DB_HOST}} -p {{.DB_PORT}} -U {{.DB_USER}} -d {{.DB_NAME}} -f "$f"
+        done
+        echo "✅ 本番シードデータ適用完了"
+
+  db:seed:dev:
+    desc: '開発用シードデータを投入'
+    cmds:
+      - |
+        echo "🌱 開発シードデータを適用中..."
+        for f in $(ls db/seeds/development/*.sql 2>/dev/null | sort); do
+          echo "  適用中: $(basename $f)"
+          PGPASSWORD={{.DB_PASSWORD}} psql -h {{.DB_HOST}} -p {{.DB_PORT}} -U {{.DB_USER}} -d {{.DB_NAME}} -f "$f"
+        done
+        echo "✅ 開発シードデータ適用完了"
+
+  db:seed:all:
+    desc: '全シードデータを投入（共通 → 本番 → 開発）'
+    cmds:
+      - task: db:seed:common
+      - task: db:seed:prod
+      - task: db:seed:dev
+
   db:seed:
-    desc: 'シードデータを投入'
-    cmd: go run ./cmd/seed/main.go
+    desc: 'シードデータを投入（db:seed:allのエイリアス）'
+    cmds:
+      - task: db:seed:all
 
   db:dump:
     desc: 'データベースをダンプ'

@@ -58,6 +58,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '~> 1.14.2'
+          terraform_wrapper: false
 
       - name: Google Cloud Auth
         uses: google-github-actions/auth@v3
@@ -70,14 +71,15 @@ jobs:
 
       - name: Terraform Plan (pre-apply check)
         id: plan
-        run: terraform plan -var-file=environments/production.tfvars -no-color -input=false -detailed-exitcode
-        continue-on-error: true
+        run: |
+          set +e
+          terraform plan -var-file=environments/production.tfvars -no-color -input=false -detailed-exitcode
+          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
 
       - name: Skip if No Changes
         if: steps.plan.outputs.exitcode == '0'
         run: |
           echo "::notice::No changes detected. Skipping apply."
-          exit 0
 
       - name: Fail on Plan Error
         if: steps.plan.outputs.exitcode == '1'

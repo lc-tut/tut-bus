@@ -44,7 +44,7 @@ services:
       - db
 
   db:
-    image: postgres:17
+    image: postgres:15
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: p@ssw0rd
@@ -53,6 +53,7 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
       - ./database/pg_hba.conf:/etc/postgresql/pg_hba.custom:ro
     command: postgres
       -c hba_file=/etc/postgresql/pg_hba.custom

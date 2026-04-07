@@ -1,0 +1,325 @@
+# ========================================
+# Migration CI - Validate & Test
+# ========================================
+# PR時にマイグレーションファイルの検証とテストを実行
+# - ファイル命名規則チェック
+# - up/downペア存在チェック
+# - PostgreSQL 15でマイグレーション実行テスト
+# - sqlcコンパイル検証
+
+name: 'Migration CI'
+
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'apps/api/db/migrations/**'
+      - 'apps/api/db/queries/**'
+      - 'apps/api/db/seeds/**'
+      - 'apps/api/sqlc.yaml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: apps/api
+
+env:
+  MIGRATE_VERSION: 'v4.18.3'
+  SQLC_VERSION: '1.28.0'
+
+jobs:
+  validate:
+    name: 'Validate Migration Files'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check Migration File Naming
+        run: |
+          echo "🔍 マイグレーションファイルの命名規則をチェック..."
+          ERRORS=0
+
+          for file in db/migrations/*.sql; do
+            [ -e "$file" ] || continue
+            basename=$(basename "$file")
+
+            # 命名規則: NNNNNN_<description>.(up|down).sql
+            if ! echo "$basename" | grep -qE '^[0-9]{6}_[a-z_]+\.(up|down)\.sql$'; then
+              echo "::error file=$file::命名規則違反: $basename (期待: NNNNNN_description.up.sql / NNNNNN_description.down.sql)"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          if [ "$ERRORS" -gt 0 ]; then
+            exit 1
+          fi
+          echo "✅ 命名規則チェック OK"
+
+      - name: Check Up/Down Pairs
+        run: |
+          echo "🔍 up/downペアの存在をチェック..."
+          ERRORS=0
+
+          # up ファイルに対応する down があるか
+          for up_file in db/migrations/*.up.sql; do
+            [ -e "$up_file" ] || continue
+            down_file="${up_file%.up.sql}.down.sql"
+            if [ ! -f "$down_file" ]; then
+              echo "::error file=$up_file::対応するdownファイルがありません: $(basename "$down_file")"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          # down ファイルに対応する up があるか
+          for down_file in db/migrations/*.down.sql; do
+            [ -e "$down_file" ] || continue
+            up_file="${down_file%.down.sql}.up.sql"
+            if [ ! -f "$up_file" ]; then
+              echo "::error file=$down_file::対応するupファイルがありません: $(basename "$up_file")"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          if [ "$ERRORS" -gt 0 ]; then
+            exit 1
+          fi
+          echo "✅ up/downペアチェック OK"
+
+      - name: Check Migration Sequence
+        run: |
+          echo "🔍 マイグレーション番号の連続性をチェック..."
+
+          # up ファイルから番号を抽出してソート
+          NUMBERS=$(ls db/migrations/*.up.sql 2>/dev/null | xargs -I{} basename {} | grep -oE '^[0-9]+' | sort -n | uniq)
+
+          PREV=0
+          for NUM in $NUMBERS; do
+            # 先頭の0を除去して数値比較
+            CLEAN_NUM=$((10#$NUM))
+            EXPECTED=$((PREV + 1))
+            if [ "$CLEAN_NUM" -ne "$EXPECTED" ]; then
+              echo "::warning::マイグレーション番号が連続していません: $PREV → $CLEAN_NUM (期待: $EXPECTED)"
+            fi
+            PREV=$CLEAN_NUM
+          done
+
+          echo "✅ シーケンスチェック完了"
+
+      # -----------------------------------------------
+      # Seed Safety Check (seedlint)
+      # PostgreSQL AST パーサーによるSQL安全性検証
+      # 正規表現ではなくpg_queryで構文木を解析するため誤検知なし
+      # -----------------------------------------------
+      - name: Setup Go (for seedlint)
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/tools/seedlint/go.sum
+
+      - name: Build seedlint
+        run: |
+          cd tools/seedlint
+          go build -o seedlint .
+          echo "✅ seedlint ビルド完了"
+
+      - name: Check Seed Safety (common/ + production/)
+        run: |
+          echo "🔍 common/ + production/ シードの安全性をチェック (seedlint safe)..."
+          tools/seedlint/seedlint safe db/seeds/common/ db/seeds/production/
+
+      - name: Check Seed Syntax (development/)
+        run: |
+          echo "🔍 development/ シードの構文をチェック (seedlint syntax)..."
+          tools/seedlint/seedlint syntax db/seeds/development/
+
+  test:
+    name: 'Test Migrations'
+    runs-on: ubuntu-latest
+    needs: validate
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: tut_bus_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -h localhost -U postgres"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+          --health-start-period=5s
+
+    env:
+      DB_URL: 'postgres://postgres:testpassword@localhost:5432/tut_bus_test?sslmode=disable'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+
+      - name: Install golang-migrate
+        run: |
+          curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/${{ env.MIGRATE_VERSION }}/migrate.linux-amd64.tar.gz" | tar xz
+          sudo mv migrate /usr/local/bin/migrate
+
+      - name: Install sqlc
+        run: |
+          curl -fsSL "https://github.com/sqlc-dev/sqlc/releases/download/v${{ env.SQLC_VERSION }}/sqlc_${{ env.SQLC_VERSION }}_linux_amd64.tar.gz" | tar xz
+          sudo mv sqlc /usr/local/bin/sqlc
+
+      - name: Run Migrations Up
+        run: |
+          echo "⬆️ マイグレーションを適用中..."
+          migrate -path db/migrations -database "${{ env.DB_URL }}" up
+          echo "✅ マイグレーション適用完了"
+
+      - name: sqlc Compile Check
+        run: |
+          echo "🔍 sqlcコンパイルチェック..."
+          sqlc compile
+          echo "✅ sqlcコンパイル OK"
+
+      # ⚠️ 以下のロールバックテストはCI専用のテストDBコンテナ（tut_bus_test）で実行されます。
+      # 本番DBには一切接続・影響しません。
+      # down -all でロールバックが正常に動作することを検証しています。
+      - name: Run Migrations Down (Rollback Test)
+        run: |
+          echo "⬇️ ロールバックテスト中（CI テストDB: tut_bus_test）..."
+          migrate -path db/migrations -database "${{ env.DB_URL }}" down -all
+          echo "✅ 全マイグレーションのロールバック成功"
+
+      - name: Run Migrations Up Again (Idempotency Test)
+        run: |
+          echo "⬆️ 再適用テスト中..."
+          migrate -path db/migrations -database "${{ env.DB_URL }}" up
+          echo "✅ マイグレーション再適用成功"
+
+      # Phase 1: ドライラン - トランザクション内で実行してROLLBACKすることで、
+      # SQLが実際のスキーマに対してエラーなく実行できるか検証
+      - name: Dry-run Seeds (Transaction Validation)
+        run: |
+          echo "🔍 シードドライラン（BEGIN + ROLLBACK）..."
+          DRY_RUN_SQL="BEGIN;"
+          for seed_file in db/seeds/common/*.sql db/seeds/production/*.sql; do
+            [ -e "$seed_file" ] || continue
+            echo "  検証中: $(basename "$seed_file")"
+            DRY_RUN_SQL="${DRY_RUN_SQL}
+          $(cat "$seed_file")"
+          done
+          DRY_RUN_SQL="${DRY_RUN_SQL}
+          ROLLBACK;"
+
+          echo "$DRY_RUN_SQL" | PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -v ON_ERROR_STOP=1 --quiet
+          echo "✅ ドライラン成功（SQLにエラーなし）"
+
+      # Phase 2: 実際に適用
+      - name: Apply Seeds (common + production)
+        run: |
+          echo "🌱 シードデータの適用..."
+          for seed_file in db/seeds/common/*.sql db/seeds/production/*.sql; do
+            [ -e "$seed_file" ] || continue
+            echo "  適用中: $(basename "$seed_file")"
+            PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -v ON_ERROR_STOP=1 -f "$seed_file"
+          done
+          echo "✅ シードデータ適用完了"
+
+      - name: Test Seed Idempotency (common + production)
+        run: |
+          echo "🔁 シード冪等性テスト..."
+          echo "  データを変更してからseedを再実行し、変更が保持されることを検証"
+
+          # 現在のレコード数を取得
+          COUNT_BEFORE=$(PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test \
+            -t -A -c "SELECT count(*) FROM bus_stops;" 2>/dev/null || echo "0")
+          echo "  seed適用後のレコード数: $COUNT_BEFORE"
+
+          # テスト用のデータ変更（管理画面での操作をシミュレート）
+          PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -c "
+            -- 既存レコードの名前を変更（管理画面での編集をシミュレート）
+            UPDATE bus_stops SET name = name || '_MODIFIED' WHERE id = (SELECT MIN(id) FROM bus_stops);
+            -- 新しいレコードを追加（管理画面での追加をシミュレート）
+            INSERT INTO bus_stops (name, lat, lng) VALUES ('USER_ADDED_STOP', 0, 0);
+          " 2>/dev/null || echo "  (テストデータの変更スキップ - テーブルが空の可能性)"
+
+          # 変更後の状態を記録
+          MODIFIED_NAME=$(PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test \
+            -t -A -c "SELECT name FROM bus_stops WHERE name LIKE '%_MODIFIED' LIMIT 1;" 2>/dev/null || echo "")
+          USER_ADDED=$(PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test \
+            -t -A -c "SELECT count(*) FROM bus_stops WHERE name = 'USER_ADDED_STOP';" 2>/dev/null || echo "0")
+
+          # seed を再実行
+          echo "  common seeds を再適用..."
+          for seed_file in db/seeds/common/*.sql; do
+            [ -e "$seed_file" ] || continue
+            PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -f "$seed_file" 2>/dev/null
+          done
+
+          echo "  production seeds を再適用..."
+          for seed_file in db/seeds/production/*.sql; do
+            [ -e "$seed_file" ] || continue
+            PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test -f "$seed_file" 2>/dev/null
+          done
+
+          # 検証: 変更が保持されているか
+          ERRORS=0
+
+          MODIFIED_NAME_AFTER=$(PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test \
+            -t -A -c "SELECT name FROM bus_stops WHERE name LIKE '%_MODIFIED' LIMIT 1;" 2>/dev/null || echo "")
+          if [ -n "$MODIFIED_NAME" ] && [ "$MODIFIED_NAME" != "$MODIFIED_NAME_AFTER" ]; then
+            echo "::error::冪等性違反: 編集済みデータが上書きされました ($MODIFIED_NAME → $MODIFIED_NAME_AFTER)"
+            ERRORS=$((ERRORS + 1))
+          else
+            echo "  ✅ 編集済みデータが保持されています"
+          fi
+
+          USER_ADDED_AFTER=$(PGPASSWORD=testpassword psql -h localhost -U postgres -d tut_bus_test \
+            -t -A -c "SELECT count(*) FROM bus_stops WHERE name = 'USER_ADDED_STOP';" 2>/dev/null || echo "0")
+          if [ "$USER_ADDED_AFTER" != "$USER_ADDED" ]; then
+            echo "::error::冪等性違反: ユーザー追加データが削除されました"
+            ERRORS=$((ERRORS + 1))
+          else
+            echo "  ✅ ユーザー追加データが保持されています"
+          fi
+
+          if [ "$ERRORS" -gt 0 ]; then
+            exit 1
+          fi
+          echo "✅ シード冪等性テスト完了"
+
+      - name: Go Build Check
+        run: CGO_ENABLED=0 go build -o /dev/null .
+
+      - name: Go Tests
+        run: go test -v -race ./...
+
+      - name: Migration Summary
+        if: always()
+        run: |
+          echo "### Migration CI Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+
+          MIGRATION_COUNT=$(ls db/migrations/*.up.sql 2>/dev/null | wc -l | tr -d ' ')
+          SEED_COMMON_COUNT=$(ls db/seeds/common/*.sql 2>/dev/null | wc -l | tr -d ' ')
+          SEED_PROD_COUNT=$(ls db/seeds/production/*.sql 2>/dev/null | wc -l | tr -d ' ')
+          QUERY_COUNT=$(ls db/queries/*.sql 2>/dev/null | wc -l | tr -d ' ')
+
+          echo "| Migration Files | ${MIGRATION_COUNT} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Common Seeds | ${SEED_COMMON_COUNT} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Production Seeds | ${SEED_PROD_COUNT} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Query Files | ${QUERY_COUNT} |" >> "$GITHUB_STEP_SUMMARY"

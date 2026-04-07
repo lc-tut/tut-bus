@@ -297,7 +297,59 @@ terraform apply \
 | Cloudflare | SSL/TLS / HTTPS 設定                                  |
 | Vercel     | プロジェクト + 環境変数 + カスタムドメイン            |
 
-### 5.4 出力値の確認
+### 5.4 Cloud SQL IAM ユーザーの権限付与（初回のみ）
+
+`terraform apply` で Cloud SQL インスタンスと IAM ユーザーが作成されますが、PostgreSQL 15 では IAM ユーザーに `public` スキーマの操作権限がデフォルトで付与されません。
+マイグレーション（Cloud Run Job）を実行する前に、`postgres` 管理ユーザーで一度だけ GRANT を実行する必要があります。
+
+**1. 自分のアカウントに Cloud SQL Admin 権限を一時的に付与**
+
+```bash
+gcloud projects add-iam-policy-binding main-vcompute \
+  --member="user:<YOUR_EMAIL>" \
+  --role="roles/cloudsql.admin"
+# 条件の選択を求められたら「None」を選択
+```
+
+**2. postgres ユーザーのパスワードを設定**
+
+```bash
+gcloud sql users set-password postgres \
+  --instance=tut-bus-db-prod \
+  --project=main-vcompute \
+  --password='一時パスワード'
+```
+
+**3. Cloud SQL Studio でログイン**
+
+GCP Console → Cloud SQL → `tut-bus-db-prod` → **Cloud SQL Studio** で `postgres` ユーザーとしてログインします。
+
+**4. IAM ユーザーに権限を付与**
+
+```sql
+-- public スキーマの利用 & テーブル作成権限
+GRANT USAGE, CREATE ON SCHEMA public TO "tut-bus-app-sa@main-vcompute.iam";
+
+-- 既存テーブル・シーケンスへの全権限
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "tut-bus-app-sa@main-vcompute.iam";
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "tut-bus-app-sa@main-vcompute.iam";
+
+-- 今後作成されるテーブル・シーケンスへの自動権限付与
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO "tut-bus-app-sa@main-vcompute.iam";
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO "tut-bus-app-sa@main-vcompute.iam";
+```
+
+> **注意**: この手順は初回のみ必要です。一度実行すれば、以降の Migration Deploy（Cloud Run Job）は正常に動作します。
+
+**5. 一時的に付与した Cloud SQL Admin 権限を削除**
+
+```bash
+gcloud projects remove-iam-policy-binding main-vcompute \
+  --member="user:<YOUR_EMAIL>" \
+  --role="roles/cloudsql.admin"
+```
+
+### 5.5 出力値の確認
 
 ```bash
 # GitHub Actions で必要な値

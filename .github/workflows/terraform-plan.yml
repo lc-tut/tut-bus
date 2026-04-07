@@ -40,6 +40,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '~> 1.14.2'
+          terraform_wrapper: false
 
       - name: Google Cloud Auth
         uses: google-github-actions/auth@v3
@@ -52,22 +53,31 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -var-file=environments/production.tfvars -no-color -input=false -detailed-exitcode
-        continue-on-error: true
+        run: |
+          set +e
+          PLAN_OUTPUT=$(terraform plan -var-file=environments/production.tfvars -no-color -input=false -detailed-exitcode 2>&1)
+          PLAN_EXITCODE=$?
+          echo "$PLAN_OUTPUT"
+          echo "exitcode=$PLAN_EXITCODE" >> "$GITHUB_OUTPUT"
+          {
+            echo "stdout<<__TF_PLAN_EOF__"
+            echo "$PLAN_OUTPUT"
+            echo "__TF_PLAN_EOF__"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Determine Plan Status
         id: plan_status
         run: |
           EXIT_CODE="${{ steps.plan.outputs.exitcode }}"
           if [ "$EXIT_CODE" = "0" ]; then
-            echo "status=No changes" >> $GITHUB_OUTPUT
-            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "status=No changes" >> "$GITHUB_OUTPUT"
+            echo "emoji=✅" >> "$GITHUB_OUTPUT"
           elif [ "$EXIT_CODE" = "2" ]; then
-            echo "status=Changes detected" >> $GITHUB_OUTPUT
-            echo "emoji=⚠️" >> $GITHUB_OUTPUT
+            echo "status=Changes detected" >> "$GITHUB_OUTPUT"
+            echo "emoji=⚠️" >> "$GITHUB_OUTPUT"
           else
-            echo "status=Error" >> $GITHUB_OUTPUT
-            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "status=Error" >> "$GITHUB_OUTPUT"
+            echo "emoji=❌" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Post Plan to PR

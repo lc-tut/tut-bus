@@ -2,6 +2,7 @@
 resource "vercel_project" "main" {
   name      = var.project_name
   framework = var.framework
+  team_id   = var.team_id
 
   git_repository = {
     type              = "github"
@@ -15,6 +16,16 @@ resource "vercel_project" "main" {
   output_directory   = var.output_directory
   root_directory     = var.root_directory
   build_machine_type = "enhanced"
+
+  # Production デプロイ時にカスタムドメインを自動割り当て
+  auto_assign_custom_domains = true
+
+  # Production ビルドを Preview より優先
+  prioritise_production_builds = true
+
+  # Skew Protection（有効にすると Production デプロイが Staged になり Promote が必要）
+  # 不要な場合は null（未設定）にする
+  skew_protection = var.skew_protection
 }
 
 # 環境変数 - Production
@@ -129,6 +140,7 @@ resource "vercel_project_environment_variable" "better_auth_secret" {
   target     = ["production", "preview"]
   key        = "BETTER_AUTH_SECRET"
   value      = var.better_auth_secret
+  sensitive  = true
 }
 
 # GitHub OAuth - Client ID
@@ -145,6 +157,7 @@ resource "vercel_project_environment_variable" "auth_github_secret" {
   target     = ["production", "preview"]
   key        = "AUTH_GITHUB_SECRET"
   value      = var.auth_github_secret
+  sensitive  = true
 }
 
 # Allowed Team（オプション）
