@@ -1,7 +1,7 @@
 # ========================================
 # API Deploy - App Engine
 # ========================================
-# mainブランチへのGoソース・dataフォルダ変更push時、または手動トリガーで
+# mainブランチへのGoソース変更push時、または手動トリガーで
 # App Engineにデプロイ（DB/seed/script変更では発火しない）
 
 name: 'API Deploy'
@@ -12,6 +12,7 @@ on:
     paths:
       - 'apps/api/**'
       - '!apps/api/db/**'
+      - '!apps/api/data/**'
       - '!apps/api/scripts/**'
       - '!apps/api/tools/**'
   workflow_dispatch:
