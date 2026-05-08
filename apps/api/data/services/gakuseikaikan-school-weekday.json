@@ -11,9 +11,22 @@
   },
   "direction": "inbound",
   "validityPeriods": [
-    { "from": "2025-09-22", "to": "2025-12-19" },
-    { "from": "2025-12-22", "to": "2025-12-22" },
-    { "from": "2026-01-05", "to": "2026-04-30" }
+    {
+      "from": "2025-09-22",
+      "to": "2025-12-19"
+    },
+    {
+      "from": "2025-12-22",
+      "to": "2025-12-22"
+    },
+    {
+      "from": "2026-01-05",
+      "to": "2026-04-30"
+    },
+    {
+      "from": "2026-04-07",
+      "to": "2026-07-29"
+    }
   ],
   "segments": [
     {
@@ -23,13 +36,34 @@
         "value": "weekday"
       },
       "times": [
-        { "departure": "8:14", "arrival": "8:24" },
-        { "departure": "8:34", "arrival": "8:44" },
-        { "departure": "8:54", "arrival": "9:04" },
-        { "departure": "9:14", "arrival": "9:24" },
-        { "departure": "10:20", "arrival": "10:30" },
-        { "departure": "10:45", "arrival": "10:55" },
-        { "departure": "17:09", "arrival": "17:19" }
+        {
+          "departure": "8:14",
+          "arrival": "8:24"
+        },
+        {
+          "departure": "8:34",
+          "arrival": "8:44"
+        },
+        {
+          "departure": "8:54",
+          "arrival": "9:04"
+        },
+        {
+          "departure": "9:14",
+          "arrival": "9:24"
+        },
+        {
+          "departure": "10:20",
+          "arrival": "10:30"
+        },
+        {
+          "departure": "10:45",
+          "arrival": "10:55"
+        },
+        {
+          "departure": "17:10",
+          "arrival": "17:20"
+        }
       ]
     }
   ]
