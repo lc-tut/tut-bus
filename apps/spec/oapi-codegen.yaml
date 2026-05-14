@@ -1,7 +1,0 @@
-package: oapi
-generate:
-  - models
-  - echo-server
-  - spec
-
-output: ../api/pkg/oapi/models.gen.go
