@@ -66,6 +66,11 @@ jobs:
           workload_identity_provider: ${{ vars.WIF_PROVIDER }}
           service_account: ${{ vars.TERRAFORM_SA }}
 
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
       - name: Terraform Init
         run: terraform init -input=false
 
