@@ -100,10 +100,23 @@ jobs:
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
+      - name: Load CORS Origins from Terraform Vars
+        id: tfvars
+        run: |
+          CORS_ALLOWED_ORIGINS=$(sed -n "s/^cors_allowed_origins = \"\(.*\)\"/\1/p" ../../infra/environments/production.tfvars)
+          if [ -z "$CORS_ALLOWED_ORIGINS" ]; then
+            echo "::error::infra/environments/production.tfvars から cors_allowed_origins を取得できませんでした"
+            exit 1
+          fi
+          echo "cors_allowed_origins=$CORS_ALLOWED_ORIGINS" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to App Engine
         id: deploy
         run: |
-          gcloud app deploy app.yaml \
+          cp app.yaml app.ci.yaml
+          sed -i "s|^  CORS_ALLOWED_ORIGINS:.*$|  CORS_ALLOWED_ORIGINS: '${{ steps.tfvars.outputs.cors_allowed_origins }}'|" app.ci.yaml
+
+          gcloud app deploy app.ci.yaml \
             --project=${{ vars.GCP_PROJECT_ID }} \
             --quiet \
             --no-promote \
