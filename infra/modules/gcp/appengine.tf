@@ -32,6 +32,8 @@ resource "null_resource" "app_engine_config_rollout" {
   }
 
   provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+
     command = <<-EOT
       set -euo pipefail
 
