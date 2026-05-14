@@ -38,7 +38,8 @@ resource "null_resource" "app_engine_config_rollout" {
       set -euo pipefail
 
       APP_DIR="${path.module}/../../../apps/api"
-      TMP_FILE="$(mktemp /tmp/app.XXXXXX.yaml)"
+      cd "$APP_DIR"
+      TMP_FILE="$(mktemp ./app.XXXXXX.yaml)"
       trap 'rm -f "$TMP_FILE"' EXIT
 
       cat > "$TMP_FILE" <<'EOF'
@@ -68,7 +69,6 @@ resource "null_resource" "app_engine_config_rollout" {
         target_throughput_utilization: 0.8
       EOF
 
-      cd "$APP_DIR"
       gcloud app deploy "$TMP_FILE" --project="${var.project_id}" --quiet
     EOT
   }
