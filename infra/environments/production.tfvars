@@ -24,7 +24,7 @@ db_instance_name = "tut-bus-db-prod"
 db_tier          = "db-f1-micro"
 
 # Application Configuration
-cors_allowed_origins = "https://tut-bus.hekuta.net,https://tut-bus.lcn.ad.jp"
+cors_allowed_origins = "https://tut-bus.hekuta.net,https://tut-bus.lcn.ad.jp,https://tut-life-helper.vercel.app"
 
 # ========================================
 # Cloudflare
