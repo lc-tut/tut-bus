@@ -34,6 +34,7 @@ resource "vercel_project_environment_variable" "api_url_production" {
   target     = ["production"]
   key        = "NEXT_PUBLIC_API_URL"
   value      = var.api_url_production
+  sensitive  = false
 }
 
 # 環境変数 - Preview
@@ -42,6 +43,7 @@ resource "vercel_project_environment_variable" "api_url_preview" {
   target     = ["preview"]
   key        = "NEXT_PUBLIC_API_URL"
   value      = var.api_url_preview
+  sensitive  = false
 }
 
 # 環境変数 - Development
@@ -50,6 +52,7 @@ resource "vercel_project_environment_variable" "api_url_development" {
   target     = ["development"]
   key        = "NEXT_PUBLIC_API_URL"
   value      = var.api_url_development
+  sensitive  = false
 }
 
 # Corepack有効化（pnpm 9.x を使用するため）
@@ -58,6 +61,7 @@ resource "vercel_project_environment_variable" "enable_corepack" {
   target     = ["production", "preview", "development"]
   key        = "ENABLE_EXPERIMENTAL_COREPACK"
   value      = "1"
+  sensitive  = false
 }
 
 # ========================================
@@ -70,6 +74,7 @@ resource "vercel_project_environment_variable" "announcement_message" {
   target     = ["production", "preview"]
   key        = "NEXT_PUBLIC_ANNOUNCEMENT_MESSAGE"
   value      = var.announcement_message
+  sensitive  = false
 }
 
 resource "vercel_project_environment_variable" "announcement_title" {
@@ -78,6 +83,7 @@ resource "vercel_project_environment_variable" "announcement_title" {
   target     = ["production", "preview"]
   key        = "NEXT_PUBLIC_ANNOUNCEMENT_TITLE"
   value      = var.announcement_title
+  sensitive  = false
 }
 
 resource "vercel_project_environment_variable" "announcement_type" {
@@ -86,6 +92,7 @@ resource "vercel_project_environment_variable" "announcement_type" {
   target     = ["production", "preview"]
   key        = "NEXT_PUBLIC_ANNOUNCEMENT_TYPE"
   value      = var.announcement_type
+  sensitive  = false
 }
 
 resource "vercel_project_environment_variable" "announcement_link_url" {
@@ -94,6 +101,7 @@ resource "vercel_project_environment_variable" "announcement_link_url" {
   target     = ["production", "preview"]
   key        = "NEXT_PUBLIC_ANNOUNCEMENT_LINK_URL"
   value      = var.announcement_link_url
+  sensitive  = false
 }
 
 resource "vercel_project_environment_variable" "announcement_link_text" {
@@ -102,6 +110,7 @@ resource "vercel_project_environment_variable" "announcement_link_text" {
   target     = ["production", "preview"]
   key        = "NEXT_PUBLIC_ANNOUNCEMENT_LINK_TEXT"
   value      = var.announcement_link_text
+  sensitive  = false
 }
 
 # Google Analytics
@@ -111,6 +120,7 @@ resource "vercel_project_environment_variable" "ga_id" {
   target     = ["production"]
   key        = "NEXT_PUBLIC_GA_ID"
   value      = var.ga_id
+  sensitive  = false
 }
 
 # ========================================
@@ -123,6 +133,7 @@ resource "vercel_project_environment_variable" "app_url_production" {
   target     = ["production"]
   key        = "NEXT_PUBLIC_APP_URL"
   value      = var.app_url_production
+  sensitive  = false
 }
 
 # アプリURL - Preview
@@ -132,6 +143,7 @@ resource "vercel_project_environment_variable" "app_url_preview" {
   target     = ["preview"]
   key        = "NEXT_PUBLIC_APP_URL"
   value      = var.app_url_preview
+  sensitive  = false
 }
 
 # Better Auth Secret
@@ -149,6 +161,7 @@ resource "vercel_project_environment_variable" "auth_github_id" {
   target     = ["production", "preview"]
   key        = "AUTH_GITHUB_ID"
   value      = var.auth_github_id
+  sensitive  = false
 }
 
 # GitHub OAuth - Client Secret
@@ -167,6 +180,7 @@ resource "vercel_project_environment_variable" "auth_allowed_team" {
   target     = ["production", "preview"]
   key        = "AUTH_ALLOWED_TEAM"
   value      = var.auth_allowed_team
+  sensitive  = false
 }
 
 # カスタムドメイン（オプション）
