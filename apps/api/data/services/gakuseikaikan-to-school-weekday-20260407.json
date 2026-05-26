@@ -1,6 +1,6 @@
 {
-  "id": "gakuseikaikan-to-school-weekday",
-  "name": "学生会館 → 大学（学生会館方面） (平日)",
+  "id": "gakuseikaikan-to-school-weekday-20260407",
+  "name": "学生会館 → 大学（学生会館方面） (平日 2026-04-07〜)",
   "from": {
     "stopId": 6,
     "displayName": "学生会館"
@@ -11,7 +11,10 @@
   },
   "direction": "inbound",
   "validityPeriods": [
-    { "from": "2026-04-07", "to": "2026-07-29" }
+    {
+      "from": "2026-04-07",
+      "to": "2026-07-29"
+    }
   ],
   "segments": [
     {

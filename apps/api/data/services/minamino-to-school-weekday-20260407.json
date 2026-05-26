@@ -1,6 +1,6 @@
 {
-  "id": "minamino-school-weekday",
-  "name": "八王子みなみ野駅 -> 大学（みなみ野駅方面） (平日) ",
+  "id": "minamino-to-school-weekday-20260407",
+  "name": "八王子みなみ野駅 → 大学（みなみ野駅方面） (平日 2026-04-07〜)",
   "from": {
     "stopId": 2,
     "displayName": "八王子みなみ野駅"
@@ -11,7 +11,10 @@
   },
   "direction": "inbound",
   "validityPeriods": [
-    { "from": "2026-04-07", "to": "2026-07-29" }
+    {
+      "from": "2026-04-07",
+      "to": "2026-07-29"
+    }
   ],
   "segments": [
     {
@@ -57,13 +60,12 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "8:17",
-      "endTime": "9:21",
+      "startTime": "8:16",
+      "endTime": "9:22",
       "intervalRange": {
         "min": 3,
         "max": 5
-      },
-      "note": "Runs every 3-5 minutes"
+      }
     },
     {
       "segmentType": "fixed",
@@ -280,13 +282,12 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "16:47",
-      "endTime": "17:24",
+      "startTime": "16:46",
+      "endTime": "17:25",
       "intervalRange": {
         "min": 3,
         "max": 10
-      },
-      "note": "Runs every 3-10 minutes"
+      }
     },
     {
       "segmentType": "fixed",
@@ -347,13 +348,12 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "19:01",
-      "endTime": "19:11",
+      "startTime": "19:00",
+      "endTime": "19:12",
       "intervalRange": {
         "min": 5,
         "max": 10
-      },
-      "note": "Runs every 5-10 minutes"
+      }
     },
     {
       "segmentType": "fixed",

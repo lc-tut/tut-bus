@@ -1,6 +1,6 @@
 {
-  "id": "school-to-hachioji-weekday",
-  "name": "大学（八王子駅方面） → 八王子駅 (平日)",
+  "id": "school-to-hachioji-weekday-20260407",
+  "name": "大学（八王子駅方面） → 八王子駅 (平日 2026-04-07〜)",
   "from": {
     "stopId": 3,
     "displayName": "大学（八王子駅方面）"
@@ -11,7 +11,10 @@
   },
   "direction": "outbound",
   "validityPeriods": [
-    { "from": "2026-04-07", "to": "2026-07-29" }
+    {
+      "from": "2026-04-07",
+      "to": "2026-07-29"
+    }
   ],
   "segments": [
     {
@@ -49,8 +52,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "7:44",
-      "endTime": "9:02",
+      "startTime": "7:43",
+      "endTime": "9:03",
       "intervalRange": {
         "min": 3,
         "max": 5
@@ -267,10 +270,10 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "15:01",
-      "endTime": "15:29",
+      "startTime": "15:00",
+      "endTime": "15:30",
       "intervalRange": {
-        "min": 5,
+        "min": 3,
         "max": 10
       }
     },
@@ -313,8 +316,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "16:21",
-      "endTime": "17:39",
+      "startTime": "16:20",
+      "endTime": "17:40",
       "intervalRange": {
         "min": 3,
         "max": 10
@@ -363,8 +366,8 @@
         "type": "dayType",
         "value": "weekday"
       },
-      "startTime": "18:41",
-      "endTime": "19:09",
+      "startTime": "18:40",
+      "endTime": "19:10",
       "intervalRange": {
         "min": 5,
         "max": 10

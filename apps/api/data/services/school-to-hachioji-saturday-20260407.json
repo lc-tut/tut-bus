@@ -1,6 +1,6 @@
 {
-  "id": "school-to-hachioji-saturday",
-  "name": "大学（八王子駅方面） → 八王子駅 (土曜日)",
+  "id": "school-to-hachioji-saturday-20260407",
+  "name": "大学（八王子駅方面） → 八王子駅 (土曜 2026-04-07〜)",
   "from": {
     "stopId": 3,
     "displayName": "大学（八王子駅方面）"
@@ -11,7 +11,10 @@
   },
   "direction": "outbound",
   "validityPeriods": [
-    { "from": "2026-04-07", "to": "2026-07-29" }
+    {
+      "from": "2026-04-07",
+      "to": "2026-07-29"
+    }
   ],
   "segments": [
     {

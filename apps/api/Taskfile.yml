@@ -192,6 +192,16 @@ tasks:
     dir: tools/service-generator
     cmd: go mod tidy
 
+  generate:timetable:
+    desc: 'PDFから時刻表JSONを生成 (usage: task api:generate:timetable -- --pdf path/to/timetable.pdf)'
+    dir: tools/timetable-gen
+    cmd: go run . {{.CLI_ARGS}}
+
+  generate:timetable:setup:
+    desc: 'timetable-gen の依存パッケージをインストール'
+    dir: tools/timetable-gen
+    cmd: go mod tidy
+
   default:
     desc: '利用可能なタスク一覧を表示'
     cmds:
