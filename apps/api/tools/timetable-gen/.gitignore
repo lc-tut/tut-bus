@@ -1,3 +1,5 @@
 .env
 downloaded/
 timetable-gen
+*.pdf
+*.png
