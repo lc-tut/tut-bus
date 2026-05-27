@@ -48,15 +48,21 @@ func runSync(args []string) {
 	if err != nil {
 		log.Fatalf("fetch 失敗: %v", err)
 	}
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
+		log.Fatalf("出力ディレクトリ作成失敗: %v", err)
+	}
+
+	// 2. 期限切れサービスをアーカイブ（新規PDFがなくても実行）
+	archived := archiveExpired(outputDir)
+	if archived > 0 {
+		fmt.Printf("アーカイブ: %d 件\n", archived)
+	}
+
 	if len(newFiles) == 0 {
 		fmt.Println("新規・更新 PDF なし。終了します。")
 		return
 	}
 	fmt.Printf("新規・更新 PDF: %d 件\n", len(newFiles))
-
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		log.Fatalf("出力ディレクトリ作成失敗: %v", err)
-	}
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
@@ -65,7 +71,7 @@ func runSync(args []string) {
 	}
 	defer client.Close()
 
-	// 2. 各 PDF を JSON に変換
+	// 3. 各 PDF を JSON に変換
 	totalSaved, totalFailed := 0, 0
 	for _, pdf := range newFiles {
 		fmt.Printf("\n--- %s (%s) ---\n", filepath.Base(pdf.Path), pdf.Title)
@@ -76,12 +82,6 @@ func runSync(args []string) {
 	}
 
 	fmt.Printf("\n合計: 生成 %d 件 / スキップ %d 件\n", totalSaved, totalFailed)
-
-	// 3. 期限切れサービスをアーカイブ
-	archived := archiveExpired(outputDir)
-	if archived > 0 {
-		fmt.Printf("アーカイブ: %d 件\n", archived)
-	}
 
 	// 4. API 再起動
 	if restartAPI && totalSaved > 0 {

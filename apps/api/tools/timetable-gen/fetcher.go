@@ -21,6 +21,8 @@ const (
 	stateFileName    = ".fetch-state.json"
 )
 
+var httpClient = &http.Client{Timeout: 30 * time.Second}
+
 type PDFState struct {
 	Title        string `json:"title"`
 	SHA256       string `json:"sha256"`
@@ -123,7 +125,7 @@ func fetchNewPDFs(outputDir string) (newFiles []DownloadedPDF, skipped int, err 
 }
 
 func scrapePDFLinks() ([]PDFLink, error) {
-	resp, err := http.Get(timetablePageURL)
+	resp, err := httpClient.Get(timetablePageURL)
 	if err != nil {
 		return nil, fmt.Errorf("HTTP GET 失敗: %w", err)
 	}
@@ -164,7 +166,7 @@ func removeHTMLComments(html string) string {
 const maxBodyBytes = 50 * 1024 * 1024 // 50 MB
 
 func downloadFile(url string) ([]byte, error) {
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return nil, err
 	}

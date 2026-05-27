@@ -23,7 +23,11 @@ func runView(args []string) {
 
 	var files []string
 	if info.IsDir() {
-		entries, _ := filepath.Glob(filepath.Join(target, "*.json"))
+		entries, err := filepath.Glob(filepath.Join(target, "*.json"))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 		files = entries
 	} else {
 		files = []string{target}
