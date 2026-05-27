@@ -22,8 +22,8 @@ const (
 )
 
 type PDFState struct {
-	Title       string `json:"title"`
-	SHA256      string `json:"sha256"`
+	Title        string `json:"title"`
+	SHA256       string `json:"sha256"`
 	DownloadedAt string `json:"downloadedAt"`
 }
 

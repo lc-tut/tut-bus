@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-
 // StationRoute holds the stop IDs and display names for one station's route.
 type StationRoute struct {
 	Key           string // kebab-case key used in service IDs
@@ -42,13 +41,13 @@ var stationRoutes = map[string]StationRoute{
 
 // stationAliases maps alternate names Gemini might return to canonical names.
 var stationAliases = map[string]string{
-	"八王子みなみ野":    "八王子みなみ野駅",
-	"みなみ野駅":      "八王子みなみ野駅",
-	"みなみ野":       "八王子みなみ野駅",
-	"八王子駅南口":     "八王子駅",
-	"八王子南口":      "八王子駅",
-	"hachioji":   "八王子駅",
-	"学生会館前":      "学生会館",
+	"八王子みなみ野":       "八王子みなみ野駅",
+	"みなみ野駅":         "八王子みなみ野駅",
+	"みなみ野":          "八王子みなみ野駅",
+	"八王子駅南口":        "八王子駅",
+	"八王子南口":         "八王子駅",
+	"hachioji":      "八王子駅",
+	"学生会館前":         "学生会館",
 	"gakuseikaikan": "学生会館",
 }
 
