@@ -22,7 +22,21 @@ func Map(data *ExtractedData, periods []ValidityPeriod) ([]ServiceData, error) {
 			return nil, fmt.Errorf("table %q: %w", table.StationName, err)
 		}
 
-		vp := resolvePeriods(table, periods)
+		// validFrom が取れない通常スケジュールは日付なし ID になり学期をまたいで衝突する。
+		// CLI --from が指定されていれば periods[0].From を ID 用に補完する（validityPeriods は
+		// resolvePeriods が cli 全体から決定するため、ここでは ID 生成目的の代入のみ）。
+		if table.SpecificFrom == "" && table.ValidFrom == "" {
+			if len(periods) > 0 {
+				table.ValidFrom = periods[0].From
+			} else {
+				return nil, fmt.Errorf("table %q: validFrom が空です。PDFに運行期間が見つからない場合は --from/--to を指定してください", table.StationName)
+			}
+		}
+
+		vp, err := resolvePeriods(table, periods)
+		if err != nil {
+			return nil, fmt.Errorf("table %q: %w", table.StationName, err)
+		}
 		cond := buildCondition(table)
 
 		outbound := ServiceData{
@@ -251,20 +265,21 @@ func normalizeTime(s string) string {
 	return hour + ":" + min
 }
 
-// resolvePeriods returns CLI-provided periods, then PDF-extracted periods, then a safe default.
-func resolvePeriods(table ExtractedTable, cli []ValidityPeriod) []ValidityPeriod {
+// resolvePeriods returns CLI-provided periods, then PDF-extracted periods.
+// Returns an error if no period can be determined.
+func resolvePeriods(table ExtractedTable, cli []ValidityPeriod) ([]ValidityPeriod, error) {
 	if len(cli) > 0 {
-		return cli
+		return cli, nil
 	}
 	if table.SpecificFrom != "" {
 		to := table.SpecificTo
 		if to == "" {
 			to = table.SpecificFrom
 		}
-		return []ValidityPeriod{{From: table.SpecificFrom, To: to}}
+		return []ValidityPeriod{{From: table.SpecificFrom, To: to}}, nil
 	}
 	if table.ValidFrom != "" && table.ValidTo != "" {
-		return []ValidityPeriod{{From: table.ValidFrom, To: table.ValidTo}}
+		return []ValidityPeriod{{From: table.ValidFrom, To: table.ValidTo}}, nil
 	}
-	return []ValidityPeriod{{From: "2025-04-01", To: "2099-12-31"}}
+	return nil, fmt.Errorf("有効期間が取得できませんでした。--from/--to を指定してください")
 }

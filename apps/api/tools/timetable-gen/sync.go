@@ -83,6 +83,10 @@ func runSync(args []string) {
 
 	fmt.Printf("\n合計: 生成 %d 件 / スキップ %d 件\n", totalSaved, totalFailed)
 
+	if totalFailed > 0 {
+		log.Printf("警告: %d 件の生成に失敗しました", totalFailed)
+	}
+
 	// 4. API 再起動
 	if restartAPI && totalSaved > 0 {
 		fmt.Println("API コンテナを再起動しています...")
@@ -93,6 +97,10 @@ func runSync(args []string) {
 		}
 	} else if totalSaved > 0 {
 		fmt.Println("\n※ API を再起動してください: docker restart api")
+	}
+
+	if totalFailed > 0 {
+		os.Exit(1)
 	}
 }
 

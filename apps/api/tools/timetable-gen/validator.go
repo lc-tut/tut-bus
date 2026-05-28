@@ -31,6 +31,19 @@ func Validate(svc ServiceData) []error {
 	if len(svc.ValidityPeriods) == 0 {
 		errs = append(errs, fmt.Errorf("validityPeriods is empty"))
 	}
+	for _, vp := range svc.ValidityPeriods {
+		from, fromErr := time.Parse("2006-01-02", vp.From)
+		if fromErr != nil {
+			errs = append(errs, fmt.Errorf("validityPeriods.from %q: invalid date", vp.From))
+		}
+		to, toErr := time.Parse("2006-01-02", vp.To)
+		if toErr != nil {
+			errs = append(errs, fmt.Errorf("validityPeriods.to %q: invalid date", vp.To))
+		}
+		if fromErr == nil && toErr == nil && from.After(to) {
+			errs = append(errs, fmt.Errorf("validityPeriods: from %s is after to %s", vp.From, vp.To))
+		}
+	}
 	if len(svc.Segments) == 0 {
 		errs = append(errs, fmt.Errorf("segments is empty"))
 	}
@@ -48,6 +61,18 @@ func Validate(svc ServiceData) []error {
 		case "shuttle":
 			if seg.StartTime == "" || seg.EndTime == "" {
 				errs = append(errs, fmt.Errorf("segments[%d] shuttle: startTime/endTime required", i))
+			} else {
+				start, err1 := parseTimeStr(seg.StartTime)
+				end, err2 := parseTimeStr(seg.EndTime)
+				if err1 != nil {
+					errs = append(errs, fmt.Errorf("segments[%d] shuttle.startTime %q: invalid format", i, seg.StartTime))
+				}
+				if err2 != nil {
+					errs = append(errs, fmt.Errorf("segments[%d] shuttle.endTime %q: invalid format", i, seg.EndTime))
+				}
+				if err1 == nil && err2 == nil && !start.Before(end) {
+					errs = append(errs, fmt.Errorf("segments[%d] shuttle: startTime(%s) >= endTime(%s)", i, seg.StartTime, seg.EndTime))
+				}
 			}
 		default:
 			errs = append(errs, fmt.Errorf("segments[%d]: unknown segmentType %q", i, seg.SegmentType))

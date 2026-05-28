@@ -120,13 +120,14 @@ func extractionSchema() *genai.Schema {
 // Extract calls Gemini to extract raw table data from the PDF.
 // Gemini outputs structured intermediate data; column interpretation is left to mapper.go.
 func Extract(ctx context.Context, client *genai.Client, pdfData []byte) (*ExtractedData, error) {
-	model := client.GenerativeModel("gemini-3.1-flash-lite")
+	model := client.GenerativeModel("gemini-3.1-pro-preview")
 	model.ResponseMIMEType = "application/json"
 	model.ResponseSchema = extractionSchema()
 
 	const maxRetries = 3
 	const maxRateLimitRetries = 5
 	rateLimitCount := 0
+	var retryHint string
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		if attempt > 1 {
 			log.Printf("リトライ %d/%d...", attempt, maxRetries)
@@ -134,8 +135,13 @@ func Extract(ctx context.Context, client *genai.Client, pdfData []byte) (*Extrac
 		}
 		log.Printf("Gemini 呼び出し中 (試行 %d/%d)...", attempt, maxRetries)
 
+		prompt := extractionPrompt
+		if retryHint != "" {
+			prompt += "\n\n【前回の問題点】\n" + retryHint
+		}
+
 		resp, err := model.GenerateContent(ctx,
-			genai.Text(extractionPrompt),
+			genai.Text(prompt),
 			genai.Blob{MIMEType: "application/pdf", Data: pdfData},
 		)
 		if err != nil {
@@ -146,7 +152,6 @@ func Extract(ctx context.Context, client *genai.Client, pdfData []byte) (*Extrac
 				}
 				log.Printf("レートリミット検出 (%d 回目)、10秒待機...", rateLimitCount)
 				time.Sleep(10 * time.Second)
-				attempt--
 			}
 			log.Printf("API エラー (試行 %d): %v", attempt, err)
 			continue
@@ -173,6 +178,19 @@ func Extract(ctx context.Context, client *genai.Client, pdfData []byte) (*Extrac
 		}
 		if len(extracted.Tables) == 0 {
 			log.Printf("テーブルが抽出されませんでした (試行 %d)", attempt)
+			continue
+		}
+
+		// validFrom が空のテーブルがあれば次のリトライで Gemini に伝える
+		var missingDates []string
+		for _, t := range extracted.Tables {
+			if t.SpecificFrom == "" && t.ValidFrom == "" {
+				missingDates = append(missingDates, t.StationName)
+			}
+		}
+		if len(missingDates) > 0 {
+			retryHint = fmt.Sprintf("以下の駅で validFrom が空です: %v\nPDFのタイトルや見出しから運行期間（例: 4月7日〜7月29日）を必ず抽出し validFrom/validTo に設定してください。", missingDates)
+			log.Printf("validFrom 不足 (%v)、リトライします...", missingDates)
 			continue
 		}
 
