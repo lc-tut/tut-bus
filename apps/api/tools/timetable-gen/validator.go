@@ -74,6 +74,15 @@ func Validate(svc ServiceData) []error {
 					errs = append(errs, fmt.Errorf("segments[%d] shuttle: startTime(%s) >= endTime(%s)", i, seg.StartTime, seg.EndTime))
 				}
 			}
+			if seg.Interval == nil {
+				errs = append(errs, fmt.Errorf("segments[%d] shuttle: interval required", i))
+			} else {
+				if seg.Interval.Min <= 0 || seg.Interval.Max <= 0 {
+					errs = append(errs, fmt.Errorf("segments[%d] shuttle: interval min/max must be > 0 (got %d/%d)", i, seg.Interval.Min, seg.Interval.Max))
+				} else if seg.Interval.Min > seg.Interval.Max {
+					errs = append(errs, fmt.Errorf("segments[%d] shuttle: interval min(%d) > max(%d)", i, seg.Interval.Min, seg.Interval.Max))
+				}
+			}
 		default:
 			errs = append(errs, fmt.Errorf("segments[%d]: unknown segmentType %q", i, seg.SegmentType))
 		}

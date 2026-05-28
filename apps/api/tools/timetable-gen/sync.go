@@ -81,7 +81,7 @@ func runSync(args []string) {
 		totalFailed += failed
 	}
 
-	fmt.Printf("\n合計: 生成 %d 件 / スキップ %d 件\n", totalSaved, totalFailed)
+	fmt.Printf("\n合計: 生成 %d 件 / 失敗 %d 件\n", totalSaved, totalFailed)
 
 	if totalFailed > 0 {
 		log.Printf("警告: %d 件の生成に失敗しました", totalFailed)
@@ -105,7 +105,11 @@ func runSync(args []string) {
 }
 
 func archiveExpired(servicesDir string) int {
-	today := time.Now().Format("2006-01-02")
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		jst = time.FixedZone("JST", 9*60*60)
+	}
+	today := time.Now().In(jst).Format("2006-01-02")
 	archiveDir := filepath.Join(servicesDir, "archived")
 
 	entries, err := os.ReadDir(servicesDir)
