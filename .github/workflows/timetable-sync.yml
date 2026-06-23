@@ -32,13 +32,17 @@ jobs:
           go-version-file: apps/api/tools/timetable-gen/go.mod
           cache-dependency-path: apps/api/tools/timetable-gen/go.sum
 
+      - name: Build timetable-gen
+        working-directory: apps/api/tools/timetable-gen
+        run: go build -o timetable-gen-bin .
+
       - name: Run Sync
         id: sync
         working-directory: apps/api/tools/timetable-gen
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          OUTPUT=$(go run . sync --output ../../data/services 2>&1) || true
+          OUTPUT=$(./timetable-gen-bin sync --output ../../data/services 2>&1) || true
           EXIT_CODE=$?
           echo "$OUTPUT"
           {
@@ -114,7 +118,7 @@ jobs:
 
           DESCRIPTION="$SYNC_OUTPUT"
           if [ -n "$PR_URL" ]; then
-            DESCRIPTION="$DESCRIPTION\n\n📋 PR: $PR_URL"
+            DESCRIPTION="${DESCRIPTION}"$'\n\n'"📋 PR: ${PR_URL}"
           fi
 
           payload=$(jq -n \
