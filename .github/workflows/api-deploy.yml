@@ -13,6 +13,7 @@ on:
       - 'apps/api/**'
       - '!apps/api/db/**'
       - '!apps/api/data/**'
+      - 'apps/api/data/services/**'
       - '!apps/api/scripts/**'
       - '!apps/api/tools/**'
   workflow_dispatch:

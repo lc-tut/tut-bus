@@ -1,6 +1,6 @@
 {
-  "id": "minamino-school-saturday",
-  "name": "八王子みなみ野駅 -> 大学（みなみ野駅方面） (土曜日) ",
+  "id": "minamino-to-school-saturday-20260407",
+  "name": "八王子みなみ野駅 → 大学（みなみ野駅方面） (土曜 2026-04-07〜)",
   "from": {
     "stopId": 2,
     "displayName": "八王子みなみ野駅"
@@ -11,7 +11,10 @@
   },
   "direction": "inbound",
   "validityPeriods": [
-    { "from": "2026-04-07", "to": "2026-07-29" }
+    {
+      "from": "2026-04-07",
+      "to": "2026-07-29"
+    }
   ],
   "segments": [
     {
