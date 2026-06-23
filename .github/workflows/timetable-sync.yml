@@ -110,10 +110,8 @@ jobs:
             COLOR=3066993  # 緑
             if [ "$HAS_CHANGES" = "true" ]; then
               TITLE="時刻表データを更新しました"
-            elif echo "$SYNC_OUTPUT" | grep -q "新規・更新 PDF なし"; then
-              TITLE="時刻表データに変更はありませんでした"
             else
-              TITLE="時刻表データを再生成しましたが差分なし"
+              TITLE="時刻表データに変更はありませんでした"
             fi
           else
             COLOR=15158332  # 赤
