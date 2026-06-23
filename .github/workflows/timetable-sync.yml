@@ -32,14 +32,6 @@ jobs:
           go-version-file: apps/api/tools/timetable-gen/go.mod
           cache-dependency-path: apps/api/tools/timetable-gen/go.sum
 
-      - name: Cache downloaded PDFs
-        uses: actions/cache@v4
-        with:
-          path: apps/api/tools/timetable-gen/downloaded
-          key: timetable-pdfs-${{ github.run_id }}
-          restore-keys: |
-            timetable-pdfs-
-
       - name: Build timetable-gen
         working-directory: apps/api/tools/timetable-gen
         run: go build -o timetable-gen-bin .
@@ -65,6 +57,8 @@ jobs:
         id: check
         run: |
           git add apps/api/data/services/
+          STATE=apps/api/tools/timetable-gen/downloaded/.fetch-state.json
+          [ -f "$STATE" ] && git add "$STATE"
           if git diff --staged --quiet; then
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
             echo "変更なし。終了します。"
