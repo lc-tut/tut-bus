@@ -1,5 +1,5 @@
 .env
-downloaded/
+timetable-gen-bin
 timetable-gen
 *.pdf
 *.png
