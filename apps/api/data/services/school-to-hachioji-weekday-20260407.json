@@ -273,7 +273,7 @@
       "startTime": "15:00",
       "endTime": "15:30",
       "intervalRange": {
-        "min": 3,
+        "min": 5,
         "max": 10
       }
     },
