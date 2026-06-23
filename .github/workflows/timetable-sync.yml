@@ -32,6 +32,14 @@ jobs:
           go-version-file: apps/api/tools/timetable-gen/go.mod
           cache-dependency-path: apps/api/tools/timetable-gen/go.sum
 
+      - name: Cache downloaded PDFs
+        uses: actions/cache@v4
+        with:
+          path: apps/api/tools/timetable-gen/downloaded
+          key: timetable-pdfs-${{ github.run_id }}
+          restore-keys: |
+            timetable-pdfs-
+
       - name: Build timetable-gen
         working-directory: apps/api/tools/timetable-gen
         run: go build -o timetable-gen-bin .
@@ -108,8 +116,10 @@ jobs:
             COLOR=3066993  # 緑
             if [ "$HAS_CHANGES" = "true" ]; then
               TITLE="時刻表データを更新しました"
-            else
+            elif echo "$SYNC_OUTPUT" | grep -q "新規・更新 PDF なし"; then
               TITLE="時刻表データに変更はありませんでした"
+            else
+              TITLE="時刻表データを再生成しましたが差分なし"
             fi
           else
             COLOR=15158332  # 赤
