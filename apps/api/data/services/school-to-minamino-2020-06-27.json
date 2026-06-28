@@ -1,6 +1,6 @@
 {
-  "id": "school-to-minamino-saturday-20260407",
-  "name": "大学（みなみ野駅方面） → 八王子みなみ野駅 (土曜 2026-04-07〜)",
+  "id": "school-to-minamino-2020-06-27",
+  "name": "大学（みなみ野駅方面） → 八王子みなみ野駅 (2020-06-27)",
   "from": {
     "stopId": 5,
     "displayName": "大学（みなみ野駅方面）"
@@ -12,16 +12,17 @@
   "direction": "outbound",
   "validityPeriods": [
     {
-      "from": "2026-04-07",
-      "to": "2026-07-25"
+      "from": "2020-06-27",
+      "to": "2020-06-27"
     }
   ],
   "segments": [
     {
       "segmentType": "fixed",
       "condition": {
-        "type": "dayType",
-        "value": "saturday"
+        "type": "specificPeriod",
+        "from": "2020-06-27",
+        "to": "2020-06-27"
       },
       "times": [
         {
@@ -29,16 +30,8 @@
           "arrival": "8:16"
         },
         {
-          "departure": "8:36",
-          "arrival": "8:44"
-        },
-        {
           "departure": "9:03",
           "arrival": "9:11"
-        },
-        {
-          "departure": "9:26",
-          "arrival": "9:34"
         },
         {
           "departure": "10:17",
@@ -73,16 +66,8 @@
           "arrival": "17:20"
         },
         {
-          "departure": "17:41",
-          "arrival": "17:49"
-        },
-        {
           "departure": "18:12",
           "arrival": "18:20"
-        },
-        {
-          "departure": "19:06",
-          "arrival": "19:14"
         }
       ]
     }
