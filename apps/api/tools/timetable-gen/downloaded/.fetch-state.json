@@ -5,10 +5,30 @@
       "sha256": "a732a799203752050ac2159e0f9ff85d92510e45a5f02b8c31271e8464145470",
       "downloadedAt": "2026-05-27T06:34:00+09:00"
     },
+    "/campus/access/260407_02.pdf": {
+      "title": "4月7日(月)～7月25日(土)　基本運行時刻表（2026年度）",
+      "sha256": "3bd2287a9cc34e8a0589e84666fb44aba1ecbf32b3f68bf1e3e57e2b09277cc8",
+      "downloadedAt": "2026-07-05T16:13:10Z"
+    },
     "/campus/access/260523.pdf": {
       "title": "5月23日(土)　東京工科大学「スポーツ大会」運行時刻表",
       "sha256": "bb6d48853f472317e0848eaeb16a4ad623dcbc0c2c41c0afbdc36ed3698fcb7b",
       "downloadedAt": "2026-05-27T06:34:00+09:00"
+    },
+    "/campus/access/260627.pdf": {
+      "title": "6月27日運行　臨時運行時刻表",
+      "sha256": "ea3794710a4c89ad443581a03723eab051fcdc6c9bb38c9634ce5be3eac9b4d4",
+      "downloadedAt": "2026-07-05T16:13:11Z"
+    },
+    "/campus/access/260727.pdf": {
+      "title": "7月27日(月)～8月1日(土)　運行時刻表",
+      "sha256": "d3018852f53413d17384bf48d4c71bdaad393d46a7ffc6f93076ab62c3403a36",
+      "downloadedAt": "2026-07-05T16:13:11Z"
+    },
+    "/campus/access/260803.pdf": {
+      "title": "8月3日(月)～7日(金)・24日(月)～29日(土)　運行時刻表",
+      "sha256": "85bcacd21f40940c43e914910aa64b0870e5cbff7a551b110419f9767107102a",
+      "downloadedAt": "2026-07-05T16:13:11Z"
     }
   }
 }

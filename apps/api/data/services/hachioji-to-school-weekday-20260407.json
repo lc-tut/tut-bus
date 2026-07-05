@@ -13,7 +13,7 @@
   "validityPeriods": [
     {
       "from": "2026-04-07",
-      "to": "2026-07-29"
+      "to": "2026-07-25"
     }
   ],
   "segments": [
@@ -53,7 +53,7 @@
         "value": "weekday"
       },
       "startTime": "7:55",
-      "endTime": "9:15",
+      "endTime": "9:20",
       "intervalRange": {
         "min": 3,
         "max": 5
@@ -66,10 +66,6 @@
         "value": "weekday"
       },
       "times": [
-        {
-          "departure": "9:15",
-          "arrival": "9:33"
-        },
         {
           "departure": "9:20",
           "arrival": "9:38"
@@ -434,7 +430,7 @@
         },
         {
           "departure": "21:31",
-          "arrival": "21:49"
+          "arrival": "21:45"
         }
       ]
     }
