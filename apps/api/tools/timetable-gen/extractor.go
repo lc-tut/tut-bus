@@ -35,6 +35,9 @@ const extractionPrompt = `このPDFは東京工科大学スクールバスの時
 特定日スケジュール（「5月23日」「紅華祭」等の特定イベント）:
   dayType は空のまま
   specificFrom / specificTo に "YYYY-MM-DD" 形式で設定（1日のみなら同じ日付を両方）
+  年はPDFのタイトル・見出し・発行年度の記載から明確に特定できる場合のみ設定すること。
+  年を特定できる記載がPDF内に見当たらない場合、絶対に憶測で埋めてはならない。
+  その場合は specificFrom / specificTo を空文字のままにすること。
 
 4. segments の種類
 

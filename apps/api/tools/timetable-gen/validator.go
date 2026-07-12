@@ -11,6 +11,18 @@ import (
 // to be considered complete. Catches cases where Gemini missed most of the table.
 const minFixedTimesPerService = 5
 
+// yearToleranceBefore/After bound how far a validityPeriod's year may drift from the
+// current year. Catches Gemini misreading an omitted year (e.g. defaulting to 2020).
+const (
+	yearToleranceBefore = 1
+	yearToleranceAfter  = 2
+)
+
+func isPlausibleYear(t time.Time) bool {
+	now := time.Now().Year()
+	return t.Year() >= now-yearToleranceBefore && t.Year() <= now+yearToleranceAfter
+}
+
 // Validate checks a ServiceData for correctness and completeness.
 // Returns a slice of errors; empty means valid.
 func Validate(svc ServiceData) []error {
@@ -42,6 +54,12 @@ func Validate(svc ServiceData) []error {
 		}
 		if fromErr == nil && toErr == nil && from.After(to) {
 			errs = append(errs, fmt.Errorf("validityPeriods: from %s is after to %s", vp.From, vp.To))
+		}
+		if fromErr == nil && !isPlausibleYear(from) {
+			errs = append(errs, fmt.Errorf("validityPeriods.from %q: year looks implausible (expected around %d)", vp.From, time.Now().Year()))
+		}
+		if toErr == nil && !isPlausibleYear(to) {
+			errs = append(errs, fmt.Errorf("validityPeriods.to %q: year looks implausible (expected around %d)", vp.To, time.Now().Year()))
 		}
 	}
 	if len(svc.Segments) == 0 {

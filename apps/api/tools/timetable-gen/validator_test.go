@@ -67,6 +67,12 @@ func TestValidate_FromAfterTo(t *testing.T) {
 	assertContainsError(t, Validate(svc), "is after")
 }
 
+func TestValidate_ImplausibleYear(t *testing.T) {
+	svc := validService()
+	svc.ValidityPeriods = []ValidityPeriod{{From: "2020-06-27", To: "2020-06-27"}}
+	assertContainsError(t, Validate(svc), "year looks implausible")
+}
+
 func TestValidate_TooFewFixedTimes(t *testing.T) {
 	svc := validService()
 	svc.Segments[0].Times = []TimePair{
