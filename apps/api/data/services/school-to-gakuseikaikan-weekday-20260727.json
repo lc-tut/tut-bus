@@ -1,0 +1,58 @@
+{
+  "id": "school-to-gakuseikaikan-weekday-20260727",
+  "name": "大学（学生会館方面） → 学生会館 (平日 2026-07-27〜)",
+  "from": {
+    "stopId": 4,
+    "displayName": "大学（学生会館方面）"
+  },
+  "to": {
+    "stopId": 6,
+    "displayName": "学生会館"
+  },
+  "direction": "outbound",
+  "validityPeriods": [
+    {
+      "from": "2026-07-27",
+      "to": "2026-08-01"
+    }
+  ],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "dayType",
+        "value": "weekday"
+      },
+      "times": [
+        {
+          "departure": "8:04",
+          "arrival": "8:14"
+        },
+        {
+          "departure": "8:24",
+          "arrival": "8:34"
+        },
+        {
+          "departure": "8:44",
+          "arrival": "8:54"
+        },
+        {
+          "departure": "9:04",
+          "arrival": "9:14"
+        },
+        {
+          "departure": "10:10",
+          "arrival": "10:20"
+        },
+        {
+          "departure": "10:35",
+          "arrival": "10:45"
+        },
+        {
+          "departure": "17:00",
+          "arrival": "17:10"
+        }
+      ]
+    }
+  ]
+}

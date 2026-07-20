@@ -1,0 +1,75 @@
+{
+  "id": "school-to-hachioji-2020-06-27",
+  "name": "大学（八王子駅方面） → 八王子駅 (2020-06-27)",
+  "from": {
+    "stopId": 3,
+    "displayName": "大学（八王子駅方面）"
+  },
+  "to": {
+    "stopId": 1,
+    "displayName": "八王子駅"
+  },
+  "direction": "outbound",
+  "validityPeriods": [
+    {
+      "from": "2020-06-27",
+      "to": "2020-06-27"
+    }
+  ],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2020-06-27",
+        "to": "2020-06-27"
+      },
+      "times": [
+        {
+          "departure": "8:07",
+          "arrival": "8:20"
+        },
+        {
+          "departure": "8:57",
+          "arrival": "9:10"
+        },
+        {
+          "departure": "9:57",
+          "arrival": "10:10"
+        },
+        {
+          "departure": "11:32",
+          "arrival": "11:45"
+        },
+        {
+          "departure": "11:57",
+          "arrival": "12:10"
+        },
+        {
+          "departure": "13:02",
+          "arrival": "13:15"
+        },
+        {
+          "departure": "14:47",
+          "arrival": "15:00"
+        },
+        {
+          "departure": "15:10",
+          "arrival": "15:23"
+        },
+        {
+          "departure": "16:10",
+          "arrival": "16:23"
+        },
+        {
+          "departure": "17:10",
+          "arrival": "17:23"
+        },
+        {
+          "departure": "18:10",
+          "arrival": "18:23"
+        }
+      ]
+    }
+  ]
+}
