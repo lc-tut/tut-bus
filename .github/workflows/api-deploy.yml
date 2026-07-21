@@ -55,7 +55,7 @@ jobs:
 
       - name: Go Format Check
         run: |
-          UNFORMATTED=$(gofmt -l .)
+          UNFORMATTED=$(gofmt -l $(go list -f '{{.Dir}}' ./...))
           if [ -n "$UNFORMATTED" ]; then
             echo "::error::フォーマットされていないファイルがあります"
             echo "$UNFORMATTED"

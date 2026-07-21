@@ -1,0 +1,56 @@
+# ========================================
+# Timetable Gen CI - Lint / Build / Test
+# ========================================
+# PR時に timetable-gen（apps/api とは別モジュール）の
+# フォーマット・静的解析・ビルド・テストを実行
+
+name: 'Timetable Gen CI'
+
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'apps/api/tools/timetable-gen/**'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: apps/api/tools/timetable-gen
+
+jobs:
+  ci:
+    name: 'Lint & Build & Test'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/tools/timetable-gen/go.mod
+          cache-dependency-path: apps/api/tools/timetable-gen/go.sum
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Go Format Check
+        run: |
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "::error::以下のファイルがフォーマットされていません:"
+            echo "$UNFORMATTED"
+            exit 1
+          fi
+
+      - name: Go Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build -o /dev/null .
+
+      - name: Test
+        run: go test -v -race ./...
