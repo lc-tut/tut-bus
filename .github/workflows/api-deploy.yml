@@ -55,7 +55,7 @@ jobs:
 
       - name: Go Format Check
         run: |
-          UNFORMATTED=$(gofmt -l $(find . -name '*.go' -not -path './tools/*'))
+          UNFORMATTED=$(gofmt -l $(go list -f '{{range .GoFiles}}{{$.Dir}}/{{.}} {{end}}{{range .TestGoFiles}}{{$.Dir}}/{{.}} {{end}}{{range .XTestGoFiles}}{{$.Dir}}/{{.}} {{end}}' ./...))
           if [ -n "$UNFORMATTED" ]; then
             echo "::error::フォーマットされていないファイルがあります"
             echo "$UNFORMATTED"
