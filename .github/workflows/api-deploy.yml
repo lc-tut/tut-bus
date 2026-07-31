@@ -189,3 +189,62 @@ jobs:
           echo "| Actor | @${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Status | \`${{ job.status }}\` |" >> "$GITHUB_STEP_SUMMARY"
+
+  # ========================================
+  # Discord 通知
+  # ========================================
+  # ci が落ちると deploy は走らないため、両ジョブの結果を集約して必ず通知する
+  notify:
+    name: 'Notify Discord'
+    runs-on: ubuntu-latest
+    needs: [ci, deploy]
+    if: always()
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          CI_RESULT="${{ needs.ci.result }}"
+          DEPLOY_RESULT="${{ needs.deploy.result }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [ "$DEPLOY_RESULT" = "success" ]; then
+            COLOR=3066993  # 緑
+            TITLE="APIデプロイ完了"
+            DESCRIPTION="バージョン gh-${{ github.run_number }} が本番で配信中です。"
+          elif [ "$CI_RESULT" != "success" ]; then
+            COLOR=15158332  # 赤
+            TITLE="APIデプロイ失敗（デプロイ前チェック）"
+            DESCRIPTION="gofmt / vet / build / test のいずれかが失敗しました。本番は更新されていません。"
+          else
+            COLOR=15158332  # 赤
+            TITLE="APIデプロイ失敗（App Engine）"
+            DESCRIPTION="デプロイ前チェックは通過しましたが、App Engine への反映に失敗しました。本番は更新されていません。"
+          fi
+
+          payload=$(jq -n \
+            --arg title "$TITLE" \
+            --arg description "$DESCRIPTION" \
+            --arg run_url "$RUN_URL" \
+            --arg commit "${{ github.sha }}" \
+            --argjson color "$COLOR" \
+            '{
+              embeds: [{
+                title: $title,
+                description: $description,
+                color: $color,
+                fields: [
+                  { name: "コミット", value: $commit, inline: false },
+                  { name: "ワークフロー", value: $run_url, inline: false }
+                ]
+              }]
+            }')
+
+          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$payload"

@@ -1,0 +1,117 @@
+# ========================================
+# Timetable Promote - dev → main
+# ========================================
+# timetable-sync が作った PR が dev にマージされたとき、
+# dev → main の PR を自動作成する（通常の開発PRでは発火しない）
+
+name: 'Timetable Promote'
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [dev]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    name: 'Create dev → main PR'
+    runs-on: ubuntu-latest
+    # timetable-sync が作ったブランチがマージされた場合のみ
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'chore/timetable-sync-')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Check for existing PR
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR=$(gh pr list --base main --head dev --state open --json number --jq '.[0].number // ""')
+          if [ -n "$PR" ]; then
+            echo "既存のPR #$PR があります。新規作成をスキップします。"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for diff
+        id: diff
+        if: steps.existing.outputs.skip == 'false'
+        run: |
+          if git diff --quiet origin/main origin/dev; then
+            echo "dev と main に差分がありません。"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create PR
+        id: pr
+        if: steps.existing.outputs.skip == 'false' && steps.diff.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_URL=$(gh pr create \
+            --base main \
+            --head dev \
+            --title "時刻表データを本番へ反映 ($(date +%Y-%m-%d))" \
+            --body "$(cat <<'EOF'
+          時刻表の自動更新が dev にマージされたため、本番反映用の PR を自動作成しました。
+
+          マージすると API Deploy が発火し、App Engine に反映されます。
+          dev にある時刻表以外の変更も一緒に main へ入るため、内容を確認してからマージしてください。
+          EOF
+          )")
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "作成しました: $PR_URL"
+
+      - name: Notify Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          PR_URL="${{ steps.pr.outputs.pr_url }}"
+          EXISTING_SKIP="${{ steps.existing.outputs.skip }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [ -n "$PR_URL" ]; then
+            COLOR=3447003  # 青
+            TITLE="本番反映PRを作成しました"
+            DESCRIPTION="時刻表が更新されました。マージすると本番に反映されます。"$'\n\n'"$PR_URL"
+          elif [ "$EXISTING_SKIP" = "true" ]; then
+            COLOR=10181046  # 紫
+            TITLE="本番反映PRは作成済みです"
+            DESCRIPTION="既存の dev → main PR があるため、新規作成をスキップしました。"
+          else
+            COLOR=15158332  # 赤
+            TITLE="本番反映PRの作成に失敗しました"
+            DESCRIPTION="手動で dev → main の PR を作成してください。"
+          fi
+
+          payload=$(jq -n \
+            --arg title "$TITLE" \
+            --arg description "$DESCRIPTION" \
+            --arg run_url "$RUN_URL" \
+            --argjson color "$COLOR" \
+            '{
+              embeds: [{
+                title: $title,
+                description: $description,
+                color: $color,
+                fields: [{ name: "ワークフロー", value: $run_url, inline: false }]
+              }]
+            }')
+
+          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
