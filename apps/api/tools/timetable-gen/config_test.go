@@ -17,8 +17,8 @@ func TestLookupStation_Canonical(t *testing.T) {
 
 func TestLookupStation_Aliases(t *testing.T) {
 	tests := []struct {
-		input    string
-		wantKey  string
+		input   string
+		wantKey string
 	}{
 		{"八王子みなみ野", "minamino"},
 		{"みなみ野駅", "minamino"},

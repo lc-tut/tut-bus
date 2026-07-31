@@ -36,9 +36,9 @@ func TestNormalizeTime(t *testing.T) {
 
 func TestParseInterval(t *testing.T) {
 	tests := []struct {
-		input    string
-		wantMin  int
-		wantMax  int
+		input   string
+		wantMin int
+		wantMax int
 	}{
 		{"約3〜5分間隔", 3, 5},
 		{"約3~5分間隔", 3, 5},
