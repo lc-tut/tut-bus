@@ -1,0 +1,307 @@
+{
+  "id": "school-to-minamino-2026-11-23",
+  "name": "大学（みなみ野駅方面） → 八王子みなみ野駅 (2026-11-23)",
+  "from": {
+    "stopId": 5,
+    "displayName": "大学（みなみ野駅方面）"
+  },
+  "to": {
+    "stopId": 2,
+    "displayName": "八王子みなみ野駅"
+  },
+  "direction": "outbound",
+  "validityPeriods": [
+    {
+      "from": "2026-11-23",
+      "to": "2026-11-23"
+    }
+  ],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2026-11-23",
+        "to": "2026-11-23"
+      },
+      "times": [
+        {
+          "departure": "7:26",
+          "arrival": "7:34"
+        },
+        {
+          "departure": "7:36",
+          "arrival": "7:44"
+        },
+        {
+          "departure": "7:47",
+          "arrival": "7:55"
+        },
+        {
+          "departure": "7:58",
+          "arrival": "8:06"
+        },
+        {
+          "departure": "8:08",
+          "arrival": "8:16"
+        },
+        {
+          "departure": "8:17",
+          "arrival": "8:25"
+        },
+        {
+          "departure": "8:24",
+          "arrival": "8:32"
+        },
+        {
+          "departure": "8:36",
+          "arrival": "8:44"
+        },
+        {
+          "departure": "8:43",
+          "arrival": "8:51"
+        },
+        {
+          "departure": "8:54",
+          "arrival": "9:02"
+        },
+        {
+          "departure": "9:03",
+          "arrival": "9:11"
+        },
+        {
+          "departure": "9:17",
+          "arrival": "9:25"
+        },
+        {
+          "departure": "9:26",
+          "arrival": "9:34"
+        },
+        {
+          "departure": "9:32",
+          "arrival": "9:40"
+        },
+        {
+          "departure": "9:39",
+          "arrival": "9:47"
+        },
+        {
+          "departure": "9:48",
+          "arrival": "9:56"
+        },
+        {
+          "departure": "9:57",
+          "arrival": "10:05"
+        },
+        {
+          "departure": "10:06",
+          "arrival": "10:14"
+        },
+        {
+          "departure": "10:17",
+          "arrival": "10:25"
+        },
+        {
+          "departure": "10:28",
+          "arrival": "10:36"
+        },
+        {
+          "departure": "10:37",
+          "arrival": "10:45"
+        },
+        {
+          "departure": "10:48",
+          "arrival": "10:56"
+        },
+        {
+          "departure": "11:08",
+          "arrival": "11:16"
+        },
+        {
+          "departure": "11:28",
+          "arrival": "11:36"
+        },
+        {
+          "departure": "11:48",
+          "arrival": "11:56"
+        },
+        {
+          "departure": "11:55",
+          "arrival": "12:03"
+        },
+        {
+          "departure": "12:08",
+          "arrival": "12:16"
+        },
+        {
+          "departure": "12:15",
+          "arrival": "12:23"
+        },
+        {
+          "departure": "12:28",
+          "arrival": "12:36"
+        },
+        {
+          "departure": "12:35",
+          "arrival": "12:43"
+        },
+        {
+          "departure": "12:48",
+          "arrival": "12:56"
+        },
+        {
+          "departure": "13:08",
+          "arrival": "13:16"
+        },
+        {
+          "departure": "13:28",
+          "arrival": "13:36"
+        },
+        {
+          "departure": "13:48",
+          "arrival": "13:56"
+        },
+        {
+          "departure": "14:08",
+          "arrival": "14:16"
+        },
+        {
+          "departure": "14:28",
+          "arrival": "14:36"
+        },
+        {
+          "departure": "14:48",
+          "arrival": "14:56"
+        },
+        {
+          "departure": "15:01",
+          "arrival": "15:09"
+        },
+        {
+          "departure": "15:12",
+          "arrival": "15:20"
+        },
+        {
+          "departure": "15:21",
+          "arrival": "15:29"
+        },
+        {
+          "departure": "15:31",
+          "arrival": "15:39"
+        },
+        {
+          "departure": "15:41",
+          "arrival": "15:49"
+        },
+        {
+          "departure": "15:51",
+          "arrival": "15:59"
+        },
+        {
+          "departure": "16:01",
+          "arrival": "16:09"
+        },
+        {
+          "departure": "16:12",
+          "arrival": "16:20"
+        },
+        {
+          "departure": "16:21",
+          "arrival": "16:29"
+        },
+        {
+          "departure": "16:38",
+          "arrival": "16:46"
+        },
+        {
+          "departure": "16:52",
+          "arrival": "17:00"
+        },
+        {
+          "departure": "17:01",
+          "arrival": "17:09"
+        },
+        {
+          "departure": "17:12",
+          "arrival": "17:20"
+        },
+        {
+          "departure": "17:21",
+          "arrival": "17:29"
+        },
+        {
+          "departure": "17:32",
+          "arrival": "17:40"
+        },
+        {
+          "departure": "17:41",
+          "arrival": "17:49"
+        },
+        {
+          "departure": "17:52",
+          "arrival": "18:00"
+        },
+        {
+          "departure": "17:59",
+          "arrival": "18:07"
+        },
+        {
+          "departure": "18:12",
+          "arrival": "18:20"
+        },
+        {
+          "departure": "18:23",
+          "arrival": "18:31"
+        },
+        {
+          "departure": "18:34",
+          "arrival": "18:42"
+        },
+        {
+          "departure": "18:47",
+          "arrival": "18:55"
+        },
+        {
+          "departure": "18:56",
+          "arrival": "19:04"
+        },
+        {
+          "departure": "19:06",
+          "arrival": "19:14"
+        },
+        {
+          "departure": "19:16",
+          "arrival": "19:24"
+        },
+        {
+          "departure": "19:38",
+          "arrival": "19:46"
+        },
+        {
+          "departure": "19:50",
+          "arrival": "19:58"
+        },
+        {
+          "departure": "20:10",
+          "arrival": "20:18"
+        },
+        {
+          "departure": "20:29",
+          "arrival": "20:37"
+        },
+        {
+          "departure": "20:50",
+          "arrival": "20:58"
+        },
+        {
+          "departure": "21:01",
+          "arrival": "21:09"
+        },
+        {
+          "departure": "21:20",
+          "arrival": "21:28"
+        }
+      ]
+    }
+  ]
+}
