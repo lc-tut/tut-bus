@@ -4,15 +4,22 @@
 # timetable-sync が main へ直接PRを作るようになったため、
 # main にマージされた変更を dev へ機械的に同期する（旧: dev→mainのPR自動作成）。
 # このワークフローは main 上に存在して初めて発火する（push トリガーの仕様）。
+#
+# dev には PR 必須のルールセット（base-dev）が掛かっており、直接 push は
+# GH013 で拒否される。承認は0件で足りる設定なので、PRを作ってそのまま
+# マージすることでルールを迂回せずに自動化する。
 
 name: 'Sync main → dev'
 
 on:
   push:
     branches: [main]
+  # 失敗したあとの再実行用
+  workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: sync-main-to-dev
@@ -30,8 +37,11 @@ jobs:
           ref: dev
           fetch-depth: 0
 
-      - name: Merge main into dev
+      - name: Open and merge sync PR
         id: merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -47,24 +57,29 @@ jobs:
             exit 0
           fi
 
-          if git merge --no-edit origin/main; then
-            git push origin dev
-            echo "status=merged" >> "$GITHUB_OUTPUT"
-          else
+          BRANCH="chore/sync-main-to-dev-${RUN_ID}"
+          git switch -c "$BRANCH"
+          if ! git merge --no-edit origin/main; then
             git merge --abort
             echo "status=conflict" >> "$GITHUB_OUTPUT"
             echo "main → dev のマージでコンフリクトが発生しました。手動対応が必要です。"
             exit 1
           fi
+          git push origin "$BRANCH"
+
+          gh pr create --base dev --head "$BRANCH" \
+            --title "chore: main を dev へ同期" \
+            --body "main にマージ済みの内容を dev へ取り込みます（自動同期）。"
+          gh pr merge "$BRANCH" --merge --delete-branch
+          echo "status=merged" >> "$GITHUB_OUTPUT"
 
       - name: Notify Discord
         if: always()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          JOB_STATUS="${{ job.status }}"
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-
           # 成功時（同期不要／マージ成功）は毎日通知が飛ぶとうるさいので送らない
           if [ "$JOB_STATUS" = "success" ]; then
             exit 0
