@@ -6,11 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"os/exec"
 	"time"
-
-	"github.com/google/generative-ai-go/genai"
 )
 
 // Bounds the Python subprocess: sync.go processes PDFs sequentially, so a
@@ -61,16 +58,9 @@ func ExtractGeo(ctx context.Context, pdfPath string) (*ExtractedData, error) {
 	return &out.ExtractedData, nil
 }
 
-// extractWithMode dispatches on extractorMode ("gemini" default, or "geo").
-func extractWithMode(ctx context.Context, client *genai.Client, pdfPath, extractorMode string) (*ExtractedData, error) {
-	if extractorMode != "geo" {
-		pdfData, err := os.ReadFile(pdfPath)
-		if err != nil {
-			return nil, fmt.Errorf("PDF 読み込み失敗: %w", err)
-		}
-		return Extract(ctx, client, pdfData)
-	}
-
+// extractWithMode runs the coordinate extractor, falling back per fallback.go
+// when it cannot produce usable tables.
+func extractWithMode(ctx context.Context, pdfPath string) (*ExtractedData, error) {
 	extracted, err := ExtractGeo(ctx, pdfPath)
 	if err != nil {
 		return geoFallback(pdfPath, err)

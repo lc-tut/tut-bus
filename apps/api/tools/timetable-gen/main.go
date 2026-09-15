@@ -10,9 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/google/generative-ai-go/genai"
-	"google.golang.org/api/option"
 )
 
 func main() {
@@ -37,37 +34,20 @@ func main() {
 
 	pdfPath := flag.String("pdf", "", "PDFファイルのパス (必須)")
 	outputDir := flag.String("output", "../../data/services", "出力ディレクトリ")
-	apiKey := flag.String("api-key", os.Getenv("GEMINI_API_KEY"), "Gemini API Key")
 	validFrom := flag.String("from", "", "有効期間 from (YYYY-MM-DD, 複数はカンマ区切り)")
 	validTo := flag.String("to", "", "有効期間 to (YYYY-MM-DD, 複数はカンマ区切り)")
-	extractorMode := flag.String("extractor", "gemini", "抽出方式: gemini (デフォルト) | geo")
 	flag.Parse()
 
 	if *pdfPath == "" {
 		log.Fatal("--pdf を指定してください")
 	}
-	// --extractor=geo needs no Gemini API key at all - only the default
-	// gemini path does.
-	if *extractorMode != "geo" && *apiKey == "" {
-		log.Fatal("GEMINI_API_KEY を設定するか --api-key を指定してください")
-	}
-
 	periods, err := parsePeriods(*validFrom, *validTo)
 	if err != nil {
 		log.Fatalf("有効期間の指定が不正です: %v", err)
 	}
 
 	ctx := context.Background()
-	var client *genai.Client
-	if *extractorMode != "geo" {
-		client, err = genai.NewClient(ctx, option.WithAPIKey(*apiKey))
-		if err != nil {
-			log.Fatalf("Gemini クライアント作成失敗: %v", err)
-		}
-		defer client.Close()
-	}
-
-	extracted, err := extractWithMode(ctx, client, *pdfPath, *extractorMode)
+	extracted, err := extractWithMode(ctx, *pdfPath)
 	if err != nil {
 		log.Fatalf("PDF 抽出失敗: %v", err)
 	}
