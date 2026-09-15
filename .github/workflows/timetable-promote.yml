@@ -36,6 +36,9 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
 
+          # checkout は ref: dev しか取らないので、origin/main は明示的に取得する
+          git fetch origin main
+
           if git diff --quiet origin/main origin/dev; then
             echo "dev と main に差分がありません。同期不要。"
             echo "status=no-op" >> "$GITHUB_OUTPUT"
