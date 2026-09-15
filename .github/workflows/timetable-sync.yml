@@ -1,14 +1,15 @@
 # ========================================
 # Timetable Sync
 # ========================================
-# 毎週月曜 0:00 JST（日曜 15:00 UTC）にTUTサイトの時刻表PDFを確認し、
+# 毎日 0:00 JST（前日 15:00 UTC）にTUTサイトの時刻表PDFを確認し、
 # 新規・更新があればJSONを再生成してPRを作成する
+# （--extractor=geo 移行によりGemini APIコストが無くなったため、issue #213を機に週次から毎日へ変更）
 
 name: 'Timetable Sync'
 
 on:
   schedule:
-    - cron: '0 15 * * 0'
+    - cron: '0 15 * * *'
   workflow_dispatch:
     inputs:
       extractor:
