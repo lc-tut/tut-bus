@@ -4,6 +4,13 @@
 # 毎日 0:00 JST（前日 15:00 UTC）にTUTサイトの時刻表PDFを確認し、
 # 新規・更新があればJSONを再生成してPRを作成する
 # （--extractor=geo 移行によりGemini APIコストが無くなったため、issue #213を機に週次から毎日へ変更）
+#
+# PR は main 向け（旧: dev → main の二段階）。
+# 人が1回見るだけで済み、却下してもマージしなければ良いだけになる。
+# main を直接 checkout して動くため、timetable-gen ツール自体の変更は
+# main に昇格されるまで sync には反映されない（ワークフロー定義自体は
+# デフォルトブランチ dev から読まれるが、実行される Go コードとデータは
+# main のもの）。本番データは本番コードで生成するための意図的な構成。
 
 name: 'Timetable Sync'
 
@@ -31,7 +38,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: dev
+          ref: main
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -104,7 +111,7 @@ jobs:
           fi
 
           PR_URL=$(gh pr create \
-            --base dev \
+            --base main \
             --head "$BRANCH" \
             --title "chore: 時刻表データを自動更新 ($(date +%Y-%m-%d))" \
             --body "$(cat <<EOF
