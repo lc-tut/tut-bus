@@ -42,9 +42,11 @@ type PDFLink struct {
 var rePDFLink = regexp.MustCompile(`<a\s+href="(/campus/access/[^"]+\.pdf)"[^>]*>([^<]+)</a>`)
 
 type DownloadedPDF struct {
-	Path  string
-	Title string
-	URL   string // absolute URL on the university's site
+	Path   string
+	Title  string
+	URL    string // absolute URL on the university's site
+	RelURL string // key used in .fetch-state.json
+	SHA256 string
 }
 
 func runFetch(args []string) {
@@ -58,6 +60,9 @@ func runFetch(args []string) {
 	newFiles, skipped, err := fetchNewPDFs(outputDir)
 	if err != nil {
 		log.Fatalf("fetch 失敗: %v", err)
+	}
+	for _, pdf := range newFiles {
+		RecordProcessed(outputDir, pdf)
 	}
 
 	fmt.Printf("\nダウンロード: %d 件 / スキップ: %d 件\n", len(newFiles), skipped)
@@ -104,25 +109,39 @@ func fetchNewPDFs(outputDir string) (newFiles []DownloadedPDF, skipped int, err 
 			continue
 		}
 
-		state.PDFs[link.URL] = PDFState{
-			Title:        link.Title,
-			SHA256:       hash,
-			DownloadedAt: time.Now().Format(time.RFC3339),
-		}
-
 		action := "新規"
 		if known {
 			action = "更新"
 		}
 		fmt.Printf("  [%s] %s  (%s)\n", action, filename, link.Title)
-		newFiles = append(newFiles, DownloadedPDF{Path: outPath, Title: link.Title, URL: fullURL})
-	}
-
-	if saveErr := saveFetchState(stateFile, state); saveErr != nil {
-		log.Printf("状態ファイル保存失敗: %v", saveErr)
+		newFiles = append(newFiles, DownloadedPDF{
+			Path:   outPath,
+			Title:  link.Title,
+			URL:    fullURL,
+			RelURL: link.URL,
+			SHA256: hash,
+		})
 	}
 
 	return newFiles, skipped, nil
+}
+
+// RecordProcessed marks a PDF as handled in .fetch-state.json. Callers must
+// only do this once the PDF actually produced data: an entry written earlier
+// makes the next run skip the PDF as "unchanged", so a failed extraction
+// would silently lose that timetable for good (this is how 260627.pdf and
+// 260912.pdf disappeared).
+func RecordProcessed(outputDir string, pdf DownloadedPDF) {
+	stateFile := filepath.Join(outputDir, stateFileName)
+	state := loadFetchState(stateFile)
+	state.PDFs[pdf.RelURL] = PDFState{
+		Title:        pdf.Title,
+		SHA256:       pdf.SHA256,
+		DownloadedAt: time.Now().Format(time.RFC3339),
+	}
+	if err := saveFetchState(stateFile, state); err != nil {
+		log.Printf("状態ファイル保存失敗: %v", err)
+	}
 }
 
 func scrapePDFLinks() ([]PDFLink, error) {
