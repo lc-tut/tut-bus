@@ -102,7 +102,22 @@ func TestValidate_ShuttleNoInterval(t *testing.T) {
 		EndTime:     "12:00",
 		Interval:    nil,
 	})
-	assertContainsError(t, Validate(svc), "interval required")
+	assertContainsError(t, Validate(svc), "interval or note required")
+}
+
+func TestValidate_ShuttleNoIntervalButHasNote(t *testing.T) {
+	svc := validService()
+	svc.Segments = append(svc.Segments, ServiceSegment{
+		SegmentType: "shuttle",
+		Condition:   SegmentCondition{Type: "dayType", Value: "weekday"},
+		StartTime:   "9:00",
+		EndTime:     "12:00",
+		Interval:    nil,
+		Note:        "乗車状況により運行",
+	})
+	if errs := Validate(svc); len(errs) > 0 {
+		t.Errorf("expected no errors for a shuttle segment with Note but no Interval, got: %v", errs)
+	}
 }
 
 func TestValidate_ShuttleIntervalZero(t *testing.T) {

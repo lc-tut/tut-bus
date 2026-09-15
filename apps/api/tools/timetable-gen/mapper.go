@@ -108,12 +108,24 @@ func expandShuttleRows(segs []ExtractedSegment, depCol int) []ExtractedSegment {
 					currentRows = nil
 				}
 				// shuttle placeholder — startTime/endTime will be filled by surrounding rows
-				intervalMin, intervalMax := parseInterval(rowCol(row, shuttleNoteCol))
-				result = append(result, ExtractedSegment{
+				noteText := rowCol(row, shuttleNoteCol)
+				intervalMin, intervalMax := parseInterval(noteText)
+				seg := ExtractedSegment{
 					Type:        "shuttle",
 					IntervalMin: intervalMin,
 					IntervalMax: intervalMax,
-				})
+				}
+				// Some PDFs state no numeric interval (e.g. "乗車状況により運行").
+				// Carry the note through instead so Validate() has something
+				// to accept in place of Interval.
+				if intervalMin == 0 && intervalMax == 0 {
+					if noteText != "" {
+						seg.Note = noteText
+					} else {
+						seg.Note = "シャトル運行"
+					}
+				}
+				result = append(result, seg)
 			} else {
 				currentRows = append(currentRows, row)
 			}

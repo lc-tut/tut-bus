@@ -93,7 +93,10 @@ func Validate(svc ServiceData) []error {
 				}
 			}
 			if seg.Interval == nil {
-				errs = append(errs, fmt.Errorf("segments[%d] shuttle: interval required", i))
+				// No numeric interval in the source PDF - accept a Note instead.
+				if seg.Note == "" {
+					errs = append(errs, fmt.Errorf("segments[%d] shuttle: interval or note required", i))
+				}
 			} else {
 				if seg.Interval.Min <= 0 || seg.Interval.Max <= 0 {
 					errs = append(errs, fmt.Errorf("segments[%d] shuttle: interval min/max must be > 0 (got %d/%d)", i, seg.Interval.Min, seg.Interval.Max))

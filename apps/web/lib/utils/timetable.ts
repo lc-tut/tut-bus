@@ -52,7 +52,7 @@ export const generateDisplayBuses = (
       segment.segmentType === 'shuttle' &&
       segment.startTime &&
       segment.endTime &&
-      segment.intervalRange
+      (segment.intervalRange || segment.note)
     ) {
       displayBuses.push({
         departureTime: segment.startTime,
@@ -66,10 +66,8 @@ export const generateDisplayBuses = (
         shuttleTimeRange: {
           startTime: segment.startTime,
           endTime: segment.endTime,
-          intervalRange: {
-            min: segment.intervalRange.min,
-            max: segment.intervalRange.max,
-          },
+          intervalRange: segment.intervalRange,
+          note: segment.note,
         },
       })
     }
@@ -197,6 +195,19 @@ export const getShuttleSegments = (
       Number(bus.departure.stopId) === selectedDepartureGroupId &&
       Number(bus.destination.stopId) === selectedDestinationGroupId
   )
+}
+
+// シャトル便の間隔表示テキスト。intervalRange が無ければ note、それも無ければ既定文言にフォールバックする
+export const formatShuttleInterval = (
+  shuttleTimeRange: DisplayBusInfo['shuttleTimeRange']
+): string => {
+  const interval = shuttleTimeRange?.intervalRange
+  if (interval) {
+    return interval.min === interval.max
+      ? `約${interval.min}分間隔`
+      : `約${interval.min}～${interval.max}分間隔`
+  }
+  return shuttleTimeRange?.note || 'シャトル運行'
 }
 
 // "HH:mm" 形式の時刻文字列を分単位の数値に変換する関数

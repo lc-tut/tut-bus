@@ -196,13 +196,18 @@ func (u *busStopUseCase) createBusStopSegments(services []domain.ServiceData, bu
 					},
 					StartTime: fmtStart,
 					EndTime:   fmtEnd,
-					IntervalRange: struct {
+				}
+				if s.IntervalRange != nil {
+					shuttleSegment.IntervalRange = &struct {
 						Max int32 `json:"max"`
 						Min int32 `json:"min"`
 					}{
 						Min: int32(s.IntervalRange.Min),
 						Max: int32(s.IntervalRange.Max),
-					},
+					}
+				}
+				if s.Note != "" {
+					shuttleSegment.Note = &s.Note
 				}
 
 				var segment oapi.ModelsBusStopSegment

@@ -209,12 +209,15 @@ export interface components {
       destination: components['schemas']['Models.StopRef']
       startTime: components['schemas']['Scalars.TimeISO']
       endTime: components['schemas']['Scalars.TimeISO']
-      intervalRange: {
+      /** @description Absent when the source timetable gives no numeric interval - fall back to `note`. */
+      intervalRange?: {
         /** Format: int32 */
         min: number
         /** Format: int32 */
         max: number
       }
+      /** @description Explanation to show in place of `intervalRange` when it's absent. */
+      note?: string
     }
     'Models.StopRef': {
       /** Format: int32 */

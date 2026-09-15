@@ -30,7 +30,8 @@ export type SegmentForDate =
       }
       startTime: string // "HH:mm"
       endTime: string // "HH:mm"
-      intervalRange: { min: number; max: number }
+      intervalRange?: { min: number; max: number }
+      note?: string
     }
 
 // 全体（日付固定版）
@@ -67,7 +68,8 @@ export interface DisplayBusInfo {
   shuttleTimeRange?: {
     startTime: string
     endTime: string
-    intervalRange: { min: number; max: number }
+    intervalRange?: { min: number; max: number }
+    note?: string
   }
 }
 
