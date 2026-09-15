@@ -290,6 +290,9 @@ func resolvePeriods(table ExtractedTable, cli []ValidityPeriod) ([]ValidityPerio
 		}
 		return []ValidityPeriod{{From: table.SpecificFrom, To: to}}, nil
 	}
+	if len(table.ValidPeriods) > 0 {
+		return table.ValidPeriods, nil
+	}
 	if table.ValidFrom != "" && table.ValidTo != "" {
 		return []ValidityPeriod{{From: table.ValidFrom, To: table.ValidTo}}, nil
 	}

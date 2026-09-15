@@ -102,15 +102,31 @@ jobs:
         if: always() && steps.check.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # PDFタイトル由来の文字列を ${{ }} でスクリプトに直接展開すると、
+          # bash がパースする前に置換されるためコマンド実行になる。env 経由なら値のまま渡る。
+          SYNC_OUTPUT: ${{ steps.sync.outputs.sync_output }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          SERVER_URL: ${{ github.server_url }}
         run: |
-          BRANCH="chore/timetable-sync-$(date +%Y%m%d)-${{ github.run_id }}"
+          # 毎日動くので、前日のPRが未マージのまま翌日また作ると
+          # 中身が同じPRが積み上がる（旧 promote が持っていたガードの移植）
+          EXISTING=$(gh pr list --base main --state open \
+            --json number,headRefName \
+            --jq '[.[] | select(.headRefName | startswith("chore/timetable-sync-"))] | .[0].number // ""')
+          if [ -n "$EXISTING" ]; then
+            echo "既存の時刻表PR #$EXISTING が未マージです。先にそちらを処理してください。"
+            echo "pr_url=${SERVER_URL}/${REPO}/pull/${EXISTING}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BRANCH="chore/timetable-sync-$(date +%Y%m%d)-${RUN_ID}"
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git checkout -b "$BRANCH"
           git commit -m "chore: 時刻表データを自動更新"
           git push origin "$BRANCH"
 
-          SYNC_OUTPUT="${{ steps.sync.outputs.sync_output }}"
           PDF_LINKS=$(echo "$SYNC_OUTPUT" | grep '^  URL: ' | sed -E 's/^  URL: (.+)$/- \1/')
           if [ -z "$PDF_LINKS" ]; then
             PDF_LINKS="(URL情報なし)"
@@ -139,13 +155,13 @@ jobs:
         if: always()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          JOB_STATUS: ${{ job.status }}
+          SYNC_EXIT: ${{ steps.sync.outputs.exit_code }}
+          SYNC_OUTPUT: ${{ steps.sync.outputs.sync_output }}
+          HAS_CHANGES: ${{ steps.check.outputs.has_changes }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          JOB_STATUS="${{ job.status }}"
-          SYNC_EXIT="${{ steps.sync.outputs.exit_code }}"
-          SYNC_OUTPUT="${{ steps.sync.outputs.sync_output }}"
-          HAS_CHANGES="${{ steps.check.outputs.has_changes }}"
-          PR_URL="${{ steps.pr.outputs.pr_url }}"
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           # 毎日実行なので「変更なし」で通知すると毎朝ノイズが飛ぶ。黙って終わる。
           if [ "$JOB_STATUS" = "success" ] && [ "$SYNC_EXIT" = "0" ] && [ "$HAS_CHANGES" != "true" ]; then
@@ -195,6 +211,8 @@ jobs:
       # sync が失敗していたら、通知を送った後で run 自体も失敗させる
       - name: Fail if sync failed
         if: always() && steps.sync.outputs.exit_code != '0'
+        env:
+          SYNC_EXIT: ${{ steps.sync.outputs.exit_code }}
         run: |
-          echo "sync が終了コード ${{ steps.sync.outputs.exit_code }} で失敗しました"
+          echo "sync が終了コード ${SYNC_EXIT} で失敗しました"
           exit 1

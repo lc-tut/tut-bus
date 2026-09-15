@@ -61,9 +61,6 @@ func runFetch(args []string) {
 	if err != nil {
 		log.Fatalf("fetch 失敗: %v", err)
 	}
-	for _, pdf := range newFiles {
-		RecordProcessed(outputDir, pdf)
-	}
 
 	fmt.Printf("\nダウンロード: %d 件 / スキップ: %d 件\n", len(newFiles), skipped)
 	fmt.Printf("保存先: %s\n", outputDir)
@@ -126,11 +123,11 @@ func fetchNewPDFs(outputDir string) (newFiles []DownloadedPDF, skipped int, err 
 	return newFiles, skipped, nil
 }
 
-// RecordProcessed marks a PDF as handled in .fetch-state.json. Callers must
-// only do this once the PDF actually produced data: an entry written earlier
-// makes the next run skip the PDF as "unchanged", so a failed extraction
-// would silently lose that timetable for good (this is how 260627.pdf and
-// 260912.pdf disappeared).
+// RecordProcessed marks a PDF as handled in .fetch-state.json. An entry here
+// means "this PDF was turned into service data", nothing weaker: fetchNewPDFs
+// skips anything already recorded, so writing one before extraction succeeds
+// loses that timetable for good (this is how 260627.pdf and 260912.pdf
+// disappeared). Only sync may call this, and only after generation.
 func RecordProcessed(outputDir string, pdf DownloadedPDF) {
 	stateFile := filepath.Join(outputDir, stateFileName)
 	state := loadFetchState(stateFile)

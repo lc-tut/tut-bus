@@ -42,21 +42,34 @@ RE_YEAR = re.compile(r"(\d{4})年度")
 RE_DATE_PART = re.compile(r"(?:(\d{1,2})月)?(\d{1,2})日")
 RE_STATION = re.compile(r"【(.+?)】")
 RE_RANGE_MARK = re.compile(r"[～〜~]")
+RE_SEGMENT_SPLIT = re.compile(r"[・、]")
 
 
-def _parse_date_parts(text):
-    """Returns a list of (month, day) tuples found in text, in order, with
-    each bare "N日" inheriting the most recently stated month."""
-    parts = []
+def _parse_date_segments(text):
+    """Splits a date declaration into disjoint periods, as [(from_md, to_md)].
+
+    "8月3日～7日・24日～28日運行" is two separate periods, not one 26-day range
+    (the old single from/to collapse put phantom buses on 8/8-8/23). A bare
+    "N日" inherits the most recently stated month, across separators too.
+    """
+    segments = []
     current_month = None
+    chunk = 0
+    pos = 0
     for m in RE_DATE_PART.finditer(text):
+        chunk += len(RE_SEGMENT_SPLIT.findall(text[pos:m.start()]))
+        pos = m.end()
         month_str, day_str = m.groups()
         if month_str:
             current_month = int(month_str)
         if current_month is None:
             continue
-        parts.append((current_month, int(day_str)))
-    return parts
+        md = (current_month, int(day_str))
+        if segments and segments[-1][0] == chunk:
+            segments[-1][1][1] = md
+        else:
+            segments.append((chunk, [md, md]))
+    return [(s[1][0], s[1][1]) for s in segments]
 
 
 def _classify_daytype(text):
@@ -129,21 +142,16 @@ def _extract_date_declarations(words):
     semester timetable from a one-off event, not the "運行" suffix or any
     day-of-week label nearby (both appear on either kind of PDF).
 
-    Returns dicts sorted by y: {y, kind, from_md, to_md}.
+    Returns dicts sorted by y: {y, kind, segments}.
     """
     decls = []
     for w in words:
         text = _to_halfwidth_digits(w["text"])
-        months_days = _parse_date_parts(text)
-        if not months_days:
+        segments = _parse_date_segments(text)
+        if not segments:
             continue
         kind = "regular" if RE_RANGE_MARK.search(text) else "specific"
-        decls.append({
-            "y": w["top"],
-            "kind": kind,
-            "from_md": months_days[0],
-            "to_md": months_days[-1],
-        })
+        decls.append({"y": w["top"], "kind": kind, "segments": segments})
     decls.sort(key=lambda d: d["y"])
     return decls
 
@@ -221,6 +229,24 @@ def _nearest_station(labels, table_y, x0, x1):
 
 def _fmt_date(year, month, day):
     return f"{year:04d}-{month:02d}-{day:02d}"
+
+
+def _dates_with_rollover(year, segments):
+    """Stamps a year onto each (month, day), carrying to the next year when the
+    month goes backwards. "12月28日～1月5日運行" otherwise yields from > to, which
+    Validate rejects - the winter timetable would simply fail to generate.
+    """
+    out = []
+    prev_month = None
+    for segment in segments:
+        pair = []
+        for month, day in segment:
+            if prev_month is not None and month < prev_month:
+                year += 1
+            prev_month = month
+            pair.append(_fmt_date(year, month, day))
+        out.append((pair[0], pair[1]))
+    return out
 
 
 def extract_tables(pdf_path):
@@ -330,8 +356,8 @@ def extract_tables(pdf_path):
                 station_name = station["name"] if station else ""
 
                 day_type = ""
-                specific_from = specific_to = ""
-                valid_from = valid_to = ""
+                # (specificFrom, specificTo, validFrom, validTo, validPeriods)
+                periods = [("", "", "", "", [])]
 
                 date_decl = _nearest_before(date_decls, t["header_y"])
                 if date_decl is not None:
@@ -342,7 +368,7 @@ def extract_tables(pdf_path):
                     if year_decl is not None:
                         year = year_decl["year"]
                     else:
-                        year = _year_from_filename(pdf_path, date_decl["from_md"][0])
+                        year = _year_from_filename(pdf_path, date_decl["segments"][0][0][0])
                         if year is not None:
                             print(
                                 f"注記: {os.path.basename(pdf_path)} にYYYY年度の記載が無いため、"
@@ -350,31 +376,40 @@ def extract_tables(pdf_path):
                                 file=sys.stderr,
                             )
                     if year is not None:
-                        from_date = _fmt_date(year, *date_decl["from_md"])
-                        to_date = _fmt_date(year, *date_decl["to_md"])
+                        dates = _dates_with_rollover(year, date_decl["segments"])
                         if date_decl["kind"] == "specific":
-                            specific_from, specific_to = from_date, to_date
+                            # Disjoint one-off dates become one table each, so
+                            # each gets its own service file and period.
+                            periods = [(f, t2, "", "", []) for f, t2 in dates]
                         else:
-                            valid_from, valid_to = from_date, to_date
+                            # A dayType schedule keeps one table: dropping
+                            # dayType here would let a Saturday timetable run
+                            # on weekdays. The gaps go into validPeriods.
+                            periods = [(
+                                "", "", dates[0][0], dates[-1][1],
+                                [{"from": f, "to": t2} for f, t2 in dates] if len(dates) > 1 else [],
+                            )]
                             dt_decl = _nearest_before(daytype_decls, t["header_y"])
                             if dt_decl is not None:
                                 day_type = dt_decl["dayType"]
 
-                results.append({
-                    "page": t["page"],
-                    "header_x": t["header_x"],
-                    "header_y": t["header_y"],
-                    "y_upper": t["y_upper"],
-                    "row_count": len(rows),
-                    "warning": warn,
-                    "stationName": station_name,
-                    "dayType": day_type,
-                    "specificFrom": specific_from,
-                    "specificTo": specific_to,
-                    "validFrom": valid_from,
-                    "validTo": valid_to,
-                    "rows": rows,
-                })
+                for specific_from, specific_to, valid_from, valid_to, valid_periods in periods:
+                    results.append({
+                        "page": t["page"],
+                        "header_x": t["header_x"],
+                        "header_y": t["header_y"],
+                        "y_upper": t["y_upper"],
+                        "row_count": len(rows),
+                        "warning": warn,
+                        "stationName": station_name,
+                        "dayType": day_type,
+                        "specificFrom": specific_from,
+                        "specificTo": specific_to,
+                        "validFrom": valid_from,
+                        "validTo": valid_to,
+                        "validPeriods": valid_periods,
+                        "rows": rows,
+                    })
     return results
 
 
@@ -393,6 +428,7 @@ def to_extracted_data(tables):
             "specificTo": t["specificTo"],
             "validFrom": t["validFrom"],
             "validTo": t["validTo"],
+            "validPeriods": t["validPeriods"],
             "segments": [{"type": "fixed", "rows": t["rows"]}],
         })
     if not out_tables:

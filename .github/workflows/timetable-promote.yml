@@ -36,8 +36,10 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-          # checkout は ref: dev しか取らないので、origin/main は明示的に取得する
-          git fetch origin main
+          # checkout が張る refspec は dev だけなので、明示的に
+          # refs/remotes/origin/main まで書かないと origin/main が作られず、
+          # 直後の git diff / git merge が unknown revision で落ちる
+          git fetch origin main:refs/remotes/origin/main
 
           if git diff --quiet origin/main origin/dev; then
             echo "dev と main に差分がありません。同期不要。"
