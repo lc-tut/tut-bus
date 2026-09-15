@@ -11,8 +11,10 @@ on:
     branches: [main, dev]
     paths:
       - 'apps/api/tools/timetable-gen/**'
-      # 生成データだけのPR（sync が作るもの）にも検証を通す
-      - 'apps/api/data/services/*.json'
+      # sync が作るPRは .fetch-state.json しか触らない。bot のPRは GitHub が
+      # 承認待ちにして自動では走らないため、ここで拾っても人が毎回クリック
+      # しないと動かない。生成データの検証は sync ジョブ側で完結させている。
+      - '!apps/api/tools/timetable-gen/downloaded/**'
 
 permissions:
   contents: read

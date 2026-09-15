@@ -144,16 +144,12 @@ func TestExtractGeo_Fixtures(t *testing.T) {
 	}
 }
 
-// TestExtractGeo_NoAPIKeyRequired confirms the geo path works with no
-// GEMINI_API_KEY set and a nil genai client - i.e. it goes through
-// extractWithMode() exactly as main.go/sync.go call it for --extractor=geo,
-// never touching the client or the key. See
-// TestExtractWithMode_DurationOutlierDoesNotRejectValidPDF below for why
-// this fixture's row_check warnings don't get in the way here.
-func TestExtractGeo_NoAPIKeyRequired(t *testing.T) {
-	t.Setenv("GEMINI_API_KEY", "")
-
-	extracted, err := extractWithMode(context.Background(), nil, "testdata/260928.pdf", "geo")
+// Extraction must need no network and no credentials of any kind: that was
+// the point of dropping Gemini, and it is what lets the workflow run without
+// anyone's API key. See TestExtractWithMode_DurationOutlierDoesNotRejectValidPDF
+// below for why this fixture's row_check warnings don't get in the way here.
+func TestExtractGeo_NeedsNoCredentials(t *testing.T) {
+	extracted, err := extractWithMode(context.Background(), "testdata/260928.pdf")
 	if err != nil {
 		t.Fatalf("extractWithMode error: %v", err)
 	}
@@ -170,7 +166,7 @@ func TestExtractGeo_NoAPIKeyRequired(t *testing.T) {
 // corrupted row, so it must not reject the PDF: this fixture matches
 // production data exactly and has to extract cleanly.
 func TestExtractWithMode_DurationOutlierDoesNotRejectValidPDF(t *testing.T) {
-	extracted, err := extractWithMode(context.Background(), nil, "testdata/260928.pdf", "geo")
+	extracted, err := extractWithMode(context.Background(), "testdata/260928.pdf")
 	if err != nil {
 		t.Fatalf("a valid PDF with legitimate duration outliers must still extract, got: %v", err)
 	}

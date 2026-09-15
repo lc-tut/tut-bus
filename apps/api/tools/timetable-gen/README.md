@@ -4,17 +4,17 @@
 
 ## 概要
 
-TUT 公式サイトから時刻表 PDF を取得し、Gemini API で時刻データを抽出して `data/services/` に JSON を出力します。毎週 GitHub Actions が自動実行し、PDF の更新があれば PR を作成します。
+TUT 公式サイトから時刻表 PDF を取得し、PDF の文字レイヤーから座標ベースで時刻データを抽出して `data/services/` に JSON を出力します。毎日 GitHub Actions が自動実行し、PDF の更新があれば PR を作成します。
+
+外部 API には一切依存しません（LLM も API キーも不要）。抽出は `extractor/geo_extract.py`（pdfplumber）が担当します。
 
 ## セットアップ
 
 ```bash
 cd apps/api/tools/timetable-gen
-echo 'GEMINI_API_KEY=your_api_key_here' > .env
-go mod tidy
+pip install -r extractor/requirements.txt
+go build .
 ```
-
-Gemini API キーは [Google AI Studio](https://aistudio.google.com/) から取得できます。
 
 ## 使い方
 
@@ -119,20 +119,21 @@ task api:generate:timetable -- view ../../data/services/
 
 ```
 PDF
- └─ extractor.go  Gemini で生データを抽出（時刻の列解釈はしない）
+ └─ extractor/geo_extract.py  文字の座標から表を復元（時刻の列解釈はしない）
+ └─ row_check.go  行の重複・時刻の単調性など内容の異常を検知
  └─ mapper.go     列インデックスを確定し ServiceData に変換
                   「～」行を検知してシャトル区間に分割
  └─ validator.go  必須フィールド・時刻形式をチェック
  └─ JSON 出力 → data/services/
 ```
 
-Gemini の役割は **表の読み取り** のみです。どの列が出発・到着かの判断は Go コードが行います。
+抽出器の役割は **表の読み取り** のみです。どの列が出発・到着かの判断は Go コードが行います。
 
-> **旧 service-generator との違い**: 旧ツールは Gemini に最終的な JSON 形式まで生成させていました。列解釈も AI 任せだったため「出発・到着が逆になる」「時刻が抜ける」などの誤りが検証しにくい問題がありました。現在は Gemini を「表の読み取り専用」に限定し、列の割り当てを Go コードで確定的に行うことで安定性を高めています。
+> **経緯**: 当初は Gemini に JSON 生成まで任せていましたが、列解釈まで AI 任せだと「出発・到着が逆になる」「時刻が抜ける」といった誤りを検証できませんでした。次に読み取りだけを Gemini に任せる形にし、最終的に PDF の文字レイヤーから座標で表を復元する方式へ移行しました。出力が決定的になり、API キーという個人資産への依存も無くなっています。
 
-### Gemini が出力する中間フォーマット
+### 抽出器が出力する中間フォーマット
 
-Gemini は以下のような `ExtractedData` 形式を返します。列の意味（どれが出発でどれが到着か）はまだ解釈されていません。
+抽出器は以下のような `ExtractedData` 形式を返します。列の意味（どれが出発でどれが到着か）はまだ解釈されていません。
 
 ```json
 {
@@ -179,7 +180,7 @@ PDF の時刻表は常に 3 列構成です。Go コードが列インデック�
 
 **抽出の仕組み:**
 
-1. Gemini は「～」行を `["～", "～", "～", "約3〜5分間隔"]` の形で fixed rows に含めて出力する（4列目に間隔メモ）
+1. 抽出器は「～」行を `["～", "～", "～", "約3〜5分間隔"]` の形で fixed rows に含めて出力する（4列目に間隔メモ）
 2. mapper.go が「～」行を検出して前後の fixed 区間を分割
 3. シャトル区間の `startTime` / `endTime` は前後の fixed 行の時刻から補完
 4. `interval` は 4 列目の文字列（例: `"約3〜5分間隔"`）を正規表現でパース
@@ -203,22 +204,24 @@ PDF の時刻表は常に 3 列構成です。Go コードが列インデック�
 
 ## 自動同期（GitHub Actions）
 
-`.github/workflows/timetable-sync.yml` が毎週月曜 0:00 JST に実行されます。
+`.github/workflows/timetable-sync.yml` が毎日 0:00 JST に実行されます。
 
 1. TUT サイトをスクレイプ
 2. 新規・更新 PDF があれば JSON を再生成
-3. 変更がある場合は `dev` ブランチへの PR を自動作成
+3. 生成物を `validate` で検証
+4. 変更がある場合は `main` ブランチへの PR を自動作成
 
-PR をマージして `main` にマージされると `api-deploy.yml` がデプロイをトリガーします。
+PR を `main` にマージすると `api-deploy.yml` がデプロイをトリガーし、`timetable-promote.yml` が `main` の内容を `dev` へ同期します。
 
-> **注意**: ワークフローには GitHub Secrets に `GEMINI_API_KEY` の登録が必要です。
+外部 API を使わないため、登録が必要な Secrets は Discord 通知用の `DISCORD_WEBHOOK_URL` だけです。
 
 ## ディレクトリ構成
 
 ```
 timetable-gen/
 ├── main.go        エントリポイント・サブコマンドルーティング
-├── extractor.go   Gemini API 呼び出し・PDF 解析
+├── geo_extractor.go  抽出スクリプトの呼び出し・フォールバック判定
+├── extractor/     座標ベース抽出（Python / pdfplumber）
 ├── mapper.go      列解釈・シャトル検知・ServiceData 変換
 ├── validator.go   生成 JSON のバリデーション
 ├── sync.go        sync サブコマンド実装
@@ -226,6 +229,5 @@ timetable-gen/
 ├── view.go        view サブコマンド実装
 ├── config.go      駅情報・ID 生成ロジック
 ├── types.go       データ型定義
-├── .env           Gemini API キー設定（gitignore）
 └── downloaded/    ダウンロード済み PDF キャッシュ（gitignore）
 ```
