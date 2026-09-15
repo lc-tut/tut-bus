@@ -1,0 +1,192 @@
+{
+  "id": "minamino-to-school-2026-09-27",
+  "name": "八王子みなみ野駅 → 大学（みなみ野駅方面） (2026-09-27)",
+  "from": {
+    "stopId": 2,
+    "displayName": "八王子みなみ野駅"
+  },
+  "to": {
+    "stopId": 5,
+    "displayName": "大学（みなみ野駅方面）"
+  },
+  "direction": "inbound",
+  "validityPeriods": [
+    {
+      "from": "2026-09-27",
+      "to": "2026-09-27"
+    }
+  ],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2026-09-27",
+        "to": "2026-09-27"
+      },
+      "times": [
+        {
+          "departure": "7:34",
+          "arrival": "7:46"
+        },
+        {
+          "departure": "7:44",
+          "arrival": "7:56"
+        },
+        {
+          "departure": "7:55",
+          "arrival": "8:07"
+        },
+        {
+          "departure": "8:06",
+          "arrival": "8:18"
+        },
+        {
+          "departure": "8:16",
+          "arrival": "8:28"
+        },
+        {
+          "departure": "8:25",
+          "arrival": "8:37"
+        },
+        {
+          "departure": "8:32",
+          "arrival": "8:44"
+        },
+        {
+          "departure": "8:41",
+          "arrival": "8:53"
+        }
+      ]
+    },
+    {
+      "segmentType": "shuttle",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2026-09-27",
+        "to": "2026-09-27"
+      },
+      "startTime": "8:41",
+      "endTime": "9:22",
+      "note": "シャトル運行(乗車状況により運行)"
+    },
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2026-09-27",
+        "to": "2026-09-27"
+      },
+      "times": [
+        {
+          "departure": "9:22",
+          "arrival": "9:34"
+        },
+        {
+          "departure": "9:29",
+          "arrival": "9:41"
+        },
+        {
+          "departure": "9:36",
+          "arrival": "9:48"
+        },
+        {
+          "departure": "9:43",
+          "arrival": "9:55"
+        },
+        {
+          "departure": "9:50",
+          "arrival": "10:02"
+        },
+        {
+          "departure": "9:57",
+          "arrival": "10:09"
+        },
+        {
+          "departure": "12:08",
+          "arrival": "12:20"
+        },
+        {
+          "departure": "12:28",
+          "arrival": "12:40"
+        },
+        {
+          "departure": "12:48",
+          "arrival": "13:00"
+        },
+        {
+          "departure": "13:08",
+          "arrival": "13:20"
+        },
+        {
+          "departure": "13:28",
+          "arrival": "13:40"
+        },
+        {
+          "departure": "13:48",
+          "arrival": "14:00"
+        },
+        {
+          "departure": "14:08",
+          "arrival": "14:20"
+        },
+        {
+          "departure": "14:28",
+          "arrival": "14:40"
+        },
+        {
+          "departure": "14:48",
+          "arrival": "15:00"
+        },
+        {
+          "departure": "15:08",
+          "arrival": "15:20"
+        },
+        {
+          "departure": "15:28",
+          "arrival": "15:40"
+        },
+        {
+          "departure": "15:48",
+          "arrival": "16:00"
+        },
+        {
+          "departure": "16:08",
+          "arrival": "16:20"
+        },
+        {
+          "departure": "16:28",
+          "arrival": "16:40"
+        },
+        {
+          "departure": "16:48",
+          "arrival": "17:00"
+        },
+        {
+          "departure": "17:08",
+          "arrival": "17:20"
+        },
+        {
+          "departure": "17:28",
+          "arrival": "17:40"
+        },
+        {
+          "departure": "17:48",
+          "arrival": "18:00"
+        },
+        {
+          "departure": "18:08",
+          "arrival": "18:20"
+        },
+        {
+          "departure": "18:28",
+          "arrival": "18:40"
+        },
+        {
+          "departure": "18:48",
+          "arrival": "19:00"
+        }
+      ]
+    }
+  ]
+}
