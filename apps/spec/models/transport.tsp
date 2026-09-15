@@ -40,10 +40,15 @@ model ShuttleSegment {
   destination: StopRef;
   startTime: TimeISO;
   endTime: TimeISO;
-  intervalRange: {
+
+  /** Absent when the source timetable gives no numeric interval - fall back to `note`. */
+  intervalRange?: {
     min: int32;
     max: int32;
   };
+
+  /** Explanation to show in place of `intervalRange` when it's absent. */
+  note?: string;
 }
 
 @TypeSpec.OpenAPI.oneOf

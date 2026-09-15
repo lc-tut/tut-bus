@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { components } from '@/generated/oas'
-import { getShuttleSegments } from '@/lib/utils/timetable'
+import { formatShuttleInterval, getShuttleSegments } from '@/lib/utils/timetable'
 import { FaShuttleVan } from 'react-icons/fa'
 import {
   Accordion,
@@ -102,8 +102,7 @@ export function RouteInfoCard({
                             {segment.shuttleTimeRange?.endTime}
                           </div>
                           <div className="text-purple-800 dark:text-purple-300">
-                            約{segment.shuttleTimeRange?.intervalRange.min}〜
-                            {segment.shuttleTimeRange?.intervalRange.max}分
+                            {formatShuttleInterval(segment.shuttleTimeRange)}
                           </div>
                         </React.Fragment>
                       ))}
