@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -294,5 +295,46 @@ func TestExtractGeo_ShuttleWithoutNumericInterval(t *testing.T) {
 	}
 	if !sawShuttleWithoutInterval {
 		t.Error("expected at least one shuttle segment with no numeric interval in this fixture - did the fixture or parsing change?")
+	}
+}
+
+// 260803.pdf declares "8月3日～7日・24日～28日運行": two disjoint weeks, not one
+// 26-day range. Collapsing them to a single from/to advertised buses on
+// 8/8-8/23, when none run.
+func TestExtractGeo_DisjointPeriodsStaySeparate(t *testing.T) {
+	extracted, err := ExtractGeo(context.Background(), "testdata/260803.pdf")
+	if err != nil {
+		t.Fatalf("ExtractGeo error: %v", err)
+	}
+
+	want := []ValidityPeriod{{From: "2026-08-03", To: "2026-08-07"}, {From: "2026-08-24", To: "2026-08-28"}}
+	weekdayTables := 0
+	for _, table := range extracted.Tables {
+		if table.DayType != "weekday" {
+			continue
+		}
+		weekdayTables++
+		if !reflect.DeepEqual(table.ValidPeriods, want) {
+			t.Errorf("table %q ValidPeriods = %+v, want %+v", table.StationName, table.ValidPeriods, want)
+		}
+	}
+	if weekdayTables == 0 {
+		t.Fatal("平日テーブルが1件も無い")
+	}
+
+	services, err := Map(extracted, nil)
+	if err != nil {
+		t.Fatalf("Map() error: %v", err)
+	}
+	for _, svc := range services {
+		if errs := Validate(svc); len(errs) > 0 {
+			t.Errorf("Validate(%s) errors: %v", svc.ID, errs)
+		}
+		if svc.Segments[0].Condition.Type != "dayType" {
+			continue
+		}
+		if !reflect.DeepEqual(svc.ValidityPeriods, want) {
+			t.Errorf("service %s ValidityPeriods = %+v, want %+v", svc.ID, svc.ValidityPeriods, want)
+		}
 	}
 }

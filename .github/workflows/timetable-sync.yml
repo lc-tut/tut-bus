@@ -1,14 +1,22 @@
 # ========================================
 # Timetable Sync
 # ========================================
-# 毎週月曜 0:00 JST（日曜 15:00 UTC）にTUTサイトの時刻表PDFを確認し、
+# 毎日 0:00 JST（前日 15:00 UTC）にTUTサイトの時刻表PDFを確認し、
 # 新規・更新があればJSONを再生成してPRを作成する
+# （--extractor=geo 移行によりGemini APIコストが無くなったため、issue #213を機に週次から毎日へ変更）
+#
+# PR は main 向け（旧: dev → main の二段階）。
+# 人が1回見るだけで済み、却下してもマージしなければ良いだけになる。
+# main を直接 checkout して動くため、timetable-gen ツール自体の変更は
+# main に昇格されるまで sync には反映されない（ワークフロー定義自体は
+# デフォルトブランチ dev から読まれるが、実行される Go コードとデータは
+# main のもの）。本番データは本番コードで生成するための意図的な構成。
 
 name: 'Timetable Sync'
 
 on:
   schedule:
-    - cron: '0 15 * * 0'
+    - cron: '0 15 * * *'
   workflow_dispatch:
     inputs:
       extractor:
@@ -30,7 +38,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: dev
+          ref: main
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -58,8 +66,14 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EXTRACTOR: ${{ github.event.inputs.extractor || 'geo' }}
         run: |
-          OUTPUT=$(./timetable-gen-bin sync --output ../../data/services --extractor "$EXTRACTOR" 2>&1) || true
+          # `|| true` を付けると $? が常に 0 になり失敗を取りこぼす（実際に
+          # 2026-09-13 の Gemini 3回失敗が success 扱いで緑通知されていた）。
+          # 失敗しても後続で生成済みの分はPRにしたいので、ここでは落とさず
+          # 最後の Fail if sync failed でまとめて落とす。
+          set +e
+          OUTPUT=$(./timetable-gen-bin sync --output ../../data/services --extractor "$EXTRACTOR" 2>&1)
           EXIT_CODE=$?
+          set -e
           echo "$OUTPUT"
           {
             echo 'sync_output<<EOF'
@@ -67,10 +81,10 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
           echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
-          exit $EXIT_CODE
 
       - name: Check for changes
         id: check
+        if: always()
         run: |
           git add apps/api/data/services/
           STATE=apps/api/tools/timetable-gen/downloaded/.fetch-state.json
@@ -85,25 +99,41 @@ jobs:
 
       - name: Create PR
         id: pr
-        if: steps.check.outputs.has_changes == 'true'
+        if: always() && steps.check.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # PDFタイトル由来の文字列を ${{ }} でスクリプトに直接展開すると、
+          # bash がパースする前に置換されるためコマンド実行になる。env 経由なら値のまま渡る。
+          SYNC_OUTPUT: ${{ steps.sync.outputs.sync_output }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          SERVER_URL: ${{ github.server_url }}
         run: |
-          BRANCH="chore/timetable-sync-$(date +%Y%m%d)-${{ github.run_id }}"
+          # 毎日動くので、前日のPRが未マージのまま翌日また作ると
+          # 中身が同じPRが積み上がる（旧 promote が持っていたガードの移植）
+          EXISTING=$(gh pr list --base main --state open \
+            --json number,headRefName \
+            --jq '[.[] | select(.headRefName | startswith("chore/timetable-sync-"))] | .[0].number // ""')
+          if [ -n "$EXISTING" ]; then
+            echo "既存の時刻表PR #$EXISTING が未マージです。先にそちらを処理してください。"
+            echo "pr_url=${SERVER_URL}/${REPO}/pull/${EXISTING}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BRANCH="chore/timetable-sync-$(date +%Y%m%d)-${RUN_ID}"
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git checkout -b "$BRANCH"
           git commit -m "chore: 時刻表データを自動更新"
           git push origin "$BRANCH"
 
-          SYNC_OUTPUT="${{ steps.sync.outputs.sync_output }}"
           PDF_LINKS=$(echo "$SYNC_OUTPUT" | grep '^  URL: ' | sed -E 's/^  URL: (.+)$/- \1/')
           if [ -z "$PDF_LINKS" ]; then
             PDF_LINKS="(URL情報なし)"
           fi
 
           PR_URL=$(gh pr create \
-            --base dev \
+            --base main \
             --head "$BRANCH" \
             --title "chore: 時刻表データを自動更新 ($(date +%Y-%m-%d))" \
             --body "$(cat <<EOF
@@ -125,23 +155,30 @@ jobs:
         if: always()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          JOB_STATUS: ${{ job.status }}
+          SYNC_EXIT: ${{ steps.sync.outputs.exit_code }}
+          SYNC_OUTPUT: ${{ steps.sync.outputs.sync_output }}
+          HAS_CHANGES: ${{ steps.check.outputs.has_changes }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          JOB_STATUS="${{ job.status }}"
-          SYNC_OUTPUT="${{ steps.sync.outputs.sync_output }}"
-          HAS_CHANGES="${{ steps.check.outputs.has_changes }}"
-          PR_URL="${{ steps.pr.outputs.pr_url }}"
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          if [ "$JOB_STATUS" = "success" ]; then
+          # 毎日実行なので「変更なし」で通知すると毎朝ノイズが飛ぶ。黙って終わる。
+          if [ "$JOB_STATUS" = "success" ] && [ "$SYNC_EXIT" = "0" ] && [ "$HAS_CHANGES" != "true" ]; then
+            echo "変更なし。通知しません。"
+            exit 0
+          fi
+
+          if [ "$JOB_STATUS" = "success" ] && [ "$SYNC_EXIT" = "0" ]; then
             COLOR=3066993  # 緑
-            if [ "$HAS_CHANGES" = "true" ]; then
-              TITLE="時刻表データを更新しました"
-            else
-              TITLE="時刻表データに変更はありませんでした"
-            fi
+            TITLE="時刻表データを更新しました"
           else
             COLOR=15158332  # 赤
-            TITLE="時刻表 sync に失敗しました"
+            if [ "$HAS_CHANGES" = "true" ]; then
+              TITLE="時刻表 sync が一部失敗しました（生成できた分はPRあり）"
+            else
+              TITLE="時刻表 sync に失敗しました"
+            fi
           fi
 
           DESCRIPTION="$SYNC_OUTPUT"
@@ -170,3 +207,12 @@ jobs:
           curl -s -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d "$payload"
+
+      # sync が失敗していたら、通知を送った後で run 自体も失敗させる
+      - name: Fail if sync failed
+        if: always() && steps.sync.outputs.exit_code != '0'
+        env:
+          SYNC_EXIT: ${{ steps.sync.outputs.exit_code }}
+        run: |
+          echo "sync が終了コード ${SYNC_EXIT} で失敗しました"
+          exit 1

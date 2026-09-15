@@ -91,6 +91,12 @@ func runSync(args []string) {
 		saved, failed := generateFromPDF(ctx, client, pdf.Path, outputDir, extractorMode)
 		totalSaved += saved
 		totalFailed += failed
+
+		if failed == 0 && saved > 0 {
+			RecordProcessed(downloadDir, pdf)
+		} else {
+			log.Printf("state に記録しません（次回再試行されます）: %s", filepath.Base(pdf.Path))
+		}
 	}
 
 	fmt.Printf("\n合計: 生成 %d 件 / 失敗 %d 件\n", totalSaved, totalFailed)
