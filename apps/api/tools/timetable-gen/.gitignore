@@ -3,3 +3,8 @@ timetable-gen-bin
 timetable-gen
 *.pdf
 *.png
+# Fixture PDFs used by geo_extractor_test.go must stay committed.
+!testdata/*.pdf
+__pycache__/
+*.pyc
+.venv/

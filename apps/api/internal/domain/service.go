@@ -103,10 +103,12 @@ type FixedSegment struct {
 // ShuttleSegment はシャトルバスのセグメントを表します
 type ShuttleSegment struct {
 	ServiceSegment
-	StartTime     string   `json:"startTime"`
-	EndTime       string   `json:"endTime"`
-	IntervalRange Interval `json:"intervalRange"`
-	Note          string   `json:"note,omitempty"`
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
+	// nil when the source PDF gave no numeric interval; Note carries the
+	// explanation instead in that case.
+	IntervalRange *Interval `json:"intervalRange,omitempty"`
+	Note          string    `json:"note,omitempty"`
 }
 
 // ServiceData はバスサービスのデータを表します

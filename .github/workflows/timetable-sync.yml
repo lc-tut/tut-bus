@@ -10,6 +10,12 @@ on:
   schedule:
     - cron: '0 15 * * 0'
   workflow_dispatch:
+    inputs:
+      extractor:
+        description: '抽出方式（issue #213 対応中の手動フォールバック用）'
+        type: choice
+        options: ['geo', 'gemini']
+        default: 'geo'
 
 permissions:
   contents: write
@@ -32,6 +38,15 @@ jobs:
           go-version-file: apps/api/tools/timetable-gen/go.mod
           cache-dependency-path: apps/api/tools/timetable-gen/go.sum
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Dependencies
+        working-directory: apps/api/tools/timetable-gen
+        run: pip install -r extractor/requirements.txt
+
       - name: Build timetable-gen
         working-directory: apps/api/tools/timetable-gen
         run: go build -o timetable-gen-bin .
@@ -41,8 +56,9 @@ jobs:
         working-directory: apps/api/tools/timetable-gen
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EXTRACTOR: ${{ github.event.inputs.extractor || 'geo' }}
         run: |
-          OUTPUT=$(./timetable-gen-bin sync --output ../../data/services 2>&1) || true
+          OUTPUT=$(./timetable-gen-bin sync --output ../../data/services --extractor "$EXTRACTOR" 2>&1) || true
           EXIT_CODE=$?
           echo "$OUTPUT"
           {

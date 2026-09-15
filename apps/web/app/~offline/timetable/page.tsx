@@ -61,7 +61,8 @@ interface CachedShuttleSegment {
   destination: { stopId: number; stopName: string }
   startTime: string
   endTime: string
-  intervalRange: { min: number; max: number }
+  intervalRange?: { min: number; max: number }
+  note?: string
 }
 
 interface FlatBusEntry {
@@ -70,7 +71,7 @@ interface FlatBusEntry {
   destinationId: number
   destinationName: string
   segmentType: 'fixed' | 'shuttle'
-  shuttleInfo?: { startTime: string; endTime: string; min: number; max: number }
+  shuttleInfo?: { startTime: string; endTime: string; min?: number; max?: number; note?: string }
 }
 
 interface CachedGroupEntry {
@@ -769,9 +770,11 @@ function OfflineBusRow({ bus }: { bus: FlatBusEntry }) {
             className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
           >
             <FaBus className="mr-1 h-2.5 w-2.5" />
-            {bus.shuttleInfo.min === bus.shuttleInfo.max
-              ? `約${bus.shuttleInfo.min}分間隔`
-              : `約${bus.shuttleInfo.min}〜${bus.shuttleInfo.max}分間隔`}
+            {bus.shuttleInfo.min == null
+              ? bus.shuttleInfo.note || 'シャトル運行'
+              : bus.shuttleInfo.min === bus.shuttleInfo.max
+                ? `約${bus.shuttleInfo.min}分間隔`
+                : `約${bus.shuttleInfo.min}〜${bus.shuttleInfo.max}分間隔`}
           </Badge>
         ) : bus.arrivalTime ? (
           <Badge variant="outline" className="text-xs md:hidden">
@@ -1008,8 +1011,9 @@ function flattenTimetable(data: CachedTimetable): FlatBusEntry[] {
         shuttleInfo: {
           startTime: seg.startTime,
           endTime: seg.endTime,
-          min: seg.intervalRange.min,
-          max: seg.intervalRange.max,
+          min: seg.intervalRange?.min,
+          max: seg.intervalRange?.max,
+          note: seg.note,
         },
       })
     }

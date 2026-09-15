@@ -19,6 +19,7 @@ func runSync(args []string) {
 	outputDir := "../../data/services"
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	restartAPI := false
+	extractorMode := "gemini"
 
 	for i, a := range args {
 		switch a {
@@ -36,10 +37,16 @@ func runSync(args []string) {
 			}
 		case "--restart-api":
 			restartAPI = true
+		case "--extractor":
+			if i+1 < len(args) {
+				extractorMode = args[i+1]
+			}
 		}
 	}
 
-	if apiKey == "" {
+	// --extractor=geo needs no Gemini API key at all - only the default
+	// gemini path does.
+	if extractorMode != "geo" && apiKey == "" {
 		log.Fatal("GEMINI_API_KEY を設定するか --api-key を指定してください")
 	}
 
@@ -65,11 +72,15 @@ func runSync(args []string) {
 	fmt.Printf("新規・更新 PDF: %d 件\n", len(newFiles))
 
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
-	if err != nil {
-		log.Fatalf("Gemini クライアント作成失敗: %v", err)
+	var client *genai.Client
+	if extractorMode != "geo" {
+		var err error
+		client, err = genai.NewClient(ctx, option.WithAPIKey(apiKey))
+		if err != nil {
+			log.Fatalf("Gemini クライアント作成失敗: %v", err)
+		}
+		defer client.Close()
 	}
-	defer client.Close()
 
 	// 3. 各 PDF を JSON に変換
 	totalSaved, totalFailed := 0, 0
@@ -77,7 +88,7 @@ func runSync(args []string) {
 		fmt.Printf("\n--- %s (%s) ---\n", filepath.Base(pdf.Path), pdf.Title)
 		fmt.Printf("  URL: %s\n", pdf.URL)
 
-		saved, failed := generateFromPDF(ctx, client, pdf.Path, outputDir)
+		saved, failed := generateFromPDF(ctx, client, pdf.Path, outputDir, extractorMode)
 		totalSaved += saved
 		totalFailed += failed
 	}
@@ -171,14 +182,8 @@ func archiveExpired(servicesDir string) int {
 	return count
 }
 
-func generateFromPDF(ctx context.Context, client *genai.Client, pdfPath, outputDir string) (saved, failed int) {
-	pdfData, err := os.ReadFile(pdfPath)
-	if err != nil {
-		log.Printf("PDF 読み込み失敗 %s: %v", pdfPath, err)
-		return 0, 1
-	}
-
-	extracted, err := Extract(ctx, client, pdfData)
+func generateFromPDF(ctx context.Context, client *genai.Client, pdfPath, outputDir, extractorMode string) (saved, failed int) {
+	extracted, err := extractWithMode(ctx, client, pdfPath, extractorMode)
 	if err != nil {
 		log.Printf("抽出失敗 %s: %v", pdfPath, err)
 		return 0, 1

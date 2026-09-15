@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { BusStatus, DisplayBusInfo } from '@/lib/types/timetable'
+import { formatShuttleInterval } from '@/lib/utils/timetable'
 
 interface BusRowProps {
   bus: DisplayBusInfo
@@ -71,16 +72,9 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
         )}
       >
         {bus.segmentType === 'shuttle' && bus.shuttleTimeRange ? (
-          bus.shuttleTimeRange.intervalRange.min === bus.shuttleTimeRange.intervalRange.max ? (
-            <span className="font-medium text-purple-700 dark:text-purple-300 text-xs">
-              約{bus.shuttleTimeRange.intervalRange.min}分間隔
-            </span>
-          ) : (
-            <span className="font-medium text-purple-700 dark:text-purple-300 text-xs">
-              約{bus.shuttleTimeRange.intervalRange.min}～{bus.shuttleTimeRange.intervalRange.max}
-              分間隔
-            </span>
-          )
+          <span className="font-medium text-purple-700 dark:text-purple-300 text-xs">
+            {formatShuttleInterval(bus.shuttleTimeRange)}
+          </span>
         ) : (
           <span>{bus.arrivalTime}</span>
         )}
@@ -136,10 +130,7 @@ export function BusRow({ bus, busStatus, index }: BusRowProps) {
                 variant="default"
                 className="md:hidden text-[10px] border-purple-400 dark:border-purple-600 bg-purple-700 dark:bg-purple-600 text-white"
               >
-                {bus.shuttleTimeRange &&
-                bus.shuttleTimeRange.intervalRange.min === bus.shuttleTimeRange.intervalRange.max
-                  ? `約${bus.shuttleTimeRange.intervalRange.min}分間隔`
-                  : `約${bus.shuttleTimeRange?.intervalRange.min}～${bus.shuttleTimeRange?.intervalRange.max}分間隔`}
+                {formatShuttleInterval(bus.shuttleTimeRange)}
               </Badge>
             </div>
           ) : (
