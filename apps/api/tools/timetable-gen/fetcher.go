@@ -44,6 +44,7 @@ var rePDFLink = regexp.MustCompile(`<a\s+href="(/campus/access/[^"]+\.pdf)"[^>]*
 type DownloadedPDF struct {
 	Path  string
 	Title string
+	URL   string // absolute URL on the university's site
 }
 
 func runFetch(args []string) {
@@ -114,7 +115,7 @@ func fetchNewPDFs(outputDir string) (newFiles []DownloadedPDF, skipped int, err 
 			action = "更新"
 		}
 		fmt.Printf("  [%s] %s  (%s)\n", action, filename, link.Title)
-		newFiles = append(newFiles, DownloadedPDF{Path: outPath, Title: link.Title})
+		newFiles = append(newFiles, DownloadedPDF{Path: outPath, Title: link.Title, URL: fullURL})
 	}
 
 	if saveErr := saveFetchState(stateFile, state); saveErr != nil {
