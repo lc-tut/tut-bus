@@ -75,6 +75,7 @@ func runSync(args []string) {
 	totalSaved, totalFailed := 0, 0
 	for _, pdf := range newFiles {
 		fmt.Printf("\n--- %s (%s) ---\n", filepath.Base(pdf.Path), pdf.Title)
+		fmt.Printf("  URL: %s\n", pdf.URL)
 
 		saved, failed := generateFromPDF(ctx, client, pdf.Path, outputDir)
 		totalSaved += saved
