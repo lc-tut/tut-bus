@@ -59,8 +59,14 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EXTRACTOR: ${{ github.event.inputs.extractor || 'geo' }}
         run: |
-          OUTPUT=$(./timetable-gen-bin sync --output ../../data/services --extractor "$EXTRACTOR" 2>&1) || true
+          # `|| true` を付けると $? が常に 0 になり失敗を取りこぼす（実際に
+          # 2026-09-13 の Gemini 3回失敗が success 扱いで緑通知されていた）。
+          # 失敗しても後続で生成済みの分はPRにしたいので、ここでは落とさず
+          # 最後の Fail if sync failed でまとめて落とす。
+          set +e
+          OUTPUT=$(./timetable-gen-bin sync --output ../../data/services --extractor "$EXTRACTOR" 2>&1)
           EXIT_CODE=$?
+          set -e
           echo "$OUTPUT"
           {
             echo 'sync_output<<EOF'
@@ -68,10 +74,10 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
           echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
-          exit $EXIT_CODE
 
       - name: Check for changes
         id: check
+        if: always()
         run: |
           git add apps/api/data/services/
           STATE=apps/api/tools/timetable-gen/downloaded/.fetch-state.json
@@ -86,7 +92,7 @@ jobs:
 
       - name: Create PR
         id: pr
-        if: steps.check.outputs.has_changes == 'true'
+        if: always() && steps.check.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -128,21 +134,28 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           JOB_STATUS="${{ job.status }}"
+          SYNC_EXIT="${{ steps.sync.outputs.exit_code }}"
           SYNC_OUTPUT="${{ steps.sync.outputs.sync_output }}"
           HAS_CHANGES="${{ steps.check.outputs.has_changes }}"
           PR_URL="${{ steps.pr.outputs.pr_url }}"
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          if [ "$JOB_STATUS" = "success" ]; then
+          # 毎日実行なので「変更なし」で通知すると毎朝ノイズが飛ぶ。黙って終わる。
+          if [ "$JOB_STATUS" = "success" ] && [ "$SYNC_EXIT" = "0" ] && [ "$HAS_CHANGES" != "true" ]; then
+            echo "変更なし。通知しません。"
+            exit 0
+          fi
+
+          if [ "$JOB_STATUS" = "success" ] && [ "$SYNC_EXIT" = "0" ]; then
             COLOR=3066993  # 緑
-            if [ "$HAS_CHANGES" = "true" ]; then
-              TITLE="時刻表データを更新しました"
-            else
-              TITLE="時刻表データに変更はありませんでした"
-            fi
+            TITLE="時刻表データを更新しました"
           else
             COLOR=15158332  # 赤
-            TITLE="時刻表 sync に失敗しました"
+            if [ "$HAS_CHANGES" = "true" ]; then
+              TITLE="時刻表 sync が一部失敗しました（生成できた分はPRあり）"
+            else
+              TITLE="時刻表 sync に失敗しました"
+            fi
           fi
 
           DESCRIPTION="$SYNC_OUTPUT"
@@ -171,3 +184,10 @@ jobs:
           curl -s -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d "$payload"
+
+      # sync が失敗していたら、通知を送った後で run 自体も失敗させる
+      - name: Fail if sync failed
+        if: always() && steps.sync.outputs.exit_code != '0'
+        run: |
+          echo "sync が終了コード ${{ steps.sync.outputs.exit_code }} で失敗しました"
+          exit 1
