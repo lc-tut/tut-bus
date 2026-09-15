@@ -7,12 +7,16 @@ type ExtractedData struct {
 }
 
 type ExtractedTable struct {
-	StationName  string             `json:"stationName"`
-	DayType      string             `json:"dayType,omitempty"`      // "weekday"|"saturday"|"holiday"
-	SpecificFrom string             `json:"specificFrom,omitempty"` // YYYY-MM-DD for specific-date schedules
-	SpecificTo   string             `json:"specificTo,omitempty"`
-	ValidFrom    string             `json:"validFrom,omitempty"`
-	ValidTo      string             `json:"validTo,omitempty"`
+	StationName  string `json:"stationName"`
+	DayType      string `json:"dayType,omitempty"`      // "weekday"|"saturday"|"holiday"
+	SpecificFrom string `json:"specificFrom,omitempty"` // YYYY-MM-DD for specific-date schedules
+	SpecificTo   string `json:"specificTo,omitempty"`
+	ValidFrom    string `json:"validFrom,omitempty"`
+	ValidTo      string `json:"validTo,omitempty"`
+	// Set only when the PDF declares disjoint periods for one dayType
+	// ("8月3日～7日・24日～28日運行"). ValidFrom/ValidTo stay as the outer span
+	// because service IDs are named from them.
+	ValidPeriods []ValidityPeriod   `json:"validPeriods,omitempty"`
 	Segments     []ExtractedSegment `json:"segments"`
 }
 
