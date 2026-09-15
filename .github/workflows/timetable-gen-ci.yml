@@ -34,6 +34,14 @@ jobs:
           go-version-file: apps/api/tools/timetable-gen/go.mod
           cache-dependency-path: apps/api/tools/timetable-gen/go.sum
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Dependencies
+        run: pip install -r extractor/requirements.txt
+
       - name: Download Dependencies
         run: go mod download
 
