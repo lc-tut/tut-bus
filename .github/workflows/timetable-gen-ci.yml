@@ -11,6 +11,8 @@ on:
     branches: [main, dev]
     paths:
       - 'apps/api/tools/timetable-gen/**'
+      # 生成データだけのPR（sync が作るもの）にも検証を通す
+      - 'apps/api/data/services/*.json'
 
 permissions:
   contents: read
@@ -62,3 +64,6 @@ jobs:
 
       - name: Test
         run: go test -v -race ./...
+
+      - name: Validate service data
+        run: go run . validate ../../data/services

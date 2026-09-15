@@ -30,6 +30,10 @@ func main() {
 		runSync(os.Args[2:])
 		return
 	}
+	if len(os.Args) > 1 && os.Args[1] == "validate" {
+		runValidate(os.Args[2:])
+		return
+	}
 
 	pdfPath := flag.String("pdf", "", "PDFファイルのパス (必須)")
 	outputDir := flag.String("output", "../../data/services", "出力ディレクトリ")
