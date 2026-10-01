@@ -1,10 +1,20 @@
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { TimetableDisplay } from './timetable-display'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
+  DialogTrigger,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -24,6 +34,8 @@ import { addDays, format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { useMemo, useState } from 'react'
 import { FaCalendarAlt, FaClock, FaExchangeAlt, FaMapMarkerAlt, FaTimes } from 'react-icons/fa'
+
+type DisplayBusInfo = components['schemas']['Models.BusStopGroupTimetable']
 
 interface TimetableFilterProps {
   selectedDeparture: number | null
@@ -62,8 +74,15 @@ export function TimetableFilter({
   endTime,
   setEndTime,
   swapStations,
-  busStopGroups, // 追加
-}: TimetableFilterProps) {
+  busStopGroups,
+  filteredTimetable,
+  timetableData,
+  isLoading = false,
+}: TimetableFilterProps & {
+  filteredTimetable: any[]
+  timetableData?: components['schemas']['Models.BusStopGroupTimetable'] | null
+  isLoading?: boolean
+}) {
   // 日付タブの設定
   const dateTabs = useMemo(
     () => [
@@ -141,20 +160,42 @@ export function TimetableFilter({
                         </span>
                       )}
                       {tab.value === 'custom' && (
-                        <span
-                          className="flex items-center gap-1.5 cursor-pointer data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90"
-                          onClick={() => setCalendarOpen(true)}
-                        >
-                          <FaCalendarAlt className="h-3 w-3" />
-                          {tab.label}
-                          {selectedDate &&
-                            now &&
-                            format(selectedDate, 'yyyy-MM-dd') !== format(now, 'yyyy-MM-dd') &&
-                            format(selectedDate, 'yyyy-MM-dd') !==
-                              format(addDays(now, 1), 'yyyy-MM-dd') && (
-                              <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full" />
-                            )}
-                        </span>
+                        <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
+                          <DialogTrigger asChild>
+                            <span className="flex items-center gap-1.5 cursor-pointer data-[state=active]:font-semibold dark:data-[state=active]:text-foreground/90">
+                              <FaCalendarAlt className="h-3 w-3" />
+                              {tab.label}
+                              {selectedDate &&
+                                now &&
+                                format(selectedDate, 'yyyy-MM-dd') !== format(now, 'yyyy-MM-dd') &&
+                                format(selectedDate, 'yyyy-MM-dd') !==
+                                format(addDays(now, 1), 'yyyy-MM-dd') && (
+                                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full" />
+                                )}
+                            </span>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>日付を選択</DialogTitle>
+                            </DialogHeader>
+                            <div className="flex items-center justify-center">
+                              <Calendar
+                                mode="single"
+                                selected={selectedDate ?? undefined}
+                                onSelect={(date: Date | undefined) => {
+                                  if (date) {
+                                    setSelectedDate(date)
+                                    // 日付選択後にダイアログを閉じる
+                                    setCalendarOpen(false)
+                                  }
+                                }}
+                                initialFocus
+                                locale={ja}
+                                className="mx-auto"
+                              />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       )}
                     </TabsTrigger>
                   ))}
@@ -163,7 +204,6 @@ export function TimetableFilter({
 
               {selectedDate && now && (
                 <div
-                  onClick={() => setCalendarOpen(true)}
                   className={cn(
                     'px-4 py-3 text-sm font-medium rounded-md flex items-center justify-center cursor-pointer',
                     format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
@@ -179,7 +219,7 @@ export function TimetableFilter({
                       format(selectedDate, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd')
                         ? 'text-green-500 dark:text-green-400'
                         : format(selectedDate, 'yyyy-MM-dd') ===
-                            format(addDays(now, 1), 'yyyy-MM-dd')
+                          format(addDays(now, 1), 'yyyy-MM-dd')
                           ? 'text-blue-500 dark:text-blue-400'
                           : 'text-muted-foreground'
                     )}
@@ -191,33 +231,6 @@ export function TimetableFilter({
                       : format(selectedDate, 'yyyy年M月d日(E)', { locale: ja })}
                 </div>
               )}
-
-              {/* カレンダーダイアログ */}
-              <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>日付を選択</DialogTitle>
-                    <DialogDescription className="sr-only">
-                      カレンダーから日付を選択してください
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex items-center justify-center">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate ?? undefined}
-                      onSelect={(date: Date | undefined) => {
-                        if (date) {
-                          setSelectedDate(date)
-                          setCalendarOpen(false)
-                        }
-                      }}
-                      autoFocus
-                      locale={ja}
-                      className="mx-auto"
-                    />
-                  </div>
-                </DialogContent>
-              </Dialog>
             </div>
           </div>
           {/* 区切り線 */}
@@ -354,10 +367,10 @@ export function TimetableFilter({
             </Select>
           </div>
           {/* 区切り線 */}
-          <div className="border-t my-4"></div>
+          {/* <div className="border-t my-4"></div> */}
           {/* 時間帯設定（簡略化）*/}
           <div>
-            <div className="mb-2">
+            <div className="mb-1">
               <label className="text-sm font-medium flex items-center cursor-pointer">
                 <FaClock className="mr-2 h-3 w-3" />
                 時間帯
@@ -409,6 +422,42 @@ export function TimetableFilter({
           </div>
         </div>
       </CardContent>
+          <CardFooter className="pb-2 pt-4 w-full text-center">
+            <Drawer>
+              <DrawerTrigger asChild>
+                <Button
+                  className="rounded-md h-10 w-full cursor-pointer  bg-blue-100 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400"
+                  variant={'outline'}
+                >
+                  検索
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle className="text-lg font-semibold flex items-center">
+                  </DrawerTitle>
+                </DrawerHeader>
+
+                <TimetableDisplay
+                  selectedDeparture={selectedDeparture}
+                  selectedDestination={selectedDestination}
+                  filteredTimetable={filteredTimetable}
+                  now={now}
+                  timetableData={timetableData}
+                  isLoading={isLoading}
+                  busStopGroups={busStopGroups}
+                />
+                <DrawerFooter>
+                  <DrawerClose asChild>
+                    <Button variant="default" className="p-5 font-bold">
+                      閉じる
+                    </Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
+          </CardFooter>
     </Card>
+
   )
 }
