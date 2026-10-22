@@ -1,0 +1,103 @@
+{
+  "id": "minamino-to-school-2026-10-11",
+  "name": "八王子みなみ野駅 → 大学（みなみ野駅方面） (2026-10-11)",
+  "from": {
+    "stopId": 2,
+    "displayName": "八王子みなみ野駅"
+  },
+  "to": {
+    "stopId": 5,
+    "displayName": "大学（みなみ野駅方面）"
+  },
+  "direction": "inbound",
+  "validityPeriods": [
+    {
+      "from": "2026-10-11",
+      "to": "2026-10-11"
+    }
+  ],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2026-10-11",
+        "to": "2026-10-11"
+      },
+      "times": [
+        {
+          "departure": "7:34",
+          "arrival": "7:46"
+        },
+        {
+          "departure": "7:44",
+          "arrival": "7:56"
+        },
+        {
+          "departure": "7:55",
+          "arrival": "8:07"
+        },
+        {
+          "departure": "8:06",
+          "arrival": "8:18"
+        },
+        {
+          "departure": "8:16",
+          "arrival": "8:28"
+        },
+        {
+          "departure": "19:24",
+          "arrival": "19:36"
+        },
+        {
+          "departure": "19:35",
+          "arrival": "19:47"
+        },
+        {
+          "departure": "19:46",
+          "arrival": "19:58"
+        },
+        {
+          "departure": "19:58",
+          "arrival": "20:10"
+        },
+        {
+          "departure": "20:10",
+          "arrival": "20:22"
+        },
+        {
+          "departure": "20:18",
+          "arrival": "20:30"
+        },
+        {
+          "departure": "20:27",
+          "arrival": "20:39"
+        },
+        {
+          "departure": "20:37",
+          "arrival": "20:49"
+        },
+        {
+          "departure": "20:47",
+          "arrival": "20:59"
+        },
+        {
+          "departure": "20:58",
+          "arrival": "21:10"
+        },
+        {
+          "departure": "21:09",
+          "arrival": "21:21"
+        },
+        {
+          "departure": "21:21",
+          "arrival": "21:33"
+        },
+        {
+          "departure": "21:27",
+          "arrival": "21:39"
+        }
+      ]
+    }
+  ]
+}
