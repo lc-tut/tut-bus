@@ -1,0 +1,103 @@
+{
+  "id": "school-to-hachioji-2026-10-11",
+  "name": "大学（八王子駅方面） → 八王子駅 (2026-10-11)",
+  "from": {
+    "stopId": 3,
+    "displayName": "大学（八王子駅方面）"
+  },
+  "to": {
+    "stopId": 1,
+    "displayName": "八王子駅"
+  },
+  "direction": "outbound",
+  "validityPeriods": [
+    {
+      "from": "2026-10-11",
+      "to": "2026-10-11"
+    }
+  ],
+  "segments": [
+    {
+      "segmentType": "fixed",
+      "condition": {
+        "type": "specificPeriod",
+        "from": "2026-10-11",
+        "to": "2026-10-11"
+      },
+      "times": [
+        {
+          "departure": "7:17",
+          "arrival": "7:30"
+        },
+        {
+          "departure": "7:27",
+          "arrival": "7:40"
+        },
+        {
+          "departure": "7:37",
+          "arrival": "7:50"
+        },
+        {
+          "departure": "7:47",
+          "arrival": "8:00"
+        },
+        {
+          "departure": "7:57",
+          "arrival": "8:10"
+        },
+        {
+          "departure": "19:10",
+          "arrival": "19:22"
+        },
+        {
+          "departure": "19:30",
+          "arrival": "19:42"
+        },
+        {
+          "departure": "19:40",
+          "arrival": "19:52"
+        },
+        {
+          "departure": "19:50",
+          "arrival": "20:02"
+        },
+        {
+          "departure": "20:00",
+          "arrival": "20:12"
+        },
+        {
+          "departure": "20:10",
+          "arrival": "20:22"
+        },
+        {
+          "departure": "20:20",
+          "arrival": "20:32"
+        },
+        {
+          "departure": "20:30",
+          "arrival": "20:42"
+        },
+        {
+          "departure": "20:40",
+          "arrival": "20:52"
+        },
+        {
+          "departure": "20:50",
+          "arrival": "21:02"
+        },
+        {
+          "departure": "21:00",
+          "arrival": "21:12"
+        },
+        {
+          "departure": "21:10",
+          "arrival": "21:22"
+        },
+        {
+          "departure": "21:20",
+          "arrival": "21:32"
+        }
+      ]
+    }
+  ]
+}
