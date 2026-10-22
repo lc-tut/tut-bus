@@ -1,8 +1,16 @@
 'use client'
 
-import { BusLocation, BusRoutePath } from '@/lib/bus-location'
+import { BusRoutePath } from '@/lib/bus-location'
+import { BusMapBus, BusMapStop } from '@/lib/bus-location-view'
+import { UserLocation } from '@/lib/hooks/use-user-location'
 import { cn } from '@/lib/utils'
-import { LngLatBounds, Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl'
+import {
+  AttributionControl,
+  LngLatBounds,
+  Map as MapLibreMap,
+  Marker,
+  setWorkerUrl,
+} from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
@@ -12,19 +20,23 @@ import { FaBus } from 'react-icons/fa'
 // バンドル後も worker を読み込めるよう、URL を明示する
 setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).href)
 
-export interface BusMapStop {
-  name: string
-  lat: number
-  lng: number
-  kind: 'departure' | 'destination'
+export interface BusMapFocus {
+  // 値が変わったときだけ表示範囲を合わせ直す
+  key: string
+  points: [number, number][]
 }
 
 interface BusMapProps {
-  buses: BusLocation[]
+  buses: BusMapBus[]
   routePath: BusRoutePath | null
   stops: BusMapStop[]
-  // false のときはドラッグ・ズームできないプレビューとして表示する
-  interactive?: boolean
+  userLocation?: UserLocation | null
+  // 指定したときはこの範囲に合わせる。null のときは路線全体を表示する
+  focus?: BusMapFocus | null
+  // スマホ向け: 1本指ではページをスクロールし、2本指で地図を動かす
+  cooperativeGestures?: boolean
+  // 利用者が地図を動かしたとき（自動で追いかけるのをやめる合図）
+  onUserMove?: () => void
   className?: string
 }
 
@@ -59,7 +71,10 @@ export default function BusMap({
   buses,
   routePath,
   stops,
-  interactive = false,
+  userLocation = null,
+  focus = null,
+  cooperativeGestures = false,
+  onUserMove,
   className,
 }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -68,6 +83,17 @@ export default function BusMap({
   const [isLoaded, setIsLoaded] = useState(false)
   const [markerEls, setMarkerEls] = useState<{ id: string; el: HTMLDivElement }[]>([])
   const [stopEls, setStopEls] = useState<{ stop: BusMapStop; el: HTMLDivElement }[]>([])
+  // 現在地マーカーの要素（ssr: false で読み込むので document がある）
+  const [userEl] = useState(() => {
+    const el = document.createElement('div')
+    el.style.zIndex = '4'
+    return el
+  })
+  const userMarkerRef = useRef<Marker | null>(null)
+  const onUserMoveRef = useRef(onUserMove)
+  useEffect(() => {
+    onUserMoveRef.current = onUserMove
+  }, [onUserMove])
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
 
@@ -92,14 +118,27 @@ export default function BusMap({
       },
       center: [139.3392, 35.6278],
       zoom: 14,
-      interactive,
-      attributionControl: { compact: true },
+      cooperativeGestures,
+      locale: {
+        'CooperativeGesturesHandler.WindowsHelpText': 'Ctrl キーを押しながらスクロールで拡大・縮小',
+        'CooperativeGesturesHandler.MacHelpText': '⌘ キーを押しながらスクロールで拡大・縮小',
+        'CooperativeGesturesHandler.MobileHelpText': '2本の指で地図を動かせます',
+      },
+      // 右下は地図の操作ボタンと重なるので左下に置く
+      attributionControl: false,
       dragRotate: false,
       pitchWithRotate: false,
     })
-    if (interactive) map.touchZoomRotate.disableRotation()
+    map.addControl(new AttributionControl({ compact: true }), 'bottom-left')
+    map.touchZoomRotate.disableRotation()
 
     map.on('load', () => setIsLoaded(true))
+    // プログラムからの移動には originalEvent が付かない
+    const handleUserMove = (e: { originalEvent?: unknown }) => {
+      if (e.originalEvent) onUserMoveRef.current?.()
+    }
+    map.on('dragstart', handleUserMove)
+    map.on('zoomstart', handleUserMove)
     mapRef.current = map
 
     const resizeObserver = new ResizeObserver(() => map.resize())
@@ -109,11 +148,12 @@ export default function BusMap({
     return () => {
       resizeObserver.disconnect()
       markers.clear()
+      userMarkerRef.current = null
       map.remove()
       mapRef.current = null
       setIsLoaded(false)
     }
-  }, [interactive])
+  }, [cooperativeGestures])
 
   // テーマに合わせてタイルの色を変える
   useEffect(() => {
@@ -126,50 +166,83 @@ export default function BusMap({
     map.setPaintProperty('gsi', 'raster-hue-rotate', paint['raster-hue-rotate'])
   }, [isDark, isLoaded])
 
-  // 経路の線と表示範囲
+  // 経路の線
   useEffect(() => {
     const map = mapRef.current
     if (!map || !isLoaded) return
 
-    const coordinates = routePath ?? stops.map((stop) => [stop.lng, stop.lat] as [number, number])
-    if (coordinates.length === 0) return
-
-    if (routePath) {
-      const data = {
-        type: 'Feature' as const,
-        properties: {},
-        geometry: { type: 'LineString' as const, coordinates: routePath },
-      }
-      const source = map.getSource(ROUTE_SOURCE_ID) as
-        | { setData: (value: typeof data) => void }
-        | undefined
-      if (source) {
-        source.setData(data)
-      } else {
-        map.addSource(ROUTE_SOURCE_ID, { type: 'geojson', data })
-        map.addLayer({
-          id: `${ROUTE_SOURCE_ID}-casing`,
-          type: 'line',
-          source: ROUTE_SOURCE_ID,
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#ffffff', 'line-width': 7, 'line-opacity': 0.8 },
-        })
-        map.addLayer({
-          id: ROUTE_SOURCE_ID,
-          type: 'line',
-          source: ROUTE_SOURCE_ID,
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': ROUTE_COLOR, 'line-width': 4 },
-        })
-      }
+    const data = {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: { type: 'LineString' as const, coordinates: routePath ?? [] },
     }
+    const source = map.getSource(ROUTE_SOURCE_ID) as
+      | { setData: (value: typeof data) => void }
+      | undefined
+    if (source) {
+      source.setData(data)
+      return
+    }
+    map.addSource(ROUTE_SOURCE_ID, { type: 'geojson', data })
+    map.addLayer({
+      id: `${ROUTE_SOURCE_ID}-casing`,
+      type: 'line',
+      source: ROUTE_SOURCE_ID,
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': '#ffffff', 'line-width': 7, 'line-opacity': 0.8 },
+    })
+    map.addLayer({
+      id: ROUTE_SOURCE_ID,
+      type: 'line',
+      source: ROUTE_SOURCE_ID,
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': ROUTE_COLOR, 'line-width': 4 },
+    })
+  }, [routePath, isLoaded])
+
+  // 表示範囲（focus があればその範囲、なければ路線全体）
+  const routeKey = routePath ? `${routePath.length}:${routePath[0]}` : ''
+  const stopsKey = stops.map((stop) => `${stop.lat},${stop.lng}`).join('|')
+  const focusKey = focus?.key ?? null
+  // 範囲の計算に使う座標は最新を参照するが、合わせ直すのはキーが変わったときだけ
+  const latestBoundsRef = useRef<[number, number][]>([])
+  useEffect(() => {
+    latestBoundsRef.current = focus
+      ? focus.points
+      : (routePath ?? stops.map((stop) => [stop.lng, stop.lat] as [number, number]))
+  })
+
+  useEffect(() => {
+    const map = mapRef.current
+    const coordinates = latestBoundsRef.current
+    if (!map || !isLoaded || coordinates.length === 0) return
 
     const bounds = coordinates.reduce(
       (b, coord) => b.extend(coord),
       new LngLatBounds(coordinates[0], coordinates[0])
     )
-    map.fitBounds(bounds, { padding: interactive ? 56 : 28, duration: 0, maxZoom: 16 })
-  }, [routePath, stops, isLoaded, interactive])
+    // バス停のラベルはマーカーの上に出るので、上側の余白を広めに取る
+    const padding = { top: 56, bottom: 32, left: 32, right: 32 }
+    // 追いかけるときはバスが近づいても周りが分かる程度で止める
+    map.fitBounds(bounds, { padding, duration: focusKey ? 800 : 0, maxZoom: focusKey ? 15 : 16 })
+  }, [routeKey, stopsKey, focusKey, isLoaded])
+
+  // 自分の現在地（マーカーは表示中のあいだ1つだけ作り、位置は別の effect で更新する）
+  const hasUserLocation = userLocation !== null
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !isLoaded || !hasUserLocation) return
+    const marker = new Marker({ element: userEl }).setLngLat(map.getCenter()).addTo(map)
+    userMarkerRef.current = marker
+    return () => {
+      marker.remove()
+      userMarkerRef.current = null
+    }
+  }, [hasUserLocation, isLoaded, userEl])
+
+  useEffect(() => {
+    if (userLocation) userMarkerRef.current?.setLngLat([userLocation.lng, userLocation.lat])
+  }, [userLocation, hasUserLocation, isLoaded])
 
   // バス停のマーカー
   useEffect(() => {
@@ -178,6 +251,8 @@ export default function BusMap({
 
     const created = stops.map((stop) => {
       const el = document.createElement('div')
+      // バス停のラベルはバスより手前に出す
+      el.style.zIndex = '3'
       const marker = new Marker({ element: el, anchor: 'bottom' })
         .setLngLat([stop.lng, stop.lat])
         .addTo(map)
@@ -205,14 +280,17 @@ export default function BusMap({
       }
     }
     for (const bus of buses) {
-      const existing = markers.get(bus.bus_id)
-      if (existing) {
-        existing.marker.setLngLat([bus.lon, bus.lat])
+      let entry = markers.get(bus.bus_id)
+      if (entry) {
+        entry.marker.setLngLat([bus.lon, bus.lat])
       } else {
         const el = document.createElement('div')
         const marker = new Marker({ element: el }).setLngLat([bus.lon, bus.lat]).addTo(map)
-        markers.set(bus.bus_id, { marker, el })
+        entry = { marker, el }
+        markers.set(bus.bus_id, entry)
       }
+      // 出発地に向かっているバスを手前に出す
+      entry.el.style.zIndex = bus.variant === 'approaching' ? '2' : '1'
     }
     setMarkerEls(Array.from(markers, ([id, { el }]) => ({ id, el })))
   }, [buses, isLoaded])
@@ -221,7 +299,8 @@ export default function BusMap({
 
   return (
     <div className={cn('relative overflow-hidden bg-muted', className)}>
-      <div ref={containerRef} className="absolute inset-0" />
+      {/* maplibregl-map クラスが position: relative を付けるので、絶対配置ではなく h-full で広げる */}
+      <div ref={containerRef} className="h-full w-full" />
 
       {stopEls.map(({ stop, el }) =>
         createPortal(
@@ -252,22 +331,41 @@ export default function BusMap({
         const bus = busesById.get(id)
         if (!bus) return null
         return createPortal(
-          <div className={cn('relative size-8', bus.stale && 'opacity-50')}>
+          <div className={cn('relative size-7', bus.stale && 'opacity-50')}>
             {/* 進行方向 */}
             <div
               className="absolute inset-0 transition-transform duration-700"
               style={{ transform: `rotate(${bus.heading}deg)` }}
             >
-              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 border-x-[6px] border-x-transparent border-b-[8px] border-b-primary" />
+              <div
+                className={cn(
+                  'absolute -top-1.5 left-1/2 -translate-x-1/2 border-x-[6px] border-x-transparent border-b-[8px]',
+                  bus.variant === 'approaching' ? 'border-b-primary' : 'border-b-slate-400'
+                )}
+              />
             </div>
-            <div className="absolute inset-0 flex items-center justify-center rounded-full border-2 border-white bg-primary text-primary-foreground shadow-md dark:border-neutral-900">
-              <FaBus className="size-3.5" />
+            <div
+              className={cn(
+                'absolute inset-0 flex items-center justify-center rounded-full border-2 border-white text-white shadow-md dark:border-neutral-900',
+                bus.variant === 'approaching' ? 'bg-primary' : 'bg-slate-400 dark:bg-slate-500'
+              )}
+            >
+              <FaBus className="size-3" />
             </div>
           </div>,
           el,
           id
         )
       })}
+
+      {userLocation &&
+        createPortal(
+          <span className="relative flex size-4" aria-label="現在地">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-60 animate-ping" />
+            <span className="relative inline-flex size-4 rounded-full border-2 border-white bg-sky-500 shadow-md" />
+          </span>,
+          userEl
+        )}
     </div>
   )
 }

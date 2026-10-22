@@ -30,26 +30,38 @@ export const congestionLabels: Record<BusCongestion, string> = {
   high: '満員',
 }
 
-interface BusLocationRouteDef {
-  slug: 'hachioji' | 'minamino' | 'kaikan'
+export type BusLocationSlug = 'hachioji' | 'minamino' | 'kaikan'
+
+export interface BusLocationRouteDef {
+  slug: BusLocationSlug
   // apps/api/data/bus_stops.json の ID
   stationStopId: number
   campusStopId: number
 }
 
-const ROUTES: BusLocationRouteDef[] = [
+export const BUS_LOCATION_ROUTES: BusLocationRouteDef[] = [
   { slug: 'hachioji', stationStopId: 1, campusStopId: 3 },
   { slug: 'minamino', stationStopId: 2, campusStopId: 5 },
   { slug: 'kaikan', stationStopId: 6, campusStopId: 4 },
 ]
 
 export interface BusLocationRoute {
-  slug: BusLocationRouteDef['slug']
+  slug: BusLocationSlug
   direction: BusLocationDirection
   // バスが出発するバス停 ID
   originStopId: number
   // バスが向かっている先のバス停 ID（距離の計算に使う）
   targetStopId: number
+}
+
+export function getBusLocationRoute(
+  slug: BusLocationSlug,
+  direction: BusLocationDirection
+): BusLocationRoute {
+  const def = BUS_LOCATION_ROUTES.find((route) => route.slug === slug) ?? BUS_LOCATION_ROUTES[0]
+  return direction === 'forward'
+    ? { slug, direction, originStopId: def.campusStopId, targetStopId: def.stationStopId }
+    : { slug, direction, originStopId: def.stationStopId, targetStopId: def.campusStopId }
 }
 
 // 出発地のバス停と行先のバス停から、位置情報の路線と向きを決める
@@ -59,29 +71,19 @@ export function resolveBusLocationRoute(
 ): BusLocationRoute | null {
   if (destinationStopId === null) return null
 
-  for (const route of ROUTES) {
+  for (const route of BUS_LOCATION_ROUTES) {
     if (destinationStopId === route.stationStopId) {
-      return {
-        slug: route.slug,
-        direction: 'forward',
-        originStopId: route.campusStopId,
-        targetStopId: route.stationStopId,
-      }
+      return getBusLocationRoute(route.slug, 'forward')
     }
     if (departureStopIds.includes(route.stationStopId)) {
-      return {
-        slug: route.slug,
-        direction: 'reverse',
-        originStopId: route.stationStopId,
-        targetStopId: route.campusStopId,
-      }
+      return getBusLocationRoute(route.slug, 'reverse')
     }
   }
   return null
 }
 
 export async function fetchBusLocations(
-  slug: BusLocationRoute['slug'],
+  slug: BusLocationSlug,
   signal?: AbortSignal
 ): Promise<BusLocation[]> {
   const res = await fetch(`${BUS_LOCATION_API_BASE}/${slug}/status`, { signal })

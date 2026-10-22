@@ -23,3 +23,9 @@ export const userConfigAtom = atomWithStorage<{
   notifications: true,
   locateNotifications: true,
 })
+
+// PC のバス位置マップで選んだ路線と向き
+export const busLocationSelectionAtom = atomWithStorage<{
+  slug: 'hachioji' | 'minamino' | 'kaikan'
+  direction: 'forward' | 'reverse'
+}>('busLocationSelection', { slug: 'hachioji', direction: 'reverse' })
