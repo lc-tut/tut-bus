@@ -16,7 +16,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { components } from '@/generated/oas'
 import {
   BUS_LOCATION_ROUTES,
-  BusLocationDirection,
   BusLocationSlug,
   getBusLocationRoute,
   resolveBusLocationRoute,
@@ -30,7 +29,13 @@ import { busLocationSelectionAtom } from '@/store'
 import { useAtom } from 'jotai'
 import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
-import { FaArrowRight, FaCrosshairs, FaListUl, FaLocationArrow } from 'react-icons/fa'
+import {
+  FaArrowRight,
+  FaCrosshairs,
+  FaExchangeAlt,
+  FaListUl,
+  FaLocationArrow,
+} from 'react-icons/fa'
 import { BusList, getStatusText, LiveDot, MapLegend, NextBusSummary, SourceNote } from './parts'
 
 const BusMap = dynamic(() => import('@/components/bus-location/bus-map'), {
@@ -160,7 +165,9 @@ function MapFooter({
 }
 
 /**
- * PC: 右側の aside の一番上に置く地図。路線と向きを切り替えられる
+ * PC: 右側の aside の一番上に置く地図
+ * 左の時刻表カードの行をクリックすると、その区間に切り替わる（busLocationSelectionAtom を共有）
+ * ここでは路線の切り替えと、向きの入れ替えだけを置く
  */
 export function DesktopBusLocationMapCard({ busStopGroups }: { busStopGroups: BusStopGroup[] }) {
   const { ref, inView } = useInView<HTMLDivElement>()
@@ -174,45 +181,42 @@ export function DesktopBusLocationMapCard({ busStopGroups }: { busStopGroups: Bu
     withRoutePath: true,
   })
 
-  const def = BUS_LOCATION_ROUTES.find((d) => d.slug === selection.slug)
-  const station = groupNameOf(def?.stationStopId, busStopGroups) ?? ''
-  const campus = groupNameOf(def?.campusStopId, busStopGroups) ?? '大学'
+  const originName = groupNameOf(route.originStopId, busStopGroups) ?? ''
+  const targetName = groupNameOf(route.targetStopId, busStopGroups) ?? ''
   const count = view?.mapBuses.length ?? 0
 
   return (
     <Card ref={ref} className="w-full overflow-hidden border-muted py-0 gap-0 block border">
-      <div className="space-y-2 px-3 py-3 border-b bg-muted/40">
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b bg-muted/40">
         <Tabs
           value={selection.slug}
           onValueChange={(slug) => setSelection({ ...selection, slug: slug as BusLocationSlug })}
+          className="min-w-0 flex-1"
         >
           <TabsList className="grid w-full grid-cols-3 bg-muted dark:bg-muted/80 p-1 h-auto border rounded-md">
             {BUS_LOCATION_ROUTES.map((d) => (
               <TabsTrigger key={d.slug} value={d.slug} className={tabsTriggerClassName}>
-                <span className="truncate">{groupNameOf(d.stationStopId, busStopGroups)}</span>
+                {d.label}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
-        <Tabs
-          value={selection.direction}
-          onValueChange={(direction) =>
-            setSelection({ ...selection, direction: direction as BusLocationDirection })
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          className="size-9 shrink-0"
+          onClick={() =>
+            setSelection({
+              ...selection,
+              direction: selection.direction === 'forward' ? 'reverse' : 'forward',
+            })
           }
+          aria-label="向きを入れ替える"
+          title="向きを入れ替える"
         >
-          <TabsList className="grid w-full grid-cols-2 bg-muted dark:bg-muted/80 p-1 h-auto border rounded-md">
-            <TabsTrigger value="reverse" className={tabsTriggerClassName}>
-              <span className="truncate">{station}</span>
-              <FaArrowRight className="size-2.5 shrink-0" />
-              <span className="shrink-0">{campus}</span>
-            </TabsTrigger>
-            <TabsTrigger value="forward" className={tabsTriggerClassName}>
-              <span className="shrink-0">{campus}</span>
-              <FaArrowRight className="size-2.5 shrink-0" />
-              <span className="truncate">{station}</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+          <FaExchangeAlt className="size-3.5" />
+        </Button>
       </div>
 
       <div className="relative h-72 xl:h-80">
@@ -226,13 +230,21 @@ export function DesktopBusLocationMapCard({ busStopGroups }: { busStopGroups: Bu
         ) : (
           <Skeleton className="absolute inset-0 rounded-none" />
         )}
-        <BusCountStatus
-          loaded={loaded}
-          error={error}
-          count={count}
-          latestAgeSeconds={view?.latestAgeSeconds ?? null}
-          className="pointer-events-none absolute top-2 left-2 rounded-md border bg-background/90 px-2 py-1 shadow-sm"
-        />
+        {/* いま地図に出している区間 */}
+        <div className="pointer-events-none absolute top-2 left-2 rounded-md border bg-background/90 px-2.5 py-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 text-sm font-bold">
+            {originName}
+            <FaArrowRight className="size-2.5 text-muted-foreground" />
+            {targetName}
+          </div>
+          <BusCountStatus
+            loaded={loaded}
+            error={error}
+            count={count}
+            latestAgeSeconds={view?.latestAgeSeconds ?? null}
+            className="mt-0.5"
+          />
+        </div>
         <MapLegend className="pointer-events-none absolute right-2 bottom-2" />
       </div>
 

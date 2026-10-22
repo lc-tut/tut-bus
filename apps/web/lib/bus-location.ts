@@ -44,15 +44,17 @@ export type BusLocationSlug = 'hachioji' | 'minamino' | 'kaikan'
 
 export interface BusLocationRouteDef {
   slug: BusLocationSlug
+  // 切り替えボタン用の短い名前（狭い幅でも切れないように）
+  label: string
   // apps/api/data/bus_stops.json の ID
   stationStopId: number
   campusStopId: number
 }
 
 export const BUS_LOCATION_ROUTES: BusLocationRouteDef[] = [
-  { slug: 'hachioji', stationStopId: 1, campusStopId: 3 },
-  { slug: 'minamino', stationStopId: 2, campusStopId: 5 },
-  { slug: 'kaikan', stationStopId: 6, campusStopId: 4 },
+  { slug: 'hachioji', label: '八王子駅', stationStopId: 1, campusStopId: 3 },
+  { slug: 'minamino', label: 'みなみ野駅', stationStopId: 2, campusStopId: 5 },
+  { slug: 'kaikan', label: '学生会館', stationStopId: 6, campusStopId: 4 },
 ]
 
 export interface BusLocationRoute {
