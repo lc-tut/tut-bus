@@ -2,12 +2,14 @@
 
 import { LinuxClubBanner, PwaInstallBanner, SurveyBanner } from '@/components/ad-banners'
 import { AnnouncementBanner } from '@/components/announcement-banner'
+import { BusLocationPanel } from '@/components/home/bus-location'
 import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { components, operations } from '@/generated/oas'
+import { isBusLocationEnabled } from '@/lib/bus-location'
 import { client } from '@/lib/client'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getCachedResponse, getLatestCachedTimetable } from '@/lib/utils/cache'
@@ -734,6 +736,14 @@ function HomeContent() {
             </div>
           ) : null
         })()}
+
+        {isBusLocationEnabled && (
+          <BusLocationPanel
+            departureGroup={group}
+            destinationStopId={selectedDestinations[group.id] || null}
+            busStopGroups={busStopGroups}
+          />
+        )}
 
         {/* 時刻表表示 */}
         {groupTimetables[group.id]?.filtered?.length > 0 && (

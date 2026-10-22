@@ -38,6 +38,8 @@ if (appUrl) {
 }
 // Google Analytics
 swConnectSrc.push('https://www.googletagmanager.com', 'https://www.google-analytics.com')
+// バス位置情報（イマロケ）
+swConnectSrc.push('https://sloc.orgncdn.net')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
