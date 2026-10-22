@@ -37,19 +37,19 @@ export default function OfflinePage() {
 
       {/* ステータスバナー */}
       {isBackOnline ? (
-        <div className="fixed top-20 md:top-16 left-0 right-0 z-40 bg-green-100 dark:bg-green-900/60 text-green-800 dark:text-green-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
+        <div className="fixed top-14 md:top-16 left-0 right-0 z-40 bg-green-100 dark:bg-green-900/60 text-green-800 dark:text-green-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
           <BiWifi className="h-3 w-3 shrink-0" />
           <span>オンラインに復帰しました</span>
         </div>
       ) : (
-        <div className="fixed top-20 md:top-16 left-0 right-0 z-40 bg-yellow-100 dark:bg-yellow-900/60 text-yellow-800 dark:text-yellow-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
+        <div className="fixed top-14 md:top-16 left-0 right-0 z-40 bg-yellow-100 dark:bg-yellow-900/60 text-yellow-800 dark:text-yellow-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
           <BiWifiOff className="h-3 w-3 shrink-0" />
           <span>オフラインです</span>
         </div>
       )}
 
       <div
-        className="pt-28 md:pt-24 mx-auto max-w-6xl flex flex-col items-center justify-center px-6"
+        className="pt-22 md:pt-24 mx-auto max-w-6xl flex flex-col items-center justify-center px-6"
         style={{ minHeight: 'calc(100vh - 7rem)' }}
       >
         {isBackOnline ? (

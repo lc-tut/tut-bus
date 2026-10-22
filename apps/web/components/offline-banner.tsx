@@ -104,7 +104,7 @@ export function OfflineBanner() {
   if (!effectivelyOffline || dismissed) return null
 
   return (
-    <div className="fixed top-20 md:top-16 left-0 right-0 z-40 bg-yellow-100 dark:bg-yellow-900/60 text-yellow-800 dark:text-yellow-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-2">
+    <div className="fixed top-14 md:top-16 left-0 right-0 z-40 bg-yellow-100 dark:bg-yellow-900/60 text-yellow-800 dark:text-yellow-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-2">
       <BiWifiOff className="h-3 w-3 shrink-0" />
       <span>オフラインです</span>
       {hasCachedData && (

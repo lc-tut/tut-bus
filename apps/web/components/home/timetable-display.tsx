@@ -18,27 +18,14 @@ import {
 } from '@/components/ui/drawer'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { components } from '@/generated/oas'
+import { useIsDesktop } from '@/lib/hooks/use-is-desktop'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getBusStatus } from '@/lib/utils/timetable'
-import { useEffect, useState } from 'react'
 import { FaArrowRight, FaClock, FaMapMarkerAlt } from 'react-icons/fa'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { BusRow } from './bus-row'
 import { ShortBusRow } from './short-bus-row'
-
-function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches
-  )
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 640px)')
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-  return isDesktop
-}
 
 export interface TimetableDisplayProps {
   selectedDeparture: number | null

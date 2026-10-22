@@ -2,12 +2,15 @@
 
 import { LinuxClubBanner, PwaInstallBanner, SurveyBanner } from '@/components/ad-banners'
 import { AnnouncementBanner } from '@/components/announcement-banner'
+import { MobileBusLocationMapCard } from '@/components/bus-location/bus-location-map-card'
+import { BusStatusRow } from '@/components/bus-location/bus-status-row'
 import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { components, operations } from '@/generated/oas'
+import { isBusLocationEnabled } from '@/lib/bus-location'
 import { client } from '@/lib/client'
 import { DisplayBusInfo } from '@/lib/types/timetable'
 import { getCachedResponse, getLatestCachedTimetable } from '@/lib/utils/cache'
@@ -238,6 +241,8 @@ function HomeContent() {
     }
   }>({})
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  // スマホで表示中のカード（バス位置マップを合わせる）
+  const [activeSlide, setActiveSlide] = useState(0)
   const [isInitialized, setIsInitialized] = useState(false)
 
   // エラーハンドリング
@@ -272,6 +277,18 @@ function HomeContent() {
       }
     }
   }, [carouselApi, busStopGroups.length, isInitialized, searchParams, lastSlide])
+
+  useEffect(() => {
+    if (!carouselApi) return
+    const syncActiveSlide = () => setActiveSlide(carouselApi.selectedScrollSnap())
+    syncActiveSlide()
+    carouselApi.on('select', syncActiveSlide)
+    carouselApi.on('reInit', syncActiveSlide)
+    return () => {
+      carouselApi.off('select', syncActiveSlide)
+      carouselApi.off('reInit', syncActiveSlide)
+    }
+  }, [carouselApi])
 
   useEffect(() => {
     if (!carouselApi) return
@@ -538,6 +555,20 @@ function HomeContent() {
         <>
           {/* モバイル: カルーセル */}
           <div className="sm:hidden">
+            {isBusLocationEnabled && (
+              // 親の p-1 と my-5 を打ち消して、ヘッダーのすぐ下から画面幅いっぱいに出す
+              <div className="-mx-1 -mt-6 mb-2">
+                <MobileBusLocationMapCard
+                  departureGroup={busStopGroups[activeSlide] ?? null}
+                  destinationStopId={
+                    busStopGroups[activeSlide]
+                      ? selectedDestinations[busStopGroups[activeSlide].id] || null
+                      : null
+                  }
+                  busStopGroups={busStopGroups}
+                />
+              </div>
+            )}
             <Carousel className="w-full" setApi={setCarouselApi}>
               <CarouselContent className="mx-[5vw]">
                 {busStopGroups.map((group, index) => (
@@ -560,8 +591,8 @@ function HomeContent() {
           {/* PC/タブレット: グリッド + サイドバナー */}
           <div className="hidden sm:block px-4 py-2">
             <div className="sm:grid sm:grid-cols-[1fr_auto] sm:gap-6">
-              {/* バス停カード */}
-              <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* バス停カード（右側のバナーの方が高くても、カードの間が空かないよう上に詰める） */}
+              <div className="grid content-start sm:grid-cols-1 lg:grid-cols-2 gap-4">
                 {busStopGroups.map((group, index) => (
                   <div key={index}>{renderGroupCard(group, index)}</div>
                 ))}
@@ -584,7 +615,7 @@ function HomeContent() {
   function renderGroupCard(group: components['schemas']['Models.BusStopGroup'], _index: number) {
     return (
       <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border">
-        <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
+        <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-2 min-h-[52px] flex items-center">
           <div className="flex items-center w-full">
             <Badge
               variant="outline"
@@ -606,7 +637,7 @@ function HomeContent() {
           }
 
           return (
-            <div className="px-4 py-3 bg-green-100/80 dark:bg-green-950/60 min-h-[64px] flex items-center">
+            <div className="px-4 py-2 bg-green-100/80 dark:bg-green-950/60 min-h-[52px] flex items-center">
               <div className="flex items-center w-full">
                 <Badge
                   variant="outline"
@@ -734,6 +765,14 @@ function HomeContent() {
             </div>
           ) : null
         })()}
+
+        {isBusLocationEnabled && (
+          <BusStatusRow
+            departureGroup={group}
+            destinationStopId={selectedDestinations[group.id] || null}
+            busStopGroups={busStopGroups}
+          />
+        )}
 
         {/* 時刻表表示 */}
         {groupTimetables[group.id]?.filtered?.length > 0 && (
