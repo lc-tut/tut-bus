@@ -477,7 +477,7 @@ function TimetableCard({
   if (!entry.timetable) {
     return (
       <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border">
-        <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
+        <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-2 min-h-[52px] flex items-center">
           <div className="flex items-center w-full">
             <Badge
               variant="outline"
@@ -541,7 +541,7 @@ function TimetableCardWithData({
   return (
     <Card className="w-full overflow-hidden border-muted pt-0 my-1 block border">
       {/* 出発地ヘッダー */}
-      <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[64px] flex items-center">
+      <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-2 min-h-[52px] flex items-center">
         <div className="flex items-center w-full">
           <Badge
             variant="outline"
@@ -556,7 +556,7 @@ function TimetableCardWithData({
 
       {/* 行き先セレクター */}
       {destinations.length > 0 && (
-        <div className="px-4 py-3 bg-green-100/80 dark:bg-green-950/60 min-h-[64px] flex items-center">
+        <div className="px-4 py-2 bg-green-100/80 dark:bg-green-950/60 min-h-[52px] flex items-center">
           <div className="flex items-center w-full">
             <Badge
               variant="outline"
