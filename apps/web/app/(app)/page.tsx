@@ -603,10 +603,11 @@ function HomeContent() {
               {/* サイドバナー (sm以上) */}
               <aside className="hidden sm:block w-80 xl:w-96 shrink-0">
                 <div className="sticky top-20 space-y-4">
+                  {/* PC ではお知らせを地図より上に出す */}
+                  <AnnouncementBanner dismissible={false} />
                   {isBusLocationEnabled && (
                     <DesktopBusLocationMapCard busStopGroups={busStopGroups} />
                   )}
-                  <AnnouncementBanner dismissible={false} />
                   <SurveyBanner />
                   <LinuxClubBanner />
                 </div>
