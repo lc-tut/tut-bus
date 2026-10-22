@@ -602,7 +602,7 @@ function HomeContent() {
               </div>
               {/* サイドバナー (sm以上) */}
               <aside className="hidden sm:block w-80 xl:w-96 shrink-0">
-                <div className="sticky top-24 space-y-4">
+                <div className="sticky top-20 space-y-4">
                   {isBusLocationEnabled && (
                     <DesktopBusLocationMapCard busStopGroups={busStopGroups} />
                   )}

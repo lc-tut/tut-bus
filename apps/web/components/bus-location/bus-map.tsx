@@ -45,7 +45,7 @@ interface BusMapProps {
 const ROUTE_SOURCE_ID = 'bus-route'
 
 // バス停のラベルはマーカーの上に出るので、上側の余白を広めに取る
-const DEFAULT_PADDING = { top: 56, bottom: 32, left: 32, right: 32 }
+const DEFAULT_PADDING = { top: 56, bottom: 48, left: 32, right: 32 }
 
 // 地理院タイル（淡色地図）
 const GSI_TILE_URL = 'https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'
@@ -255,8 +255,8 @@ export default function BusMap({
 
     const created = stops.map((stop) => {
       const el = document.createElement('div')
-      // バス停のラベルはバスより手前に出す
-      el.style.zIndex = '3'
+      // バス停のラベルは出発済みのバスより手前、接近中のバスより奥に出す
+      el.style.zIndex = '2'
       const marker = new Marker({ element: el, anchor: 'bottom' })
         .setLngLat([stop.lng, stop.lat])
         .addTo(map)
@@ -293,8 +293,8 @@ export default function BusMap({
         entry = { marker, el }
         markers.set(bus.bus_id, entry)
       }
-      // 出発地に向かっているバスを手前に出す
-      entry.el.style.zIndex = bus.variant === 'approaching' ? '2' : '1'
+      // 接近中のバスをいちばん手前に出す
+      entry.el.style.zIndex = bus.variant === 'approaching' ? '3' : '1'
     }
     setMarkerEls(Array.from(markers, ([id, { el }]) => ({ id, el })))
   }, [buses, isLoaded])

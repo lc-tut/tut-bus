@@ -209,13 +209,13 @@ export default function OfflineTimetablePage() {
       <Header />
 
       {/* オフラインバナー */}
-      <div className="fixed top-20 md:top-16 left-0 right-0 z-40 bg-yellow-100 dark:bg-yellow-900/60 text-yellow-800 dark:text-yellow-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
+      <div className="fixed top-14 left-0 right-0 z-40 bg-yellow-100 dark:bg-yellow-900/60 text-yellow-800 dark:text-yellow-200 text-xs text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
         <BiWifiOff className="h-3 w-3 shrink-0" />
         <span>オフラインです ・ 保存済みデータを表示</span>
       </div>
 
       {/* サブヘッダー */}
-      <div className="fixed top-[calc(5rem+1.5rem+0.25rem)] md:top-[calc(4rem+1.5rem+0.25rem)] left-0 right-0 z-30 border-b bg-background/95 backdrop-blur">
+      <div className="fixed top-[calc(3.5rem+1.5rem+0.25rem)] left-0 right-0 z-30 border-b bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-6xl flex items-center gap-2 px-4 py-2.5">
           {selectedDate ? (
             <button
@@ -241,7 +241,7 @@ export default function OfflineTimetablePage() {
       </div>
 
       {/* コンテンツ */}
-      <div className="pt-[calc(5rem+1.5rem+0.25rem+2.75rem)] md:pt-[calc(4rem+1.5rem+0.25rem+2.75rem)] mx-auto max-w-6xl">
+      <div className="pt-[calc(3.5rem+1.5rem+0.25rem+2.75rem)] mx-auto max-w-6xl">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="animate-pulse text-sm text-muted-foreground">読み込み中...</div>
