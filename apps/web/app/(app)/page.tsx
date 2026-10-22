@@ -2,10 +2,7 @@
 
 import { LinuxClubBanner, PwaInstallBanner, SurveyBanner } from '@/components/ad-banners'
 import { AnnouncementBanner } from '@/components/announcement-banner'
-import {
-  DesktopBusLocationMapCard,
-  MobileBusLocationMapCard,
-} from '@/components/bus-location/bus-location-map-card'
+import { MobileBusLocationMapCard } from '@/components/bus-location/bus-location-map-card'
 import { BusStatusRow } from '@/components/bus-location/bus-status-row'
 import { TimetableDisplay } from '@/components/home/timetable-display'
 import { Badge } from '@/components/ui/badge'
@@ -594,7 +591,7 @@ function HomeContent() {
           {/* PC/タブレット: グリッド + サイドバナー */}
           <div className="hidden sm:block px-4 py-2">
             <div className="sm:grid sm:grid-cols-[1fr_auto] sm:gap-6">
-              {/* バス停カード（右側の地図の方が高くても、カードの間が空かないよう上に詰める） */}
+              {/* バス停カード（右側のバナーの方が高くても、カードの間が空かないよう上に詰める） */}
               <div className="grid content-start sm:grid-cols-1 lg:grid-cols-2 gap-4">
                 {busStopGroups.map((group, index) => (
                   <div key={index}>{renderGroupCard(group, index)}</div>
@@ -602,12 +599,8 @@ function HomeContent() {
               </div>
               {/* サイドバナー (sm以上) */}
               <aside className="hidden sm:block w-80 xl:w-96 shrink-0">
-                <div className="sticky top-20 space-y-4">
-                  {/* PC ではお知らせを地図より上に出す */}
+                <div className="sticky top-24 space-y-4">
                   <AnnouncementBanner dismissible={false} />
-                  {isBusLocationEnabled && (
-                    <DesktopBusLocationMapCard busStopGroups={busStopGroups} />
-                  )}
                   <SurveyBanner />
                   <LinuxClubBanner />
                 </div>

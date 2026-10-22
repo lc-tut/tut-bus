@@ -16,7 +16,7 @@ export default function AppLayout({
       <Header />
       <OfflineBanner />
       <CacheWarmer />
-      <div className="pt-14">
+      <div className="pt-14 md:pt-16">
         <div className={cn('p-1 min-h-screen mx-auto max-w-6xl')}>{children}</div>
       </div>
       <NavBar />

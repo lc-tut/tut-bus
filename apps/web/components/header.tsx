@@ -15,17 +15,17 @@ const pcNavItems = [
 
 const Header: React.FC = () => {
   return (
-    <header className="w-full flex items-center justify-between border-b h-14 shadow-sm bg-background fixed top-0 left-0 z-50">
-      <Link href="/" className="flex items-center gap-2.5 px-4">
+    <header className="w-full flex items-center justify-between border-b h-14 shadow-sm bg-background fixed top-0 left-0 z-50 md:h-16">
+      <Link href="/" className="flex items-center gap-2.5 px-4 md:gap-4">
         <Image
           src="/tut-logo.png"
           alt="Logo"
-          width={36}
-          height={36}
+          width={40}
+          height={40}
           priority={true}
-          className="size-8 md:size-9"
+          className="size-8 md:size-10"
         />
-        <h1 className="text-lg md:text-xl font-bold">スクールバス</h1>
+        <h1 className="text-lg md:text-2xl font-bold">スクールバス</h1>
       </Link>
       <PCNav />
     </header>

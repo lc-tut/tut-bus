@@ -2,7 +2,6 @@
 
 import type { BusMapFocus } from '@/components/bus-location/bus-map'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -12,30 +11,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { components } from '@/generated/oas'
-import {
-  BUS_LOCATION_ROUTES,
-  BusLocationSlug,
-  getBusLocationRoute,
-  resolveBusLocationRoute,
-} from '@/lib/bus-location'
+import { resolveBusLocationRoute } from '@/lib/bus-location'
 import { BusLocationView, formatAge } from '@/lib/bus-location-view'
 import { useBusLocationView } from '@/lib/hooks/use-bus-location-view'
 import { useInView } from '@/lib/hooks/use-in-view'
 import { useUserLocation } from '@/lib/hooks/use-user-location'
 import { cn } from '@/lib/utils'
-import { busLocationSelectionAtom } from '@/store'
-import { useAtom } from 'jotai'
 import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
-import {
-  FaArrowRight,
-  FaCrosshairs,
-  FaExchangeAlt,
-  FaListUl,
-  FaLocationArrow,
-} from 'react-icons/fa'
+import { FaArrowRight, FaCrosshairs, FaListUl, FaLocationArrow } from 'react-icons/fa'
 import { BusList, getStatusText, LiveDot, MapLegend, NextBusSummary, SourceNote } from './parts'
 
 const BusMap = dynamic(() => import('@/components/bus-location/bus-map'), {
@@ -44,13 +29,6 @@ const BusMap = dynamic(() => import('@/components/bus-location/bus-map'), {
 })
 
 type BusStopGroup = components['schemas']['Models.BusStopGroup']
-
-const tabsTriggerClassName =
-  'px-2 py-1.5 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:font-semibold dark:data-[state=active]:shadow-sm'
-
-function groupNameOf(stopId: number | undefined, busStopGroups: BusStopGroup[]) {
-  return busStopGroups.find((g) => g.busStops.some((s) => s.id === stopId))?.name
-}
 
 // 運行台数と更新時刻（0台のときの文言は地図の下に出すので、ここでは出さない）
 function BusCountStatus({
@@ -161,95 +139,6 @@ function MapFooter({
       )}
       <BusListDialog view={view} loaded={loaded} error={error} />
     </div>
-  )
-}
-
-/**
- * PC: 右側の aside の一番上に置く地図
- * 左の時刻表カードの行をクリックすると、その区間に切り替わる（busLocationSelectionAtom を共有）
- * ここでは路線の切り替えと、向きの入れ替えだけを置く
- */
-export function DesktopBusLocationMapCard({ busStopGroups }: { busStopGroups: BusStopGroup[] }) {
-  const { ref, inView } = useInView<HTMLDivElement>()
-  const [selection, setSelection] = useAtom(busLocationSelectionAtom)
-  const route = useMemo(
-    () => getBusLocationRoute(selection.slug, selection.direction),
-    [selection.slug, selection.direction]
-  )
-  const { view, loaded, error, routePath } = useBusLocationView(route, busStopGroups, {
-    enabled: inView,
-    withRoutePath: true,
-  })
-
-  const originName = groupNameOf(route.originStopId, busStopGroups) ?? ''
-  const targetName = groupNameOf(route.targetStopId, busStopGroups) ?? ''
-  const count = view?.mapBuses.length ?? 0
-
-  return (
-    <Card ref={ref} className="w-full overflow-hidden border-muted py-0 gap-0 block border">
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b bg-muted/40">
-        <Tabs
-          value={selection.slug}
-          onValueChange={(slug) => setSelection({ ...selection, slug: slug as BusLocationSlug })}
-          className="min-w-0 flex-1"
-        >
-          <TabsList className="grid w-full grid-cols-3 bg-muted dark:bg-muted/80 p-1 h-auto border rounded-md">
-            {BUS_LOCATION_ROUTES.map((d) => (
-              <TabsTrigger key={d.slug} value={d.slug} className={tabsTriggerClassName}>
-                {d.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          className="size-9 shrink-0"
-          onClick={() =>
-            setSelection({
-              ...selection,
-              direction: selection.direction === 'forward' ? 'reverse' : 'forward',
-            })
-          }
-          aria-label="向きを入れ替える"
-          title="向きを入れ替える"
-        >
-          <FaExchangeAlt className="size-3.5" />
-        </Button>
-      </div>
-
-      <div className="relative h-72 xl:h-80">
-        {inView && view ? (
-          <BusMap
-            buses={view.mapBuses}
-            routePath={routePath}
-            stops={view.stops}
-            className="absolute inset-0"
-          />
-        ) : (
-          <Skeleton className="absolute inset-0 rounded-none" />
-        )}
-        {/* いま地図に出している区間 */}
-        <div className="pointer-events-none absolute top-2 left-2 rounded-md border bg-background/90 px-2.5 py-1.5 shadow-sm">
-          <div className="flex items-center gap-1.5 text-sm font-bold">
-            {originName}
-            <FaArrowRight className="size-2.5 text-muted-foreground" />
-            {targetName}
-          </div>
-          <BusCountStatus
-            loaded={loaded}
-            error={error}
-            count={count}
-            latestAgeSeconds={view?.latestAgeSeconds ?? null}
-            className="mt-0.5"
-          />
-        </div>
-        <MapLegend className="pointer-events-none absolute right-2 bottom-2" />
-      </div>
-
-      <MapFooter view={view} loaded={loaded} error={error} />
-    </Card>
   )
 }
 
