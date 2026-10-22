@@ -1,6 +1,7 @@
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import FaviconSwitcher from './favicon-switcher'
@@ -48,6 +49,7 @@ export default function RootLayout({
           {children}
           <Toaster richColors position="top-center" />
         </ThemeProvider>
+        <SpeedInsights />
       </body>
     </html>
   )
