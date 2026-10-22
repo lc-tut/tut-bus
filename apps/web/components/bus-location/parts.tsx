@@ -39,16 +39,22 @@ export function CongestionBadge({ congestion }: { congestion: BusCongestion | nu
   )
 }
 
+// 地図の上に重ねる色の説明
 export function MapLegend({ className }: { className?: string }) {
   return (
-    <div className={cn('flex items-center gap-3 text-[10px] text-muted-foreground', className)}>
+    <div
+      className={cn(
+        'flex items-center gap-2.5 rounded-md border bg-background/90 px-2 py-1 text-[10px] font-medium shadow-sm',
+        className
+      )}
+    >
       <span className="flex items-center gap-1">
-        <span className="size-2.5 rounded-full bg-primary" />
-        出発地に向かう
+        <span className="size-2.5 rounded-full bg-orange-500" />
+        接近中
       </span>
-      <span className="flex items-center gap-1">
-        <span className="size-2.5 rounded-full bg-slate-400 dark:bg-slate-500" />
-        行先に向かう
+      <span className="flex items-center gap-1 text-muted-foreground">
+        <span className="size-2 rounded-full bg-slate-400 dark:bg-slate-500" />
+        出発済み
       </span>
     </div>
   )
@@ -81,22 +87,22 @@ function BusListSection({
   if (items.length === 0) return null
   return (
     <section>
-      <h3 className="bg-muted/60 px-4 py-1.5 text-xs font-medium text-muted-foreground">
+      <h3 className="bg-muted/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">
         {title}（{items.length}台）
       </h3>
       <ul className="divide-y">
         {items.map(({ bus, distance, ageSeconds }) => (
           <li
             key={bus.bus_id}
-            className={cn('flex items-center gap-3 px-4 py-3', bus.stale && 'opacity-50')}
+            className={cn('flex items-center gap-3 px-3 py-2.5', bus.stale && 'opacity-50')}
           >
             <div
               className={cn(
-                'flex size-8 shrink-0 items-center justify-center rounded-full text-white',
-                bus.variant === 'approaching' ? 'bg-primary' : 'bg-slate-400 dark:bg-slate-500'
+                'flex size-7 shrink-0 items-center justify-center rounded-full text-white',
+                bus.variant === 'approaching' ? 'bg-orange-500' : 'bg-slate-400 dark:bg-slate-500'
               )}
             >
-              <FaBus className="size-3.5" />
+              <FaBus className="size-3" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold">{bus.name}</div>
@@ -144,51 +150,42 @@ export function BusList({
   }
   return (
     <>
-      <BusListSection
-        title={`${originName}に向かっているバス`}
-        items={approaching}
-        stopName={originName}
-      />
-      <BusListSection
-        title={`${targetName}に向かっているバス`}
-        items={departed}
-        stopName={targetName}
-      />
+      <BusListSection title="接近中のバス" items={approaching} stopName={originName} />
+      <BusListSection title="出発済みのバス" items={departed} stopName={targetName} />
     </>
   )
 }
 
-// 「次に来るバス」の1行表示
+// 次に来るバス（出発地に一番近い、接近中のバス）の1行表示
 export function NextBusSummary({
   nextBus,
   hasAnyBus,
-  originName,
 }: {
   nextBus: BusListItem | null
   hasAnyBus: boolean
-  originName: string
 }) {
   if (!nextBus) {
     return (
-      <span className="text-xs text-muted-foreground">
-        {hasAnyBus
-          ? `${originName}に向かっているバスは確認されていません`
-          : '運行中のバスは確認されていません'}
+      <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+        {hasAnyBus ? '接近中のバスは確認されていません' : '運行中のバスは確認されていません'}
       </span>
     )
   }
   return (
-    <>
-      <span className="text-xs text-muted-foreground shrink-0">次に来るバス</span>
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      {/* 地図の「接近中」と同じオレンジで、どのバスのことか分かるようにする */}
+      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white">
+        <FaBus className="size-2.5" />
+      </span>
       <span className="text-sm font-semibold shrink-0">{nextBus.bus.name}</span>
       {nextBus.distance !== null && (
-        <span className="text-xs text-muted-foreground whitespace-nowrap">
+        <span className="min-w-0 truncate text-xs text-muted-foreground">
           あと約{formatDistance(nextBus.distance)}
         </span>
       )}
       <span className="ml-auto shrink-0">
         <CongestionBadge congestion={nextBus.bus.congestion} />
       </span>
-    </>
+    </div>
   )
 }

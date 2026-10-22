@@ -4,15 +4,13 @@ import type { BusMapFocus } from '@/components/bus-location/bus-map'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { components } from '@/generated/oas'
@@ -23,7 +21,7 @@ import {
   getBusLocationRoute,
   resolveBusLocationRoute,
 } from '@/lib/bus-location'
-import { formatAge } from '@/lib/bus-location-view'
+import { BusLocationView, formatAge } from '@/lib/bus-location-view'
 import { useBusLocationView } from '@/lib/hooks/use-bus-location-view'
 import { useInView } from '@/lib/hooks/use-in-view'
 import { useUserLocation } from '@/lib/hooks/use-user-location'
@@ -42,51 +40,127 @@ const BusMap = dynamic(() => import('@/components/bus-location/bus-map'), {
 
 type BusStopGroup = components['schemas']['Models.BusStopGroup']
 
-function stationName(slug: BusLocationSlug, busStopGroups: BusStopGroup[]) {
-  const def = BUS_LOCATION_ROUTES.find((route) => route.slug === slug)
-  return (
-    busStopGroups.find((g) => g.busStops.some((s) => s.id === def?.stationStopId))?.name ?? slug
-  )
+const tabsTriggerClassName =
+  'px-2 py-1.5 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:font-semibold dark:data-[state=active]:shadow-sm'
+
+function groupNameOf(stopId: number | undefined, busStopGroups: BusStopGroup[]) {
+  return busStopGroups.find((g) => g.busStops.some((s) => s.id === stopId))?.name
 }
 
-// 見出しの右側には台数だけ出す（0台のときの文言は地図の下や一覧に出す）
-function CardHeaderRow({
-  title,
+// 運行台数と更新時刻（0台のときの文言は地図の下に出すので、ここでは出さない）
+function BusCountStatus({
   loaded,
   error,
   count,
   latestAgeSeconds,
+  className,
 }: {
-  title: string
   loaded: boolean
   error: boolean
   count: number
   latestAgeSeconds: number | null
+  className?: string
 }) {
   const statusText =
     count > 0 ? `${count}台が運行中` : !loaded || error ? getStatusText(loaded, error, count) : null
+  if (!statusText) return null
   return (
-    <div className="bg-blue-100/60 dark:bg-blue-950/60 px-4 py-3 min-h-[56px] flex items-center gap-3">
-      <h2 className="min-w-0 flex-1 text-base font-bold truncate">{title}</h2>
-      {statusText && (
-        <div className="text-right shrink-0">
-          <div className="text-sm font-semibold flex items-center justify-end gap-1.5">
-            <LiveDot active={count > 0} />
-            {statusText}
-          </div>
-          {latestAgeSeconds !== null && (
-            <div className="text-[10px] text-muted-foreground">
-              {formatAge(latestAgeSeconds)}に更新
-            </div>
-          )}
-        </div>
+    <div className={cn('flex items-center gap-1.5 text-xs', className)}>
+      <LiveDot active={count > 0} />
+      <span className="font-semibold">{statusText}</span>
+      {count > 0 && latestAgeSeconds !== null && (
+        <span className="text-[10px] text-muted-foreground">
+          {formatAge(latestAgeSeconds)}に更新
+        </span>
       )}
     </div>
   )
 }
 
+// 「一覧」ボタンと、運行中のバスを並べたダイアログ
+function BusListDialog({
+  view,
+  loaded,
+  error,
+}: {
+  view: BusLocationView | null
+  loaded: boolean
+  error: boolean
+}) {
+  const count = view?.mapBuses.length ?? 0
+  const originName = view?.origin?.name ?? ''
+  const targetName = view?.target?.name ?? ''
+
+  return (
+    <Dialog
+      onOpenChange={(open) => {
+        if (open) (document.activeElement as HTMLElement)?.blur()
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button type="button" size="sm" variant="outline" className="h-8 shrink-0">
+          <FaListUl className="size-3" />
+          一覧
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col gap-0 p-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-3 text-left">
+          <DialogTitle>運行中のバス</DialogTitle>
+          <DialogDescription className="flex items-center gap-1.5">
+            {originName}
+            <FaArrowRight className="size-2.5" />
+            {targetName}
+          </DialogDescription>
+          <BusCountStatus
+            loaded={loaded}
+            error={error}
+            count={count}
+            latestAgeSeconds={view?.latestAgeSeconds ?? null}
+          />
+        </DialogHeader>
+        <div className="min-h-0 flex-1 overflow-y-auto border-t">
+          {view && (
+            <BusList
+              approaching={view.approaching}
+              departed={view.departed}
+              originName={originName}
+              targetName={targetName}
+            />
+          )}
+        </div>
+        <SourceNote className="border-t px-5 py-2" />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// 地図の下の「次に来るバス」と「一覧」ボタンの行
+function MapFooter({
+  view,
+  loaded,
+  error,
+}: {
+  view: BusLocationView | null
+  loaded: boolean
+  error: boolean
+}) {
+  const count = view?.mapBuses.length ?? 0
+  return (
+    <div className="flex items-center gap-2 px-4 py-2.5 border-t min-h-[52px]">
+      {loaded && view && !(error && count === 0) ? (
+        <NextBusSummary nextBus={view.nextBus} hasAnyBus={count > 0} />
+      ) : (
+        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+          {getStatusText(loaded, error, count)}
+        </span>
+      )}
+      <BusListDialog view={view} loaded={loaded} error={error} />
+    </div>
+  )
+}
+
 /**
- * PC: カード一覧の上に置く大きな地図。路線と向きを切り替えられる
+ * PC: 右側の aside の一番上に置く地図。路線と向きを切り替えられる
  */
 export function DesktopBusLocationMapCard({ busStopGroups }: { busStopGroups: BusStopGroup[] }) {
   const { ref, inView } = useInView<HTMLDivElement>()
@@ -100,37 +174,22 @@ export function DesktopBusLocationMapCard({ busStopGroups }: { busStopGroups: Bu
     withRoutePath: true,
   })
 
-  const station = stationName(selection.slug, busStopGroups)
-  const campusStopId = BUS_LOCATION_ROUTES.find((def) => def.slug === selection.slug)?.campusStopId
-  const campusName =
-    busStopGroups.find((g) => g.busStops.some((s) => s.id === campusStopId))?.name ?? '大学'
-  const originName = view?.origin?.name ?? ''
-  const targetName = view?.target?.name ?? ''
+  const def = BUS_LOCATION_ROUTES.find((d) => d.slug === selection.slug)
+  const station = groupNameOf(def?.stationStopId, busStopGroups) ?? ''
+  const campus = groupNameOf(def?.campusStopId, busStopGroups) ?? '大学'
   const count = view?.mapBuses.length ?? 0
 
   return (
     <Card ref={ref} className="w-full overflow-hidden border-muted py-0 gap-0 block border">
-      <CardHeaderRow
-        title="バスの現在地"
-        loaded={loaded}
-        error={error}
-        count={count}
-        latestAgeSeconds={view?.latestAgeSeconds ?? null}
-      />
-
-      <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b bg-muted/40">
+      <div className="space-y-2 px-3 py-3 border-b bg-muted/40">
         <Tabs
           value={selection.slug}
           onValueChange={(slug) => setSelection({ ...selection, slug: slug as BusLocationSlug })}
         >
-          <TabsList className="bg-muted dark:bg-muted/80 p-1 h-auto border rounded-md">
-            {BUS_LOCATION_ROUTES.map((def) => (
-              <TabsTrigger
-                key={def.slug}
-                value={def.slug}
-                className="px-3 py-1.5 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:font-semibold dark:data-[state=active]:shadow-sm"
-              >
-                {stationName(def.slug, busStopGroups)}
+          <TabsList className="grid w-full grid-cols-3 bg-muted dark:bg-muted/80 p-1 h-auto border rounded-md">
+            {BUS_LOCATION_ROUTES.map((d) => (
+              <TabsTrigger key={d.slug} value={d.slug} className={tabsTriggerClassName}>
+                <span className="truncate">{groupNameOf(d.stationStopId, busStopGroups)}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -141,55 +200,43 @@ export function DesktopBusLocationMapCard({ busStopGroups }: { busStopGroups: Bu
             setSelection({ ...selection, direction: direction as BusLocationDirection })
           }
         >
-          <TabsList className="bg-muted dark:bg-muted/80 p-1 h-auto border rounded-md">
-            <TabsTrigger
-              value="reverse"
-              className="px-3 py-1.5 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:font-semibold dark:data-[state=active]:shadow-sm"
-            >
-              {station}
-              <FaArrowRight className="mx-1 size-2.5" />
-              {campusName}
+          <TabsList className="grid w-full grid-cols-2 bg-muted dark:bg-muted/80 p-1 h-auto border rounded-md">
+            <TabsTrigger value="reverse" className={tabsTriggerClassName}>
+              <span className="truncate">{station}</span>
+              <FaArrowRight className="size-2.5 shrink-0" />
+              <span className="shrink-0">{campus}</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="forward"
-              className="px-3 py-1.5 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:font-semibold dark:data-[state=active]:shadow-sm"
-            >
-              {campusName}
-              <FaArrowRight className="mx-1 size-2.5" />
-              {station}
+            <TabsTrigger value="forward" className={tabsTriggerClassName}>
+              <span className="shrink-0">{campus}</span>
+              <FaArrowRight className="size-2.5 shrink-0" />
+              <span className="truncate">{station}</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
-        <MapLegend className="ml-auto" />
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_300px]">
-        <div className="relative h-[320px] lg:h-[400px]">
-          {inView && view ? (
-            <BusMap
-              buses={view.mapBuses}
-              routePath={routePath}
-              stops={view.stops}
-              className="absolute inset-0"
-            />
-          ) : (
-            <Skeleton className="absolute inset-0 rounded-none" />
-          )}
-        </div>
-        <div className="flex flex-col border-t lg:border-t-0 lg:border-l max-h-[320px] lg:max-h-[400px]">
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            {view && (
-              <BusList
-                approaching={view.approaching}
-                departed={view.departed}
-                originName={originName}
-                targetName={targetName}
-              />
-            )}
-          </div>
-          <SourceNote className="border-t px-4 py-2" />
-        </div>
+      <div className="relative h-72 xl:h-80">
+        {inView && view ? (
+          <BusMap
+            buses={view.mapBuses}
+            routePath={routePath}
+            stops={view.stops}
+            className="absolute inset-0"
+          />
+        ) : (
+          <Skeleton className="absolute inset-0 rounded-none" />
+        )}
+        <BusCountStatus
+          loaded={loaded}
+          error={error}
+          count={count}
+          latestAgeSeconds={view?.latestAgeSeconds ?? null}
+          className="pointer-events-none absolute top-2 left-2 rounded-md border bg-background/90 px-2 py-1 shadow-sm"
+        />
+        <MapLegend className="pointer-events-none absolute right-2 bottom-2" />
       </div>
+
+      <MapFooter view={view} loaded={loaded} error={error} />
     </Card>
   )
 }
@@ -242,21 +289,10 @@ export function MobileBusLocationMapCard({
 
   if (!route) return null
 
-  const originName = view?.origin?.name ?? departureGroup?.name ?? ''
-  const targetName = view?.target?.name ?? ''
-  const count = view?.mapBuses.length ?? 0
-
   return (
-    <Card ref={ref} className="w-full overflow-hidden border-muted py-0 gap-0 block border">
-      <CardHeaderRow
-        title="バスの現在地"
-        loaded={loaded}
-        error={error}
-        count={count}
-        latestAgeSeconds={view?.latestAgeSeconds ?? null}
-      />
-
-      <div className="relative h-48">
+    // ヘッダーのすぐ下に画面幅いっぱいで敷くので、カードの枠や角丸は付けない
+    <div ref={ref} className="w-full overflow-hidden border-b bg-card">
+      <div className="relative h-56">
         {inView && view ? (
           <BusMap
             buses={view.mapBuses}
@@ -272,7 +308,15 @@ export function MobileBusLocationMapCard({
           <Skeleton className="absolute inset-0 rounded-none" />
         )}
 
-        <div className="absolute top-2 right-2 flex flex-col gap-2">
+        {showMyLocation && (locationStatus === 'denied' || locationStatus === 'unavailable') && (
+          <p className="pointer-events-none absolute top-2 left-2 rounded-md border bg-background/90 px-2 py-1 text-[10px] text-muted-foreground shadow-sm">
+            {locationStatus === 'denied'
+              ? '位置情報の利用が許可されていません'
+              : '現在地を取得できませんでした'}
+          </p>
+        )}
+
+        <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
           <Button
             type="button"
             size="sm"
@@ -303,64 +347,11 @@ export function MobileBusLocationMapCard({
             </Button>
           )}
         </div>
-        {showMyLocation && (locationStatus === 'denied' || locationStatus === 'unavailable') && (
-          <p className="absolute left-2 top-2 rounded-md border bg-background/90 px-2 py-1 text-[10px] text-muted-foreground shadow-sm">
-            {locationStatus === 'denied'
-              ? '位置情報の利用が許可されていません'
-              : '現在地を取得できませんでした'}
-          </p>
-        )}
+
+        <MapLegend className="pointer-events-none absolute right-2 bottom-2" />
       </div>
 
-      <div className="flex items-center gap-2 px-4 py-2.5 border-t min-h-[44px]">
-        {loaded && view ? (
-          <NextBusSummary nextBus={view.nextBus} hasAnyBus={count > 0} originName={originName} />
-        ) : (
-          <span className="text-xs text-muted-foreground">位置情報を取得中...</span>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between gap-2 px-4 pb-3">
-        <MapLegend />
-        <Drawer
-          onOpenChange={(open) => {
-            if (open) (document.activeElement as HTMLElement)?.blur()
-          }}
-        >
-          <DrawerTrigger asChild>
-            <Button type="button" size="sm" variant="outline" className="h-8">
-              <FaListUl className="size-3" />
-              一覧
-            </Button>
-          </DrawerTrigger>
-          <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[80vh]">
-            <DrawerHeader className="text-left">
-              <DrawerTitle>運行中のバス</DrawerTitle>
-              <DrawerDescription>
-                {originName} → {targetName}
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="min-h-0 flex-1 overflow-y-auto border-t">
-              {view && (
-                <BusList
-                  approaching={view.approaching}
-                  departed={view.departed}
-                  originName={originName}
-                  targetName={targetName}
-                />
-              )}
-              <SourceNote className="px-4 py-2" />
-            </div>
-            <DrawerFooter>
-              <DrawerClose asChild>
-                <Button variant="default" className="p-5 font-bold">
-                  閉じる
-                </Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      </div>
-    </Card>
+      <MapFooter view={view} loaded={loaded} error={error} />
+    </div>
   )
 }

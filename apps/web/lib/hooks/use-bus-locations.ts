@@ -3,8 +3,11 @@
 import { BusLocation, BusLocationSlug, fetchBusLocations } from '@/lib/bus-location'
 import { useEffect, useState } from 'react'
 
-// 公式ページは 5 秒間隔で取得しているが、負荷を考えて少し長めにする
-const POLL_INTERVAL_MS = 10000
+// 公式ページは 5 秒間隔で取得しているが、負荷を考えて長めにする
+// PC は地図とカードが同時に見えて取得する路線が増えやすいので、さらに長めにする
+function getPollIntervalMs() {
+  return window.matchMedia('(min-width: 640px)').matches ? 15000 : 10000
+}
 
 export interface BusLocationsState {
   buses: BusLocation[]
@@ -70,7 +73,7 @@ function startPoller(slug: BusLocationSlug): Poller {
       // タブが裏にあるときは取得しない
       if (!document.hidden) await load()
       if (!stopped) schedule()
-    }, POLL_INTERVAL_MS)
+    }, getPollIntervalMs())
   }
 
   function onVisibilityChange() {

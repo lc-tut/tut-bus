@@ -17,7 +17,7 @@ interface BusStatusRowProps {
 }
 
 /**
- * 時刻表カードに出す、運行台数と次に来るバスの1行表示
+ * PC の時刻表カードに出す、運行台数と次に来るバスの表示
  */
 export function BusStatusRow({
   departureGroup,
@@ -43,7 +43,8 @@ export function BusStatusRow({
   const count = view ? view.mapBuses.length : 0
 
   return (
-    <div ref={ref} className="border-b px-4 py-2.5 space-y-1.5">
+    // スマホではカルーセル上の地図カードに同じ情報があるので出さない（非表示のあいだは取得もしない）
+    <div ref={ref} className="hidden sm:block border-b px-4 py-2.5 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <LiveDot active={count > 0} />
@@ -59,11 +60,7 @@ export function BusStatusRow({
       </div>
       {loaded && view && count > 0 && (
         <div className="flex items-center gap-2 min-h-[24px]">
-          <NextBusSummary
-            nextBus={view.nextBus}
-            hasAnyBus={count > 0}
-            originName={view.origin?.name ?? departureGroup.name}
-          />
+          <NextBusSummary nextBus={view.nextBus} hasAnyBus={count > 0} />
         </div>
       )}
     </div>

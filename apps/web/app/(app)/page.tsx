@@ -559,8 +559,8 @@ function HomeContent() {
           {/* モバイル: カルーセル */}
           <div className="sm:hidden">
             {isBusLocationEnabled && (
-              // カルーセルのカードと左右の端をそろえる
-              <div className="px-[calc(5vw+0.5rem)] mb-3">
+              // 親の p-1 と my-5 を打ち消して、ヘッダーのすぐ下から画面幅いっぱいに出す
+              <div className="-mx-1 -mt-6 mb-4">
                 <MobileBusLocationMapCard
                   departureGroup={busStopGroups[activeSlide] ?? null}
                   destinationStopId={
@@ -594,20 +594,18 @@ function HomeContent() {
           {/* PC/タブレット: グリッド + サイドバナー */}
           <div className="hidden sm:block px-4 py-2">
             <div className="sm:grid sm:grid-cols-[1fr_auto] sm:gap-6">
-              <div className="space-y-4 min-w-0">
-                {isBusLocationEnabled && (
-                  <DesktopBusLocationMapCard busStopGroups={busStopGroups} />
-                )}
-                {/* バス停カード */}
-                <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4">
-                  {busStopGroups.map((group, index) => (
-                    <div key={index}>{renderGroupCard(group, index)}</div>
-                  ))}
-                </div>
+              {/* バス停カード（右側の地図の方が高くても、カードの間が空かないよう上に詰める） */}
+              <div className="grid content-start sm:grid-cols-1 lg:grid-cols-2 gap-4">
+                {busStopGroups.map((group, index) => (
+                  <div key={index}>{renderGroupCard(group, index)}</div>
+                ))}
               </div>
               {/* サイドバナー (sm以上) */}
               <aside className="hidden sm:block w-80 xl:w-96 shrink-0">
                 <div className="sticky top-24 space-y-4">
+                  {isBusLocationEnabled && (
+                    <DesktopBusLocationMapCard busStopGroups={busStopGroups} />
+                  )}
                   <AnnouncementBanner dismissible={false} />
                   <SurveyBanner />
                   <LinuxClubBanner />

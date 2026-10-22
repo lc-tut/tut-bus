@@ -37,10 +37,15 @@ interface BusMapProps {
   cooperativeGestures?: boolean
   // 利用者が地図を動かしたとき（自動で追いかけるのをやめる合図）
   onUserMove?: () => void
+  // 地図に重ねたパネルなどで隠れる分の余白（px）
+  padding?: { top: number; bottom: number; left: number; right: number }
   className?: string
 }
 
 const ROUTE_SOURCE_ID = 'bus-route'
+
+// バス停のラベルはマーカーの上に出るので、上側の余白を広めに取る
+const DEFAULT_PADDING = { top: 56, bottom: 32, left: 32, right: 32 }
 
 // 地理院タイル（淡色地図）
 const GSI_TILE_URL = 'https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'
@@ -75,6 +80,7 @@ export default function BusMap({
   focus = null,
   cooperativeGestures = false,
   onUserMove,
+  padding = DEFAULT_PADDING,
   className,
 }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -221,11 +227,9 @@ export default function BusMap({
       (b, coord) => b.extend(coord),
       new LngLatBounds(coordinates[0], coordinates[0])
     )
-    // バス停のラベルはマーカーの上に出るので、上側の余白を広めに取る
-    const padding = { top: 56, bottom: 32, left: 32, right: 32 }
     // 追いかけるときはバスが近づいても周りが分かる程度で止める
     map.fitBounds(bounds, { padding, duration: focusKey ? 800 : 0, maxZoom: focusKey ? 15 : 16 })
-  }, [routeKey, stopsKey, focusKey, isLoaded])
+  }, [routeKey, stopsKey, focusKey, isLoaded, padding])
 
   // 自分の現在地（マーカーは表示中のあいだ1つだけ作り、位置は別の effect で更新する）
   const hasUserLocation = userLocation !== null
@@ -331,7 +335,14 @@ export default function BusMap({
         const bus = busesById.get(id)
         if (!bus) return null
         return createPortal(
-          <div className={cn('relative size-7', bus.stale && 'opacity-50')}>
+          // 接近中のバスはオレンジで大きく、出発済みのバスは灰色で小さく薄く出す
+          <div
+            className={cn(
+              'relative',
+              bus.variant === 'approaching' ? 'size-8' : 'size-6 opacity-70',
+              bus.stale && 'opacity-40'
+            )}
+          >
             {/* 進行方向 */}
             <div
               className="absolute inset-0 transition-transform duration-700"
@@ -340,17 +351,17 @@ export default function BusMap({
               <div
                 className={cn(
                   'absolute -top-1.5 left-1/2 -translate-x-1/2 border-x-[6px] border-x-transparent border-b-[8px]',
-                  bus.variant === 'approaching' ? 'border-b-primary' : 'border-b-slate-400'
+                  bus.variant === 'approaching' ? 'border-b-orange-500' : 'border-b-slate-400'
                 )}
               />
             </div>
             <div
               className={cn(
                 'absolute inset-0 flex items-center justify-center rounded-full border-2 border-white text-white shadow-md dark:border-neutral-900',
-                bus.variant === 'approaching' ? 'bg-primary' : 'bg-slate-400 dark:bg-slate-500'
+                bus.variant === 'approaching' ? 'bg-orange-500' : 'bg-slate-400 dark:bg-slate-500'
               )}
             >
-              <FaBus className="size-3" />
+              <FaBus className={bus.variant === 'approaching' ? 'size-3.5' : 'size-2.5'} />
             </div>
           </div>,
           el,

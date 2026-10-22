@@ -29,7 +29,7 @@ export interface BusLocationView {
   mapBuses: BusMapBus[]
   approaching: BusListItem[]
   departed: BusListItem[]
-  // 出発地に一番近い、これから来るバス
+  // 出発地に一番近い、接近中のバス
   nextBus: BusListItem | null
   latestAgeSeconds: number | null
 }

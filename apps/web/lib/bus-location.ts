@@ -3,6 +3,16 @@
 
 const BUS_LOCATION_API_BASE = 'https://sloc.orgncdn.net/api/v1/public/Kyg1404'
 
+// 公開 API への取得方法
+// - ブラウザから直接、普通の GET を送るだけ（中継サーバー・独自ヘッダーなし）
+// - Origin / Referer はブラウザが付ける tut-bus のものをそのまま送る（偽装はしない）
+// - Cookie などの認証情報は送らない
+const FETCH_OPTIONS: RequestInit = {
+  method: 'GET',
+  mode: 'cors',
+  credentials: 'omit',
+}
+
 export const isBusLocationEnabled = process.env.NEXT_PUBLIC_BUS_LOCATION_ENABLED === 'true'
 
 // forward: キャンパス → 駅・学生会館 / reverse: 駅・学生会館 → キャンパス
@@ -86,7 +96,7 @@ export async function fetchBusLocations(
   slug: BusLocationSlug,
   signal?: AbortSignal
 ): Promise<BusLocation[]> {
-  const res = await fetch(`${BUS_LOCATION_API_BASE}/${slug}/status`, { signal })
+  const res = await fetch(`${BUS_LOCATION_API_BASE}/${slug}/status`, { ...FETCH_OPTIONS, signal })
   if (!res.ok) throw new Error(`bus location api responded ${res.status}`)
   const data: unknown = await res.json()
   return Array.isArray(data) ? (data as BusLocation[]) : []
@@ -110,7 +120,7 @@ export function fetchBusRoutePath(route: BusLocationRoute): Promise<BusRoutePath
   const cached = routePathCache.get(key)
   if (cached) return cached
 
-  const promise = fetch(`${BUS_LOCATION_API_BASE}/${route.slug}/config`)
+  const promise = fetch(`${BUS_LOCATION_API_BASE}/${route.slug}/config`, FETCH_OPTIONS)
     .then((res) => (res.ok ? (res.json() as Promise<BusRouteConfig>) : null))
     .then((config) => {
       const polyline =
