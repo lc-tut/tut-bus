@@ -560,7 +560,7 @@ function HomeContent() {
           <div className="sm:hidden">
             {isBusLocationEnabled && (
               // 親の p-1 と my-5 を打ち消して、ヘッダーのすぐ下から画面幅いっぱいに出す
-              <div className="-mx-1 -mt-6 mb-4">
+              <div className="-mx-1 -mt-6 mb-2">
                 <MobileBusLocationMapCard
                   departureGroup={busStopGroups[activeSlide] ?? null}
                   destinationStopId={
