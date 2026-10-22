@@ -38,6 +38,8 @@ if (appUrl) {
 }
 // Google Analytics
 swConnectSrc.push('https://www.googletagmanager.com', 'https://www.google-analytics.com')
+// バス位置情報（イマロケ）と地図タイル（地理院タイル）
+swConnectSrc.push('https://sloc.orgncdn.net', 'https://cyberjapandata.gsi.go.jp')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

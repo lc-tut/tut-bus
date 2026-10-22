@@ -155,6 +155,12 @@ const serwist = new Serwist({
         ],
       }),
     },
+    // バス位置情報: 古い位置を出さないようキャッシュしない
+    // defaultCache の cross-origin ルール（NetworkFirst, 1時間キャッシュ）より先にマッチさせる
+    {
+      matcher: ({ url }) => url.origin === 'https://sloc.orgncdn.net',
+      handler: new NetworkOnly(),
+    },
     // それ以外は serwist のデフォルトキャッシュ戦略
     ...defaultCache,
   ],
