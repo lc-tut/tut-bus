@@ -36,6 +36,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@serwist/next": "^9.5.4",
+    "@vercel/speed-insights": "^2.0.0",
     "autoprefixer": "^10.4.24",
     "better-auth": "^1.6.33",
     "class-variance-authority": "^0.7.1",
