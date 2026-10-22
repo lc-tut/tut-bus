@@ -2,7 +2,6 @@
 // 公式ドキュメントのない API なので、レスポンスは最低限の項目だけ型を付けて使う
 
 const BUS_LOCATION_API_BASE = 'https://sloc.orgncdn.net/api/v1/public/Kyg1404'
-const BUS_LOCATION_RIDER_BASE = 'https://rider.imaroke.com/Kyg1404'
 
 export const isBusLocationEnabled = process.env.NEXT_PUBLIC_BUS_LOCATION_ENABLED === 'true'
 
@@ -47,6 +46,8 @@ const ROUTES: BusLocationRouteDef[] = [
 export interface BusLocationRoute {
   slug: BusLocationRouteDef['slug']
   direction: BusLocationDirection
+  // バスが出発するバス停 ID
+  originStopId: number
   // バスが向かっている先のバス停 ID（距離の計算に使う）
   targetStopId: number
 }
@@ -60,10 +61,20 @@ export function resolveBusLocationRoute(
 
   for (const route of ROUTES) {
     if (destinationStopId === route.stationStopId) {
-      return { slug: route.slug, direction: 'forward', targetStopId: route.stationStopId }
+      return {
+        slug: route.slug,
+        direction: 'forward',
+        originStopId: route.campusStopId,
+        targetStopId: route.stationStopId,
+      }
     }
     if (departureStopIds.includes(route.stationStopId)) {
-      return { slug: route.slug, direction: 'reverse', targetStopId: route.campusStopId }
+      return {
+        slug: route.slug,
+        direction: 'reverse',
+        originStopId: route.stationStopId,
+        targetStopId: route.campusStopId,
+      }
     }
   }
   return null
@@ -79,10 +90,39 @@ export async function fetchBusLocations(
   return Array.isArray(data) ? (data as BusLocation[]) : []
 }
 
-// 公式の地図ページ（出発地のバス停を選んだ状態で開く）
-export function getRiderMapUrl(route: BusLocationRoute): string {
-  const stop = route.direction === 'forward' ? 'origin' : 'destination'
-  return `${BUS_LOCATION_RIDER_BASE}/${route.slug}/?stop=${stop}`
+// 路線の経路（[経度, 緯度] の配列）
+export type BusRoutePath = [number, number][]
+
+interface BusRouteConfig {
+  route?: {
+    polyline_forward?: { coordinates?: BusRoutePath } | null
+    polyline_reverse?: { coordinates?: BusRoutePath } | null
+  }
+}
+
+// 経路はほぼ変わらないので、路線ごとに1回だけ取得する
+const routePathCache = new Map<string, Promise<BusRoutePath | null>>()
+
+export function fetchBusRoutePath(route: BusLocationRoute): Promise<BusRoutePath | null> {
+  const key = `${route.slug}:${route.direction}`
+  const cached = routePathCache.get(key)
+  if (cached) return cached
+
+  const promise = fetch(`${BUS_LOCATION_API_BASE}/${route.slug}/config`)
+    .then((res) => (res.ok ? (res.json() as Promise<BusRouteConfig>) : null))
+    .then((config) => {
+      const polyline =
+        route.direction === 'forward'
+          ? config?.route?.polyline_forward
+          : config?.route?.polyline_reverse
+      return polyline?.coordinates?.length ? polyline.coordinates : null
+    })
+    .catch(() => {
+      routePathCache.delete(key)
+      return null
+    })
+  routePathCache.set(key, promise)
+  return promise
 }
 
 // 2点間の直線距離（メートル）
