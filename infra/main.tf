@@ -10,11 +10,6 @@ module "gcp" {
   zone        = var.zone
   environment = var.environment
 
-  # Database Configuration
-  db_instance_name = var.db_instance_name
-  db_name          = var.db_name
-  db_tier          = var.db_tier
-
   # Application Configuration
   cors_allowed_origins = var.cors_allowed_origins
 

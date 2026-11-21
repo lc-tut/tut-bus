@@ -69,7 +69,7 @@ TypeScript, Go, Typespec
 
 - **Vercel**: フロントエンド (Next.js) のホスティング
 - **App Engine Standard**: API (Go) アプリケーションの実行
-- **Cloud SQL (PostgreSQL)**: データベース
+- **JSON ファイル (`apps/api/data/`)**: バス停・時刻表データ（データベースは使用しない）
 - **VPC Network**: プライベートネットワーク
 - **Cloudflare**: DNS + SSL/TLS + DDoS Protection
 

@@ -81,6 +81,7 @@ resource "google_project_iam_member" "terraform_wip_admin" {
 }
 
 # Cloud SQL Admin（データベースの管理）
+# TODO: Cloud SQL / VPC の破棄が apply 済みになったら、この権限と下の Network Admin を削除する
 resource "google_project_iam_member" "terraform_sql_admin" {
   project = var.project_id
   role    = "roles/cloudsql.admin"

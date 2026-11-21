@@ -51,24 +51,6 @@ variable "environment" {
   default     = "dev"
 }
 
-# Database Configuration
-variable "db_instance_name" {
-  description = "Cloud SQLインスタンス名"
-  type        = string
-}
-
-variable "db_name" {
-  description = "データベース名"
-  type        = string
-  default     = "tutbus"
-}
-
-variable "db_tier" {
-  description = "Cloud SQLのインスタンスタイプ"
-  type        = string
-  default     = "db-f1-micro"
-}
-
 # Application Configuration
 variable "cors_allowed_origins" {
   description = "CORSで許可するオリジン（Vercelのドメイン）"

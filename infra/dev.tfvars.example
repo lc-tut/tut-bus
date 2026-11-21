@@ -16,8 +16,6 @@ project_id       = "your-gcp-project-id"
 region           = "asia-northeast1"
 zone             = "asia-northeast1-a"
 environment      = "dev"
-db_instance_name = "tut-bus-db-dev"
-db_tier          = "db-f1-micro"
 machine_type     = "e2-micro"
 
 # Application Configuration
