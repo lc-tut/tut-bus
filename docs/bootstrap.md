@@ -31,7 +31,7 @@
 | データ         | JSON ファイル (`apps/api/data/`)    | バス停・時刻表の設定ファイル             |
 | 認証           | Better Auth + GitHub OAuth          | 管理画面のアクセス制御                   |
 | IaC            | Terraform (HCL)                     | GCP / Cloudflare / Vercel のインフラ管理 |
-| CI/CD          | GitHub Actions                      | Terraform plan/apply の自動化            |
+| CI/CD          | GitHub Actions                      | Lint / Validate / API デプロイ           |
 | クラウド       | GCP (App Engine, IAM)               | バックエンド基盤                         |
 | DNS/CDN        | Cloudflare                          | DNS, SSL/TLS, DDoS 保護                  |
 | ホスティング   | Vercel                              | Next.js フロントエンド                   |
@@ -314,21 +314,14 @@ Repository → **Settings → Secrets and variables → Actions → Variables** 
 
 > **注意**: Terraform で Workload Identity の名称を変更した場合は、ここも更新が必要です。
 
-### 6.2 GitHub Secrets の登録
+### 6.2 Terraform の機密値
 
-Repository → **Settings → Secrets and variables → Actions → Secrets** タブ
-
-| シークレット名         | 値                         | 説明                               |
-| ---------------------- | -------------------------- | ---------------------------------- |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API トークン    | Terraform Cloudflare provider 認証 |
-| `VERCEL_API_TOKEN`     | Vercel API トークン        | Terraform Vercel provider 認証     |
-| `BETTER_AUTH_SECRET`   | `openssl rand -base64 32`  | Better Auth セッション暗号化       |
-| `AUTH_GITHUB_ID`       | GitHub OAuth Client ID     | 管理画面 GitHub ログイン           |
-| `AUTH_GITHUB_SECRET`   | GitHub OAuth Client Secret | 管理画面 GitHub ログイン           |
+Terraform の plan / apply は GitHub Actions では実行せず、ローカルから行います。
+Cloudflare / Vercel の API トークンや Better Auth の値は `infra/secrets.tfvars`（`secrets.tfvars.example` を参照）に設定してください。GitHub Secrets への登録は不要です。
 
 ### 6.3 GitHub Environments の設定（推奨）
 
-`terraform-apply.yml` では `environment: production` を使用しています。  
+`api-deploy.yml` では `environment: production` を使用しています。  
 手動承認を必須にする場合:
 
 1. Repository → **Settings → Environments → New environment**
@@ -337,15 +330,13 @@ Repository → **Settings → Secrets and variables → Actions → Secrets** �
 
 ### 6.4 ワークフロー一覧
 
-`.github/workflows/` に3つのワークフローがあります:
+Terraform 関連のワークフローは `terraform-ci.yml` だけです:
 
-| ワークフロー          | トリガー                  | 内容                                           |
-| --------------------- | ------------------------- | ---------------------------------------------- |
-| `terraform-ci.yml`    | `infra/**` への PR / push | `fmt -check` + `validate` の結果を PR コメント |
-| `terraform-plan.yml`  | `infra/**` への PR        | `plan` 結果を PR コメントに投稿                |
-| `terraform-apply.yml` | 手動 (workflow_dispatch)  | `apply` 実行（confirm: `yes` 入力が必要）      |
+| ワークフロー       | トリガー           | 内容                                           |
+| ------------------ | ------------------ | ---------------------------------------------- |
+| `terraform-ci.yml` | `infra/**` への PR | `fmt -check` + `validate` の結果を PR コメント |
 
-動作確認: `infra/` 配下のファイルを変更して PR を作成 → CI と Plan が自動実行されることを確認。
+plan / apply はローカルで実行します（[ローカルで Terraform を操作](#ローカルで-terraform-を操作) を参照）。
 
 ---
 
@@ -479,8 +470,11 @@ Vercel 設定は Terraform で管理されています。
 
 ### ローカルで Terraform を操作
 
+> **注意**: 本番の state は `default` ワークスペース（`default.tfstate`）にあります。`production` ワークスペースは空なので、選択されていると全リソースが新規作成扱いの plan になります。`.terraform.lock.hcl` は Git 管理外のため、state の読み込みでエラーが出たら `terraform init -upgrade` で provider を更新してください。
+
 ```bash
 cd infra
+terraform workspace select default
 terraform plan  -var-file=environments/production.tfvars -var-file=secrets.tfvars
 terraform apply -var-file=environments/production.tfvars -var-file=secrets.tfvars
 terraform output
