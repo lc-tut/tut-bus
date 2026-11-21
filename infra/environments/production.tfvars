@@ -16,12 +16,10 @@
 # ========================================
 # GCP
 # ========================================
-project_id       = "main-vcompute"
-region           = "asia-northeast1"
-zone             = "asia-northeast1-a"
-environment      = "production"
-db_instance_name = "tut-bus-db-prod"
-db_tier          = "db-f1-micro"
+project_id  = "main-vcompute"
+region      = "asia-northeast1"
+zone        = "asia-northeast1-a"
+environment = "production"
 
 # Application Configuration
 cors_allowed_origins = "https://tut-bus.hekuta.net,https://tut-bus.lcn.ad.jp,https://tut-life-helper.vercel.app"

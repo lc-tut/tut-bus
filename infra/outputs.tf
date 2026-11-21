@@ -2,31 +2,6 @@
 # GCP Outputs
 # ========================================
 
-output "gcp_db_instance_name" {
-  description = "Cloud SQLインスタンス名"
-  value       = module.gcp.db_instance_name
-}
-
-output "gcp_db_public_ip" {
-  description = "Cloud SQLインスタンスのパブリックIP"
-  value       = module.gcp.db_public_ip
-}
-
-output "gcp_db_connection_name" {
-  description = "Cloud SQLインスタンスの接続名"
-  value       = module.gcp.db_connection_name
-}
-
-output "gcp_network_name" {
-  description = "VPCネットワーク名"
-  value       = module.gcp.network_name
-}
-
-output "gcp_subnet_name" {
-  description = "サブネット名"
-  value       = module.gcp.subnet_name
-}
-
 output "gcp_service_account_email" {
   description = "サービスアカウントのメールアドレス"
   value       = module.gcp.service_account_email

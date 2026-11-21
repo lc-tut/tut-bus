@@ -41,10 +41,6 @@ tasks:
     desc: 'apiコンテナのログを表示'
     cmd: '{{.DOCKER_COMPOSE}} logs -f api'
 
-  logs:db:
-    desc: 'dbコンテナのログを表示'
-    cmd: '{{.DOCKER_COMPOSE}} logs -f db'
-
   ps:
     desc: '実行中のコンテナを表示'
     cmd: '{{.DOCKER_COMPOSE}} ps'
@@ -58,8 +54,6 @@ tasks:
     cmds:
       - pnpm install
       - task: up
-      - sleep 5
-      - task: api:migrate:up
       - echo "✅ セットアップ完了!"
 
   install:
@@ -79,7 +73,6 @@ tasks:
     cmds:
       - task: gen:spec
       - task: gen:clients
-      - task: api:sqlc:generate
 
   fmt:
     desc: '全プロダクトのフォーマットを実行'
@@ -121,14 +114,6 @@ tasks:
   dev:web:
     desc: 'webの開発サーバー起動'
     cmd: pnpm run dev:web
-
-  db:shell:
-    desc: 'PostgreSQLシェルに接続'
-    cmd: task api:db:shell
-
-  db:reset:
-    desc: 'データベースをリセット'
-    cmd: task api:db:reset
 
   # ========================================
   # Preview (production build) Tasks
