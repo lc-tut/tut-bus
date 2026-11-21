@@ -43,9 +43,6 @@ Dockerfile
 # Task
 Taskfile.yml
 
-# Database
-db/
-
 # Misc
 tmp/
 temp/

@@ -27,7 +27,6 @@ resource "null_resource" "app_engine_config_rollout" {
   triggers = {
     project_id           = var.project_id
     cors_allowed_origins = var.cors_allowed_origins
-    db_instance_name     = var.db_instance_name
     region               = var.region
   }
 
@@ -49,12 +48,6 @@ resource "null_resource" "app_engine_config_rollout" {
       env_variables:
         API_ENV: 'production'
         HOST: '0.0.0.0'
-        DB_NAME: 'tutbus'
-        DB_USER: 'postgres'
-        DB_HOST: '/cloudsql/${var.project_id}:${var.region}:${var.db_instance_name}'
-        DB_PORT: ''
-        DB_PASSWORD: ''
-        DB_SSLMODE: 'disable'
         DATA_PATH: './data'
         CORS_ALLOWED_ORIGINS: '${var.cors_allowed_origins}'
 

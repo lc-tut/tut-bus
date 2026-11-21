@@ -20,8 +20,8 @@ TerraformでTUT Busのインフラを管理します。
          │ Proxy
          ↓
 ┌─────────────────┐
-│  Google Cloud   │  ← App Engine (F1) + Cloud SQL
-│   (Backend)     │     API Server (Go) + PostgreSQL 15
+│  Google Cloud   │  ← App Engine (F1)
+│   (Backend)     │     API Server (Go)
 └─────────────────┘
 ```
 
@@ -30,8 +30,6 @@ TerraformでTUT Busのインフラを管理します。
 ### `modules/gcp/` - Google Cloud Platform
 
 - App Engine Standard Environment
-- Cloud SQL (PostgreSQL 15)
-- VPC Network & Private Service Connection
 - IAM & Service Accounts
 
 ### `modules/cloudflare/` - DNS & CDN
@@ -132,21 +130,6 @@ gcloud app versions list --project=YOUR_PROJECT_ID
 
 `apps/api/app.yaml` で以下の環境変数が設定されます：
 
-#### データベース関連（App Engine標準環境）
-
-- `DB_HOST`: `/cloudsql/PROJECT_ID:REGION:INSTANCE_NAME` (Unix socket)
-- `DB_PORT`: "" (空)
-- `DB_NAME`: データベース名
-- `DB_USER`: Cloud SQL IAMユーザー（postgres）
-- `DB_PASSWORD`: "" (空 - IAM認証を使用)
-- `DB_SSLMODE`: disable (Unix socket経由のため不要)
-
-**注意**:
-
-- App Engine標準環境ではCloud SQL Unix socketを使用
-- IAM認証を使用するため、パスワード不要
-- VPC経由のプライベート接続で安全
-
 #### アプリケーション設定
 
 - `API_ENV`: 環境（production）
@@ -235,13 +218,11 @@ terraform destroy -var-file="dev.tfvars"
 | DNS                    | tut-bus-api-dev | tut-bus-api     |
 | SSL                    | flexible        | strict          |
 | Vercelブランチ         | dev             | main            |
-| DB名                   | tut-bus-db-dev  | tut-bus-db-prod |
 
 主要な設定は `terraform.tfvars` で管理します。詳細は各モジュールの `variables.tf` を参照してください。
 
 ## 🔒 セキュリティ
 
-- Cloud SQLは`prevent_destroy`で保護されています
 - API Tokenは環境変数での管理を推奨します
 - `*.tfvars`ファイルは`.gitignore`されています（機密情報を含むため）
 - 各workspaceは独立したstateを持ちます

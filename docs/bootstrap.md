@@ -23,21 +23,21 @@
 
 このプロジェクトの構築・運用に関わるには、以下の知識が必要です。
 
-| カテゴリ       | 技術                                  | 用途                                     |
-| -------------- | ------------------------------------- | ---------------------------------------- |
-| 言語           | TypeScript, Go                        | フロントエンド / バックエンド            |
-| フレームワーク | Next.js (App Router), Echo (Go)       | Web / API                                |
-| API 定義       | TypeSpec → OpenAPI 3.0 → コード生成   | API スキーマ定義                         |
-| DB             | PostgreSQL, sqlc                      | データベース + Go コード生成             |
-| 認証           | Better Auth + GitHub OAuth            | 管理画面のアクセス制御                   |
-| IaC            | Terraform (HCL)                       | GCP / Cloudflare / Vercel のインフラ管理 |
-| CI/CD          | GitHub Actions                        | Terraform plan/apply の自動化            |
-| クラウド       | GCP (App Engine, Cloud SQL, VPC, IAM) | バックエンド基盤                         |
-| DNS/CDN        | Cloudflare                            | DNS, SSL/TLS, DDoS 保護                  |
-| ホスティング   | Vercel                                | Next.js フロントエンド                   |
-| タスクランナー | Task (go-task), Turborepo             | ローカル開発の自動化                     |
-| パッケージ管理 | pnpm (monorepo)                       | Node.js 依存パッケージ                   |
-| コンテナ       | Docker Compose                        | ローカル開発環境                         |
+| カテゴリ       | 技術                                | 用途                                     |
+| -------------- | ----------------------------------- | ---------------------------------------- |
+| 言語           | TypeScript, Go                      | フロントエンド / バックエンド            |
+| フレームワーク | Next.js (App Router), Echo (Go)     | Web / API                                |
+| API 定義       | TypeSpec → OpenAPI 3.0 → コード生成 | API スキーマ定義                         |
+| データ         | JSON ファイル (`apps/api/data/`)    | バス停・時刻表の設定ファイル             |
+| 認証           | Better Auth + GitHub OAuth          | 管理画面のアクセス制御                   |
+| IaC            | Terraform (HCL)                     | GCP / Cloudflare / Vercel のインフラ管理 |
+| CI/CD          | GitHub Actions                      | Terraform plan/apply の自動化            |
+| クラウド       | GCP (App Engine, IAM)               | バックエンド基盤                         |
+| DNS/CDN        | Cloudflare                          | DNS, SSL/TLS, DDoS 保護                  |
+| ホスティング   | Vercel                              | Next.js フロントエンド                   |
+| タスクランナー | Task (go-task), Turborepo           | ローカル開発の自動化                     |
+| パッケージ管理 | pnpm (monorepo)                     | Node.js 依存パッケージ                   |
+| コンテナ       | Docker Compose                      | ローカル開発環境                         |
 
 ---
 
@@ -72,12 +72,6 @@ brew install go-task
 ```bash
 # Air (Go ホットリロード、Docker 内で使用)
 go install github.com/air-verse/air@latest
-
-# golang-migrate (DB マイグレーション)
-brew install golang-migrate
-
-# sqlc (Go コード生成)
-brew install sqlc
 
 # oapi-codegen (OpenAPI → Go コード生成)
 go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
@@ -254,7 +248,6 @@ cp secrets.tfvars.example secrets.tfvars
 | `project_id`           | GCP プロジェクト ID       | `main-vcompute`             |
 | `region`               | GCP リージョン            | `asia-northeast1`           |
 | `environment`          | 環境名                    | `production`                |
-| `db_instance_name`     | Cloud SQL インスタンス名  | `tut-bus-db-prod`           |
 | `github_org`           | GitHub 組織名             | `lc-tut`                    |
 | `github_repo`          | GitHub リポジトリ名       | `tut-bus`                   |
 | `cloudflare_zone_name` | ドメイン名                | `hekuta.net`                |
@@ -286,8 +279,6 @@ terraform apply \
 
 | カテゴリ   | リソース                                              |
 | ---------- | ----------------------------------------------------- |
-| GCP        | VPC ネットワーク + サブネット                         |
-| GCP        | Cloud SQL (PostgreSQL) インスタンス + データベース    |
 | GCP        | App Engine アプリケーション設定                       |
 | GCP        | サービスアカウント (アプリ用 + Terraform 用)          |
 | GCP        | Workload Identity Pool / Provider (GitHub Actions 用) |
@@ -297,59 +288,7 @@ terraform apply \
 | Cloudflare | SSL/TLS / HTTPS 設定                                  |
 | Vercel     | プロジェクト + 環境変数 + カスタムドメイン            |
 
-### 5.4 Cloud SQL IAM ユーザーの権限付与（初回のみ）
-
-`terraform apply` で Cloud SQL インスタンスと IAM ユーザーが作成されますが、PostgreSQL 15 では IAM ユーザーに `public` スキーマの操作権限がデフォルトで付与されません。
-マイグレーション（Cloud Run Job）を実行する前に、`postgres` 管理ユーザーで一度だけ GRANT を実行する必要があります。
-
-**1. 自分のアカウントに Cloud SQL Admin 権限を一時的に付与**
-
-```bash
-gcloud projects add-iam-policy-binding main-vcompute \
-  --member="user:<YOUR_EMAIL>" \
-  --role="roles/cloudsql.admin"
-# 条件の選択を求められたら「None」を選択
-```
-
-**2. postgres ユーザーのパスワードを設定**
-
-```bash
-gcloud sql users set-password postgres \
-  --instance=tut-bus-db-prod \
-  --project=main-vcompute \
-  --password='一時パスワード'
-```
-
-**3. Cloud SQL Studio でログイン**
-
-GCP Console → Cloud SQL → `tut-bus-db-prod` → **Cloud SQL Studio** で `postgres` ユーザーとしてログインします。
-
-**4. IAM ユーザーに権限を付与**
-
-```sql
--- public スキーマの利用 & テーブル作成権限
-GRANT USAGE, CREATE ON SCHEMA public TO "tut-bus-app-sa@main-vcompute.iam";
-
--- 既存テーブル・シーケンスへの全権限
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "tut-bus-app-sa@main-vcompute.iam";
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "tut-bus-app-sa@main-vcompute.iam";
-
--- 今後作成されるテーブル・シーケンスへの自動権限付与
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO "tut-bus-app-sa@main-vcompute.iam";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO "tut-bus-app-sa@main-vcompute.iam";
-```
-
-> **注意**: この手順は初回のみ必要です。一度実行すれば、以降の Migration Deploy（Cloud Run Job）は正常に動作します。
-
-**5. 一時的に付与した Cloud SQL Admin 権限を削除**
-
-```bash
-gcloud projects remove-iam-policy-binding main-vcompute \
-  --member="user:<YOUR_EMAIL>" \
-  --role="roles/cloudsql.admin"
-```
-
-### 5.5 出力値の確認
+### 5.4 出力値の確認
 
 ```bash
 # GitHub Actions で必要な値
@@ -423,46 +362,54 @@ pnpm install
 ### 7.2 Docker Compose で起動
 
 ```bash
-# 全サービス起動 (web + api + db + swagger)
+# 全サービス起動 (web + api + swagger)
 task up
 # または: docker compose up -d
 
-# 初回セットアップ（依存 + 起動 + マイグレーション）を一括で
+# 初回セットアップ（依存 + 起動）を一括で
 task setup
 ```
 
 起動するサービス:
 
-| サービス | ポート | 説明                                                |
-| -------- | ------ | --------------------------------------------------- |
-| web      | 3000   | Next.js 開発サーバー                                |
-| api      | 8000   | Go API サーバー (Air ホットリロード)                |
-| db       | 5432   | PostgreSQL 17 (`postgres` / `p@ssw0rd` / `tut_bus`) |
-| swagger  | 8080   | Swagger UI (OpenAPI ドキュメント)                   |
+| サービス | ポート | 説明                                 |
+| -------- | ------ | ------------------------------------ |
+| web      | 3000   | Next.js 開発サーバー                 |
+| api      | 8000   | Go API サーバー (Air ホットリロード) |
+| swagger  | 8080   | Swagger UI (OpenAPI ドキュメント)    |
 
 ### 7.3 コード生成
 
-API スキーマや DB クエリの変更時:
+API スキーマの変更時:
 
 ```bash
-# TypeSpec → OpenAPI → TypeScript 型定義 + Go サーバーコード + sqlc
+# TypeSpec → OpenAPI → TypeScript 型定義 + Go サーバーコード
 task gen:all
 
 # 個別実行
 task gen:spec           # TypeSpec → OpenAPI YAML
 task gen:clients        # OpenAPI → TS 型定義 + Go サーバー
-task api:sqlc:generate  # SQL クエリ → Go コード
 ```
 
-### 7.4 DB マイグレーション
+### 7.4 データ（設定ファイル）
 
-```bash
-task api:migrate:up       # マイグレーション適用
-task api:migrate:down     # 1つロールバック
-task api:migrate:version  # 現在のバージョン確認
-task api:db:reset         # 全リセット (down:all → up)
-task api:db:seed          # シードデータ投入
-```
+API はデータベースを使わず、`apps/api/data/` 配下の JSON ファイルを読み込みます。
+
+| ファイル                    | 内容                                      |
+| --------------------------- | ----------------------------------------- |
+| `data/bus_stops.json`       | バス停の一覧 (`id`, `name`, `lat`, `lng`) |
+| `data/bus_stop_groups.json` | バス停グループ（出発地単位のまとまり）    |
+| `data/services/*.json`      | 運行ダイヤ（時刻表）                      |
+
+読み込み先は環境変数で変更できます。
+
+| 変数                   | デフォルト             |
+| ---------------------- | ---------------------- |
+| `DATA_PATH`            | `./data`               |
+| `BUS_STOPS_FILE`       | `bus_stops.json`       |
+| `BUS_STOP_GROUPS_FILE` | `bus_stop_groups.json` |
+
+バス停を追加・変更するときは JSON を編集して API を再デプロイします。開発環境ではキャッシュが無効なので、編集内容はすぐ反映されます。
 
 ### 7.5 Web (Next.js) 単体開発
 
@@ -497,14 +444,12 @@ gcloud app describe --project=<PROJECT_ID>
 
 ### app.yaml の環境変数
 
-`apps/api/app.yaml` に本番の環境変数が定義されています。  
-DB パスワードなどの機密値は、デプロイ前に適切な値に設定してください。
+`apps/api/app.yaml` に本番の環境変数が定義されています。
 
-| 変数                   | 説明                                             |
-| ---------------------- | ------------------------------------------------ |
-| `DB_HOST`              | Cloud SQL 接続名 (`/cloudsql/<CONNECTION_NAME>`) |
-| `DB_PASSWORD`          | DB パスワード                                    |
-| `CORS_ALLOWED_ORIGINS` | CORS 許可オリジン (カンマ区切り)                 |
+| 変数                   | 説明                                 |
+| ---------------------- | ------------------------------------ |
+| `DATA_PATH`            | データファイル (JSON) のディレクトリ |
+| `CORS_ALLOWED_ORIGINS` | CORS 許可オリジン (カンマ区切り)     |
 
 ---
 
@@ -530,19 +475,7 @@ Vercel 設定は Terraform で管理されています。
 | GitHub Actions で "Unable to authenticate"  | WIF 設定不備             | Variables の `WIF_PROVIDER`/`TERRAFORM_SA` を確認       |
 | `terraform apply` で "permission denied"    | IAM ロール不足           | `workload_identity.tf` のロール一覧を確認               |
 | Cloudflare で "must be replaced"            | Provider バージョン差    | 設定値には影響なし、apply して OK                       |
-| Cloud SQL に接続できない                    | ネットワーク/認証        | VPC 設定, IP 許可リスト, Auth Proxy を確認              |
 | `pnpm install` がエラー                     | Node.js バージョン不一致 | `node -v` が v24.x であることを確認                     |
-
-### Cloud SQL Auth Proxy（ローカルから本番 DB に接続）
-
-```bash
-# インストール
-brew install cloud-sql-proxy
-
-# 接続（terraform output で接続名を確認）
-cloud-sql-proxy <PROJECT_ID>:<REGION>:<INSTANCE_NAME>
-# → localhost:5432 から接続可能に
-```
 
 ### ローカルで Terraform を操作
 
@@ -559,12 +492,10 @@ terraform validate
 
 ```bash
 task --list              # 全コマンド一覧
-task setup               # 初回セットアップ (install + up + migrate)
+task setup               # 初回セットアップ (install + up)
 task up / task down      # Docker 起動/停止
 task gen:all             # 全コード生成
 task lint / task fix     # Lint / 自動修正
 task build               # 全ビルド
-task api:db:shell        # PostgreSQL シェル接続
-task api:migrate:up      # マイグレーション適用
 task tf:plan / tf:apply  # Terraform (※ tfvars パスが古い場合あり、直接実行推奨)
 ```
