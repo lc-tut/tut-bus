@@ -80,21 +80,6 @@ resource "google_project_iam_member" "terraform_wip_admin" {
   member  = "serviceAccount:${google_service_account.terraform.email}"
 }
 
-# Cloud SQL Admin（データベースの管理）
-# TODO: Cloud SQL / VPC の破棄が apply 済みになったら、この権限と下の Network Admin を削除する
-resource "google_project_iam_member" "terraform_sql_admin" {
-  project = var.project_id
-  role    = "roles/cloudsql.admin"
-  member  = "serviceAccount:${google_service_account.terraform.email}"
-}
-
-# Compute Network Admin（VPCの管理）
-resource "google_project_iam_member" "terraform_network_admin" {
-  project = var.project_id
-  role    = "roles/compute.networkAdmin"
-  member  = "serviceAccount:${google_service_account.terraform.email}"
-}
-
 # App Engine Admin（App Engineの管理）
 resource "google_project_iam_member" "terraform_appengine_admin" {
   project = var.project_id
