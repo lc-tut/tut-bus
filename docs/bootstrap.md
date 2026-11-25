@@ -330,13 +330,7 @@ Cloudflare / Vercel の API トークンや Better Auth の値は `infra/secrets
 
 ### 6.4 ワークフロー一覧
 
-Terraform 関連のワークフローは `terraform-ci.yml` だけです:
-
-| ワークフロー       | トリガー           | 内容                                           |
-| ------------------ | ------------------ | ---------------------------------------------- |
-| `terraform-ci.yml` | `infra/**` への PR | `fmt -check` + `validate` の結果を PR コメント |
-
-plan / apply はローカルで実行します（[ローカルで Terraform を操作](#ローカルで-terraform-を操作) を参照）。
+Terraform 関連のワークフローはありません。fmt / validate / plan / apply はローカルで実行します（[ローカルで Terraform を操作](#ローカルで-terraform-を操作) を参照）。
 
 ---
 
